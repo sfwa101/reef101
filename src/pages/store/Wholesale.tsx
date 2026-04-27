@@ -1,5 +1,5 @@
 import SinglePageStore, { type StoreCategory } from "@/components/SinglePageStore";
-import { products } from "@/lib/products";
+import { products, registerProducts } from "@/lib/products";
 import { storeThemes } from "@/lib/storeThemes";
 import { Crown, Boxes, Truck, BadgePercent } from "lucide-react";
 
@@ -13,6 +13,9 @@ const bulkProducts = products.map((p) => ({
   oldPrice: Math.round(p.price * 6),
   source: "wholesale" as const,
 }));
+
+// Register so the product detail page can resolve them by id.
+registerProducts(bulkProducts);
 
 const cats: StoreCategory[] = [
   { id: "top", name: "الأكثر توفيرًا", match: (p) => p.source === "wholesale" && (p.oldPrice ?? 0) - p.price > 30 },

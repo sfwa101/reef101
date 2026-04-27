@@ -236,10 +236,10 @@
   }
 
   .glass-strong {
-    background: hsl(var(--card) / 0.85);
+    background: hsl(var(--card) / 0.96);
     backdrop-filter: saturate(180%) blur(32px);
     -webkit-backdrop-filter: saturate(180%) blur(32px);
-    border: 1px solid hsl(var(--border) / 0.6);
+    border: 1px solid hsl(var(--border) / 0.7);
   }
 
   .glass-tinted {
@@ -259,10 +259,10 @@
 
   /* Edge-to-edge solid header (no rounded glass) */
   .header-solid {
-    background: hsl(var(--card) / 0.92);
+    background: hsl(var(--card) / 0.98);
     backdrop-filter: saturate(180%) blur(24px);
     -webkit-backdrop-filter: saturate(180%) blur(24px);
-    border-bottom: 1px solid hsl(var(--border) / 0.6);
+    border-bottom: 1px solid hsl(var(--border) / 0.7);
   }
 }
 

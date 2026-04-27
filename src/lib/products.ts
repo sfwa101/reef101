@@ -158,7 +158,19 @@ export const products: Product[] = [
   { id: "utensils", name: "طقم أواني ستانلس", unit: "5 قطع", price: 850, oldPrice: 1100, image: pUtensils, rating: 4.9, category: "أدوات منزلية", subCategory: "مطبخ", source: "home", badge: "premium" },
 ];
 
-export const getById = (id: string) => products.find((p) => p.id === id);
+// Dynamically-generated product variants (e.g. wholesale bulk packs) register
+// themselves here so getById can resolve them on the product detail page.
+const extraProducts: Product[] = [];
+export const registerProducts = (items: Product[]) => {
+  for (const item of items) {
+    if (!extraProducts.some((p) => p.id === item.id) && !products.some((p) => p.id === item.id)) {
+      extraProducts.push(item);
+    }
+  }
+};
+
+export const getById = (id: string) =>
+  products.find((p) => p.id === id) ?? extraProducts.find((p) => p.id === id);
 
 export const byBadge = (badge: Product["badge"]) =>
   products.filter((p) => p.badge === badge);
