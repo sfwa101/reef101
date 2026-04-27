@@ -31,12 +31,12 @@ const Sections = () => {
     <div className="space-y-6">
       <section className="animate-float-up">
         <h1 className="font-display text-3xl font-extrabold leading-tight tracking-tight">الأقسام</h1>
-        <p className="mt-1 text-xs text-muted-foreground">٩ متاجر مصغّرة داخل تطبيق واحد، بحساب وسلة موحّدة.</p>
+        <p className="mt-1 text-xs text-muted-foreground">9 متاجر مصغّرة داخل تطبيق واحد، بحساب وسلة موحّدة.</p>
       </section>
       <section className="animate-float-up" style={{ animationDelay: "80ms" }}>
         <div className="mb-3 flex items-baseline justify-between px-1">
           <h2 className="font-display text-xl font-extrabold text-foreground">المتاجر داخل ريف</h2>
-          <span className="text-[11px] font-medium text-muted-foreground">٩ تطبيقات</span>
+          <span className="text-[11px] font-medium text-muted-foreground">9 تطبيقات</span>
         </div>
         <FeatureTileGrid tiles={tiles} onSelect={(id) => navigate({ to: `/store/${id}` as never })} />
       </section>
