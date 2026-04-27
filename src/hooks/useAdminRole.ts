@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { retryBackendCall } from "@/lib/backendRetry";
 
 export type AppRole = "admin" | "staff" | "cashier";
 
@@ -18,11 +19,19 @@ export function useAdminRole() {
     }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
+      const { data, error } = await retryBackendCall(
+        () => supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id),
+        7,
+        500,
+      );
       if (cancelled) return;
+      if (error) {
+        setLoading(false);
+        return;
+      }
       setRoles(((data ?? []) as { role: AppRole }[]).map((r) => r.role));
       setLoading(false);
     })();
