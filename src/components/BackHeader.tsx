@@ -8,6 +8,7 @@ interface BackHeaderProps {
   fallbackTo?: "/" | "/sections" | "/account";
   right?: ReactNode;
   accent?: string;
+  themeKey?: string;
 }
 
 const BackHeader = ({ title, subtitle, fallbackTo = "/", right, accent }: BackHeaderProps) => {
