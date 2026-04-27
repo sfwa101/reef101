@@ -24,7 +24,7 @@ const navItems = [
 
 export default function AdminLayout() {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { isStaff, isAdmin, loading: roleLoading } = useAdminRole();
+  const { isStaff, isAdmin, loading: roleLoading, error: roleError } = useAdminRole();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -44,6 +44,25 @@ export default function AdminLayout() {
   }
 
   if (!user) return null;
+
+  if (roleError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-tile">
+          <h1 className="text-xl font-bold">جارٍ التحقق من الصلاحيات</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            الخلفية تأخرت للحظات بعد تسجيل الدخول. افتح الصفحة مرة أخرى خلال ثوانٍ قليلة.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-6 rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!isStaff) {
     return (
