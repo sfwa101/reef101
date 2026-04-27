@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, User, Phone, ShoppingBag, Wallet as WalletIcon, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { retryBackendCall } from "@/lib/backendRetry";
+import { isRetryableBackendError, retryBackendCall } from "@/lib/backendRetry";
+import { toast } from "sonner";
 
 type Profile = {
   id: string;
@@ -28,11 +29,14 @@ export default function AdminCustomers() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data: profs } = await retryBackendCall<any>(
+      const { data: profs, error } = await retryBackendCall<any>(
         async () => await supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(500),
-        6,
-        500,
+        8,
+        700,
       );
+      if (error && !profs) {
+        toast.error(isRetryableBackendError(error) ? "الخلفية كانت بطيئة للحظات، وتمت إعادة المحاولة" : "تعذر تحميل العملاء الآن");
+      }
       const list = (profs ?? []) as Profile[];
       setProfiles(list);
       setLoading(false);
@@ -45,8 +49,8 @@ export default function AdminCustomers() {
           map[id] = { ordersCount: 0, totalSpent: 0, walletBalance: 0, walletPoints: 0 };
         });
         const [ordersRes, walletsRes] = await Promise.all([
-          retryBackendCall<any>(async () => await supabase.from("orders").select("user_id,total").in("user_id", ids), 4, 500).catch(() => ({ data: [] })),
-          retryBackendCall<any>(async () => await supabase.from("wallet_balances").select("user_id,balance,points").in("user_id", ids), 4, 500).catch(() => ({ data: [] })),
+          retryBackendCall<any>(async () => await supabase.from("orders").select("user_id,total").in("user_id", ids), 6, 700).catch(() => ({ data: [] })),
+          retryBackendCall<any>(async () => await supabase.from("wallet_balances").select("user_id,balance,points").in("user_id", ids), 6, 700).catch(() => ({ data: [] })),
         ]);
         ((ordersRes?.data ?? []) as any[]).forEach((o) => {
           if (!map[o.user_id]) return;
