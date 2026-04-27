@@ -30,7 +30,7 @@ const ProductDetail = () => {
   return (
     <>
       <div className="space-y-5">
-        <BackHeader title={product.category} accent="منتج" />
+        <BackHeader title={product.category} />
         <div className="overflow-hidden rounded-[1.75rem] bg-secondary/30 shadow-tile">
           <img src={product.image} alt={product.name} className="aspect-square w-full object-cover" />
         </div>
