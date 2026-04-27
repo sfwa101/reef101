@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { retryBackendCall } from "@/lib/backendRetry";
 
 export type Profile = {
   id: string;
@@ -40,14 +41,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (uid: string) => {
-    // profiles table not yet created; gracefully no-op until DB schema is added
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const client = supabase as any;
-      const { data } = await client.from("profiles").select("*").eq("id", uid).maybeSingle();
+      const { data, error } = await retryBackendCall(
+        () => client.from("profiles").select("*").eq("id", uid).maybeSingle(),
+        7,
+        500,
+      );
+
+      if (error) return;
       setProfile((data as Profile) ?? null);
     } catch {
-      setProfile(null);
+      // keep the last known profile if the backend is temporarily unavailable
     }
   };
 
@@ -76,21 +82,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUpWithPhone: AuthCtx["signUpWithPhone"] = async (phone, password, fullName) => {
     const email = phoneToEmail(phone);
     const normalized = normalizePhone(phone);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-        data: { phone: normalized, full_name: fullName },
-      },
-    });
+    const { error } = await retryBackendCall(
+      () => supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { phone: normalized, full_name: fullName },
+        },
+      }),
+      4,
+      500,
+    );
     if (error) return { error: humanize(error.message) };
     return {};
   };
 
   const signInWithPhone: AuthCtx["signInWithPhone"] = async (phone, password) => {
     const email = phoneToEmail(phone);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await retryBackendCall(
+      () => supabase.auth.signInWithPassword({ email, password }),
+      4,
+      500,
+    );
     if (error) return { error: humanize(error.message) };
     return {};
   };
@@ -115,6 +129,9 @@ const humanize = (msg: string): string => {
   if (m.includes("invalid login")) return "رقم الهاتف أو كلمة السر غير صحيحة";
   if (m.includes("already registered") || m.includes("already in use") || m.includes("user already")) return "هذا الرقم مسجّل بالفعل، سجّل الدخول";
   if (m.includes("password")) return "كلمة السر يجب ألا تقل عن 6 أحرف";
+  if (m.includes("database error querying schema") || m.includes("schema cache") || m.includes("unexpected eof")) {
+    return "الخدمة كانت مشغولة للحظات، حاولنا تلقائياً ويمكنك المتابعة الآن";
+  }
   return msg;
 };
 
