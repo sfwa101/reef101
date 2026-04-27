@@ -1,6 +1,14 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import appCss from "../styles.css?url";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
+import SplashScreen from "@/components/SplashScreen";
 
 function NotFoundComponent() {
   return (
@@ -29,16 +37,21 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "ريف المدينة — عبق الريف داخل المدينة" },
+      { name: "description", content: "تسوّق منتجات السوبرماركت والمطبخ والألبان والعطارة من ريف المدينة." },
+      { property: "og:title", content: "ريف المدينة" },
+      { property: "og:description", content: "تسوّق منتجات السوبرماركت والمطبخ والألبان والعطارة من ريف المدينة." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@500;700;800&display=swap",
+      },
       {
         rel: "stylesheet",
         href: appCss,
@@ -52,7 +65,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl">
       <head>
         <HeadContent />
       </head>
@@ -65,5 +78,33 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  const [queryClient] = useState(() => new QueryClient());
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashExit, setSplashExit] = useState(false);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setSplashExit(true), 2000);
+    const t2 = setTimeout(() => setShowSplash(false), 2500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <AuthProvider>
+            <CartProvider>
+              <Toaster />
+              {showSplash && <SplashScreen exiting={splashExit} />}
+              <Outlet />
+            </CartProvider>
+          </AuthProvider>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+}
 }
