@@ -8,6 +8,8 @@ import {
   BarChart3,
   LogOut,
   Menu,
+  Wallet,
+  Bell,
 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -19,6 +21,8 @@ const navItems = [
   { to: "/admin/orders", label: "الطلبات", icon: ShoppingBag },
   { to: "/admin/products", label: "المنتجات", icon: Package },
   { to: "/admin/customers", label: "العملاء", icon: Users },
+  { to: "/admin/wallets", label: "المحافظ", icon: Wallet },
+  { to: "/admin/notifications", label: "الإشعارات", icon: Bell },
   { to: "/admin/reports", label: "التقارير", icon: BarChart3 },
 ];
 
