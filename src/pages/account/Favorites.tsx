@@ -3,7 +3,7 @@ import ProductCard from "@/components/ProductCard";
 import { products } from "@/lib/products";
 import { useFavorites } from "@/lib/favorites";
 import { Heart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 
 const Favorites = () => {
   const { favs } = useFavorites();
