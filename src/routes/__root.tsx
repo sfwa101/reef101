@@ -92,15 +92,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const [queryClient] = useState(() => new QueryClient());
   const [showSplash, setShowSplash] = useState(true);
-  const [splashExit, setSplashExit] = useState(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setSplashExit(true), 2000);
-    const t2 = setTimeout(() => setShowSplash(false), 2500);
+    const t1 = setTimeout(() => setShowSplash(false), 2700);
     registerPWA();
     return () => {
       clearTimeout(t1);
-      clearTimeout(t2);
     };
   }, []);
 
@@ -111,7 +108,7 @@ function RootComponent() {
           <AuthProvider>
             <CartProvider>
               <Toaster />
-              {showSplash && <SplashScreen exiting={splashExit} />}
+              {showSplash && <SplashScreen />}
               <Outlet />
             </CartProvider>
           </AuthProvider>
