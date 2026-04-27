@@ -7,9 +7,10 @@ interface BackHeaderProps {
   subtitle?: string;
   fallbackTo?: "/" | "/sections" | "/account";
   right?: ReactNode;
+  accent?: string;
 }
 
-const BackHeader = ({ title, subtitle, fallbackTo = "/", right }: BackHeaderProps) => {
+const BackHeader = ({ title, subtitle, fallbackTo = "/", right, accent }: BackHeaderProps) => {
   const router = useRouter();
 
   const goBack = () => {
@@ -28,6 +29,11 @@ const BackHeader = ({ title, subtitle, fallbackTo = "/", right }: BackHeaderProp
         <ChevronRight className="h-5 w-5 text-foreground" strokeWidth={2.4} />
       </button>
       <div className="flex-1 text-center">
+        {accent && (
+          <span className="mb-0.5 inline-block rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold text-primary">
+            {accent}
+          </span>
+        )}
         <h1 className="font-display text-lg font-bold text-foreground leading-tight">{title}</h1>
         {subtitle && (
           <p className="text-[11px] font-medium text-muted-foreground">{subtitle}</p>
