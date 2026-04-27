@@ -20,10 +20,10 @@ const Offers = () => {
       </section>
       <section className="grid grid-cols-2 gap-3">
         {[
-          { title: "عميل جديد", desc: "خصم ٢٠٪", code: "WELCOME20", icon: Sparkles, bg: "from-primary to-primary/70" },
+          { title: "عميل جديد", desc: "خصم 20٪", code: "WELCOME20", icon: Sparkles, bg: "from-primary to-primary/70" },
           { title: "توصيل مجاني", desc: "أول طلبين", code: "FREESHIP", icon: Gift, bg: "from-amber-500 to-orange-400" },
-          { title: "خصم كاش", desc: "٥٠ ج.م", code: "CASH50", icon: Tag, bg: "from-rose-500 to-pink-400" },
-          { title: "خصم الجملة", desc: "حتى ٣٥٪", code: "BULK35", icon: Percent, bg: "from-blue-600 to-indigo-500" },
+          { title: "خصم كاش", desc: "50 ج.م", code: "CASH50", icon: Tag, bg: "from-rose-500 to-pink-400" },
+          { title: "خصم الجملة", desc: "حتى 35٪", code: "BULK35", icon: Percent, bg: "from-blue-600 to-indigo-500" },
         ].map((c, i) => {
           const Icon = c.icon;
           return (
@@ -39,8 +39,8 @@ const Offers = () => {
       <section className="relative overflow-hidden rounded-[1.75rem] p-5 shadow-tile" style={{ background: "linear-gradient(135deg, hsl(0 65% 45%), hsl(20 70% 55%))" }}>
         <div className="absolute -bottom-12 -right-10 h-44 w-44 rounded-full bg-white/15 blur-3xl" />
         <p className="text-[10px] font-bold text-white/90">عرض محدود</p>
-        <h2 className="font-display text-2xl font-extrabold text-white text-balance">أسبوع التوفير الكبير<br />خصومات حتى ٤٠٪</h2>
-        <p className="mt-1 text-xs text-white/80">ينتهي خلال ٢ أيام</p>
+        <h2 className="font-display text-2xl font-extrabold text-white text-balance">أسبوع التوفير الكبير<br />خصومات حتى 40٪</h2>
+        <p className="mt-1 text-xs text-white/80">ينتهي خلال يومين</p>
       </section>
       <ProductCarousel title="العروض الحارة" accent="🔥 الأكثر طلبًا" products={onSale} seeAllTo="/sections" />
       {offerSections.map((s) => (
