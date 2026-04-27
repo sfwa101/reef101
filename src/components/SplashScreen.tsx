@@ -1,17 +1,11 @@
 import reefLogo from "@/assets/reef-logo.png";
 
-interface SplashScreenProps {
-  exiting: boolean;
-}
-
-const SplashScreen = ({ exiting }: SplashScreenProps) => {
+const SplashScreen = () => {
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden ${
-        exiting ? "animate-splash-out pointer-events-none" : ""
-      }`}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden pointer-events-none animate-[splash-out_0.55s_var(--ease-apple)_2.1s_forwards]"
       style={{ background: "var(--gradient-splash)" }}
-      aria-hidden={exiting}
+      aria-hidden="true"
     >
       <div className="absolute top-1/4 right-1/4 h-72 w-72 rounded-full bg-primary-glow/40 blur-3xl" />
       <div className="absolute bottom-1/4 left-1/4 h-80 w-80 rounded-full bg-primary/20 blur-3xl" />
