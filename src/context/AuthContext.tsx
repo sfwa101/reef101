@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const client = supabase as any;
-      const { data, error } = await retryBackendCall(
+      const { data, error } = await retryBackendCall<any>(
         () => client.from("profiles").select("*").eq("id", uid).maybeSingle(),
         7,
         500,
