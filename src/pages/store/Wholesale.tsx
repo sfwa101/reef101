@@ -8,7 +8,7 @@ const bulkProducts = products.map((p) => ({
   ...p,
   id: `bulk-${p.id}`,
   name: `عبوة وفر · ${p.name}`,
-  unit: `حزمة ٦× ${p.unit}`,
+  unit: `حزمة 6× ${p.unit}`,
   price: Math.round(p.price * 5.2),
   oldPrice: Math.round(p.price * 6),
   source: "wholesale" as const,
