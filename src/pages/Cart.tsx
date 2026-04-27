@@ -7,6 +7,7 @@ import { fmtMoney, toLatin } from "@/lib/format";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { isRetryableBackendError, retryBackendCall } from "@/lib/backendRetry";
 
 const WA_NUMBER = "201080068689";
 
@@ -85,23 +86,27 @@ const Cart = () => {
         !selectedAddr && guestNotes ? `العنوان: ${guestNotes}` : null,
       ].filter(Boolean);
 
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          total: grand,
-          payment_method: payment,
-          address_id: selectedAddr?.id ?? null,
-          status: "pending",
-          whatsapp_sent: true,
-          notes: noteParts.length ? noteParts.join(" · ") : null,
-        })
-        .select("id")
-        .single();
+      const { data: order, error } = await retryBackendCall(
+        async () => await supabase
+          .from("orders")
+          .insert({
+            user_id: user.id,
+            total: grand,
+            payment_method: payment,
+            address_id: selectedAddr?.id ?? null,
+            status: "pending",
+            whatsapp_sent: true,
+            notes: noteParts.length ? noteParts.join(" · ") : null,
+          })
+          .select("id")
+          .single(),
+        8,
+        700,
+      );
 
       if (error || !order) {
         console.error(error);
-        toast.error("تعذّر حفظ الطلب، حاول مرة أخرى");
+        toast.error(isRetryableBackendError(error) ? "الخدمة كانت بطيئة للحظات، حاول إتمام الطلب مرة أخرى الآن" : "تعذّر حفظ الطلب، حاول مرة أخرى");
         setSubmitting(false);
         return;
       }
@@ -114,8 +119,17 @@ const Cart = () => {
         price: l.product.price,
         quantity: l.qty,
       }));
-      const { error: itemsErr } = await supabase.from("order_items").insert(items);
-      if (itemsErr) console.error(itemsErr);
+      const { error: itemsErr } = await retryBackendCall(
+        async () => await supabase.from("order_items").insert(items),
+        8,
+        700,
+      );
+      if (itemsErr) {
+        console.error(itemsErr);
+        toast.error(isRetryableBackendError(itemsErr) ? "تم حفظ الطلب لكن تفاصيله تأخرت، أعد المحاولة بعد ثوانٍ" : "تم إنشاء الطلب لكن تعذّر حفظ المنتجات بداخله");
+        setSubmitting(false);
+        return;
+      }
 
       const lineItems = lines
         .map((l, i) => `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(l.product.price * l.qty)}`)
