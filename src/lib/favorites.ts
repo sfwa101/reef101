@@ -1,4 +1,5 @@
-// Persisted favorites store (localStorage + Supabase sync).
+// Persisted favorites store: Supabase when logged in, localStorage fallback otherwise.
+// On login the local favorites are merged into Supabase (one-way upsert).
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -27,7 +28,6 @@ export const useFavorites = () => {
   const { user } = useAuth();
   const [favs, setFavs] = useState<string[]>(loadLocal());
 
-  // Load from Cloud when user logs in, then sync any local-only ids upward.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -64,16 +64,23 @@ export const useFavorites = () => {
       const isFav = favs.includes(id);
       const next = isFav ? favs.filter((x) => x !== id) : [...favs, id];
       setFavs(next);
+      // Logged-in users: source of truth is Supabase, but keep local mirror.
       saveLocal(next);
       if (user) {
         if (isFav) {
-          await supabase.from("favorites").delete().eq("user_id", user.id).eq("product_id", id);
+          await supabase
+            .from("favorites")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("product_id", id);
         } else {
-          await supabase.from("favorites").insert({ user_id: user.id, product_id: id });
+          await supabase
+            .from("favorites")
+            .insert({ user_id: user.id, product_id: id });
         }
       }
     },
-    [favs, user]
+    [favs, user],
   );
 
   return { favs, has, toggle };
