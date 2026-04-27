@@ -22,20 +22,15 @@ export const roleToHome = (roles: AppRole[]): string => {
 
 /** Look up roles once and resolve the home path. Used right after sign-in. */
 export async function resolveHomeForUser(userId: string): Promise<string> {
-  const { data, error } = await retryBackendCall<{
-    data: { role: AppRole }[] | null;
-    error: unknown;
-  }>(
-    async () =>
-      (await supabase.from("user_roles").select("role").eq("user_id", userId)) as {
-        data: { role: AppRole }[] | null;
-        error: unknown;
-      },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const client = supabase as any;
+  const { data, error } = await retryBackendCall<any>(
+    async () => await client.from("user_roles").select("role").eq("user_id", userId),
     4,
     400,
   );
   if (error) return "/";
-  const roles = (data ?? []).map((r) => r.role);
+  const roles = ((data ?? []) as { role: AppRole }[]).map((r) => r.role);
   return roleToHome(roles);
 }
 
