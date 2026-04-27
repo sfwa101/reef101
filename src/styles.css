@@ -1,0 +1,329 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================
+   ريف المدينة — Apple-inspired design system
+   Soft glass green palette. All colors in HSL.
+   Supports light/dark + multiple accent themes.
+============================================ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-glow: hsl(var(--primary-glow));
+  --color-primary-soft: hsl(var(--primary-soft));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --font-display: 'Tajawal', 'Cairo', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  /* Surfaces — light */
+  --background: 120 25% 96%;
+  --foreground: 150 15% 14%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 150 15% 14%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 150 15% 14%;
+
+  /* Brand — sage / reef green (default theme) */
+  --primary: 142 35% 38%;
+  --primary-foreground: 60 30% 98%;
+  --primary-glow: 138 55% 70%;
+  --primary-soft: 130 45% 92%;
+
+  --secondary: 130 20% 94%;
+  --secondary-foreground: 150 20% 18%;
+
+  --muted: 140 18% 93%;
+  --muted-foreground: 150 8% 42%;
+
+  --accent: 36 70% 60%;
+  --accent-foreground: 30 30% 12%;
+
+  --destructive: 4 78% 56%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 140 15% 88%;
+  --input: 140 15% 88%;
+  --ring: 142 35% 38%;
+
+  --radius: 1.5rem;
+
+  /* Apple-style glass tokens */
+  --glass-bg: 120 40% 97% / 0.85;
+  --glass-border: 140 30% 85% / 0.6;
+  --glass-highlight: 0 0% 100% / 0.65;
+
+  /* Gradients */
+  --gradient-splash: radial-gradient(at 30% 20%, hsl(130 60% 90% / 0.9), transparent 60%),
+                     radial-gradient(at 70% 80%, hsl(150 50% 85% / 0.8), transparent 55%),
+                     linear-gradient(160deg, hsl(135 55% 95%), hsl(120 35% 92%));
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(138 60% 88% / 0.55), transparent 50%),
+                     radial-gradient(circle at 90% 30%, hsl(45 80% 88% / 0.45), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(160 50% 88% / 0.5), transparent 55%);
+  --gradient-tile-overlay: linear-gradient(180deg, transparent 30%, hsl(150 40% 8% / 0.55) 100%);
+
+  /* Shadows — soft, layered, Apple-like */
+  --shadow-soft: 0 1px 2px hsl(150 20% 20% / 0.04), 0 8px 24px -8px hsl(150 25% 25% / 0.10);
+  --shadow-tile: 0 2px 4px hsl(150 20% 20% / 0.05), 0 24px 48px -16px hsl(142 40% 25% / 0.18);
+  --shadow-float: 0 8px 32px hsl(150 30% 15% / 0.18), 0 2px 6px hsl(150 25% 20% / 0.08);
+  --shadow-pill: 0 6px 20px -4px hsl(142 50% 30% / 0.35);
+
+  /* Motion */
+  --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Dark theme */
+.dark {
+  --background: 150 12% 8%;
+  --foreground: 130 15% 92%;
+
+  --card: 150 10% 12%;
+  --card-foreground: 130 15% 92%;
+
+  --popover: 150 10% 12%;
+  --popover-foreground: 130 15% 92%;
+
+  --primary: 138 50% 55%;
+  --primary-foreground: 150 20% 8%;
+  --primary-glow: 138 60% 65%;
+  --primary-soft: 142 30% 18%;
+
+  --secondary: 150 8% 16%;
+  --secondary-foreground: 130 15% 92%;
+
+  --muted: 150 8% 16%;
+  --muted-foreground: 140 10% 62%;
+
+  --accent: 36 70% 60%;
+  --accent-foreground: 30 30% 8%;
+
+  --destructive: 4 70% 52%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 150 8% 20%;
+  --input: 150 8% 20%;
+  --ring: 138 50% 55%;
+
+  --glass-bg: 150 10% 14% / 0.8;
+  --glass-border: 150 8% 22% / 0.6;
+  --glass-highlight: 150 10% 20% / 0.65;
+
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(138 40% 22% / 0.55), transparent 50%),
+                     radial-gradient(circle at 90% 30%, hsl(45 50% 22% / 0.45), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(160 40% 18% / 0.5), transparent 55%);
+
+  --shadow-soft: 0 1px 2px hsl(0 0% 0% / 0.4), 0 8px 24px -8px hsl(0 0% 0% / 0.5);
+  --shadow-tile: 0 2px 4px hsl(0 0% 0% / 0.4), 0 24px 48px -16px hsl(0 0% 0% / 0.6);
+  --shadow-float: 0 8px 32px hsl(0 0% 0% / 0.5), 0 2px 6px hsl(0 0% 0% / 0.4);
+  --shadow-pill: 0 6px 20px -4px hsl(138 60% 30% / 0.5);
+}
+
+/* Accent color theme variants — apply as data-theme on <html> */
+[data-theme="ocean"] {
+  --primary: 200 65% 42%;
+  --primary-glow: 195 70% 65%;
+  --primary-soft: 200 70% 92%;
+  --ring: 200 65% 42%;
+  --accent: 30 75% 60%;
+}
+.dark[data-theme="ocean"] {
+  --primary: 195 65% 58%;
+  --primary-soft: 200 40% 18%;
+}
+
+[data-theme="amber"] {
+  --primary: 28 80% 48%;
+  --primary-glow: 35 85% 65%;
+  --primary-soft: 35 85% 93%;
+  --ring: 28 80% 48%;
+  --accent: 200 60% 50%;
+}
+.dark[data-theme="amber"] {
+  --primary: 32 75% 58%;
+  --primary-soft: 30 40% 20%;
+}
+
+[data-theme="rose"] {
+  --primary: 340 70% 52%;
+  --primary-glow: 335 75% 70%;
+  --primary-soft: 340 75% 94%;
+  --ring: 340 70% 52%;
+  --accent: 160 55% 45%;
+}
+.dark[data-theme="rose"] {
+  --primary: 340 70% 62%;
+  --primary-soft: 335 40% 20%;
+}
+
+[data-theme="violet"] {
+  --primary: 265 60% 55%;
+  --primary-glow: 260 65% 70%;
+  --primary-soft: 265 70% 94%;
+  --ring: 265 60% 55%;
+  --accent: 40 75% 58%;
+}
+.dark[data-theme="violet"] {
+  --primary: 260 60% 68%;
+  --primary-soft: 265 40% 22%;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html, body {
+    direction: rtl;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Tajawal', 'Cairo', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    background-image: var(--gradient-aurora);
+    background-attachment: fixed;
+  }
+
+  /* Force Western (Latin) digits everywhere — even inside Arabic flow */
+  body, body * {
+    font-variant-numeric: lining-nums tabular-nums;
+    -moz-font-feature-settings: "lnum", "tnum";
+    -webkit-font-feature-settings: "lnum", "tnum";
+    font-feature-settings: "lnum", "tnum";
+  }
+}
+
+@layer components {
+  /* Frosted glass surface — Apple iOS material */
+  .glass {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: saturate(180%) blur(24px);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  .glass-strong {
+    background: hsl(var(--card) / 0.85);
+    backdrop-filter: saturate(180%) blur(32px);
+    -webkit-backdrop-filter: saturate(180%) blur(32px);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  .glass-tinted {
+    background: linear-gradient(135deg, hsl(135 50% 95% / 0.85), hsl(120 30% 92% / 0.7));
+    backdrop-filter: saturate(180%) blur(28px);
+    -webkit-backdrop-filter: saturate(180%) blur(28px);
+    border: 1px solid hsl(140 40% 88% / 0.7);
+  }
+
+  .tile-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-tile-overlay);
+    pointer-events: none;
+  }
+
+  /* Edge-to-edge solid header (no rounded glass) */
+  .header-solid {
+    background: hsl(var(--card) / 0.92);
+    backdrop-filter: saturate(180%) blur(24px);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    border-bottom: 1px solid hsl(var(--border) / 0.6);
+  }
+}
+
+@layer utilities {
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-tile { box-shadow: var(--shadow-tile); }
+  .shadow-float { box-shadow: var(--shadow-float); }
+  .shadow-pill { box-shadow: var(--shadow-pill); }
+
+  .ease-apple { transition-timing-function: var(--ease-apple); }
+
+  .text-balance { text-wrap: balance; }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Splash animations */
+  @keyframes splash-in {
+    0% { opacity: 0; transform: scale(0.92); filter: blur(12px); }
+    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+  }
+  @keyframes splash-out {
+    0% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.02); }
+  }
+  @keyframes float-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes capsule-pop {
+    0% { opacity: 0; transform: scale(0.6) translateX(8px); }
+    60% { transform: scale(1.06) translateX(-2px); }
+    100% { opacity: 1; transform: scale(1) translateX(0); }
+  }
+  @keyframes cart-capsule-in {
+    0% { opacity: 0; transform: translateX(20px) scale(0.7); }
+    60% { transform: translateX(-3px) scale(1.05); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  .animate-cart-capsule { animation: cart-capsule-in 0.5s var(--ease-apple) both; }
+
+  @keyframes plus-one-pop {
+    0% { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
+    25% { opacity: 1; transform: translate(-50%, -14px) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%, -36px) scale(0.9); }
+  }
+  .animate-plus-one { animation: plus-one-pop 0.9s var(--ease-apple) both; }
+
+  @keyframes qty-capsule-in {
+    0% { opacity: 0; transform: scaleX(0.4); }
+    100% { opacity: 1; transform: scaleX(1); }
+  }
+  .animate-qty-capsule { animation: qty-capsule-in 0.35s var(--ease-apple) both; transform-origin: left center; }
+
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .animate-splash-in { animation: splash-in 0.9s var(--ease-apple) both; }
+  .animate-splash-out { animation: splash-out 0.5s var(--ease-apple) both; }
+  .animate-float-up { animation: float-up 0.7s var(--ease-apple) both; }
+  .animate-capsule { animation: capsule-pop 0.45s var(--ease-apple) both; }
+}
