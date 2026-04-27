@@ -8,7 +8,6 @@ import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
-import SplashScreen from "@/components/SplashScreen";
 import { registerPWA } from "@/lib/pwa";
 
 function NotFoundComponent() {
@@ -91,14 +90,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const [queryClient] = useState(() => new QueryClient());
-  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setShowSplash(false), 2700);
     registerPWA();
-    return () => {
-      clearTimeout(t1);
-    };
+    return undefined;
   }, []);
 
   return (
@@ -108,7 +103,6 @@ function RootComponent() {
           <AuthProvider>
             <CartProvider>
               <Toaster />
-              {showSplash && <SplashScreen />}
               <Outlet />
             </CartProvider>
           </AuthProvider>
