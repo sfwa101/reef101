@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -32,6 +32,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const canRenderAdmin = useMemo(() => Boolean(user && isStaff), [user, isStaff]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -39,7 +40,7 @@ export default function AdminLayout() {
     }
   }, [authLoading, user, navigate, location.pathname]);
 
-  if (authLoading || roleLoading) {
+  if (authLoading || (roleLoading && !canRenderAdmin)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-sm text-muted-foreground">جارٍ التحميل…</div>
@@ -49,7 +50,7 @@ export default function AdminLayout() {
 
   if (!user) return null;
 
-  if (roleError) {
+  if (roleError && !canRenderAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-tile">
