@@ -12,8 +12,11 @@ export const isRetryableBackendError = (error: BackendErrorLike | null | undefin
 
   const message = `${error.message ?? ""}`.toLowerCase();
   return (
+    error.code === "PGRST001" ||
     error.code === "PGRST002" ||
     error.status === 503 ||
+    message.includes("no connection to the server") ||
+    message.includes("database client error") ||
     message.includes("schema cache") ||
     message.includes("database error querying schema") ||
     message.includes("unexpected eof") ||
