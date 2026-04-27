@@ -26,7 +26,7 @@ const groups = [
 const Account = () => {
   const { resolvedMode } = useTheme();
   const { user, profile, signOut } = useAuth();
-  const { isStaff, isAdmin } = useAdminRole();
+  const { isStaff, isAdmin, loading: roleLoading, error: roleError } = useAdminRole();
   const nav = useNavigate();
 
   const handleSignOut = async () => {
@@ -70,7 +70,12 @@ const Account = () => {
           <ChevronLeft className="h-4 w-4 text-muted-foreground" />
         </div>
       </Link>
-      {isStaff && (
+      {roleLoading && (
+        <div className="glass-strong rounded-2xl px-4 py-3 text-sm text-muted-foreground shadow-tile">
+          جارٍ التحقق من صلاحيات الحساب…
+        </div>
+      )}
+      {!roleLoading && isStaff && (
         <Link
           to="/admin"
           className="glass-strong flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-right shadow-tile ring-1 ring-primary/30"
@@ -86,6 +91,11 @@ const Account = () => {
           </div>
           <ChevronLeft className="h-4 w-4 text-muted-foreground" />
         </Link>
+      )}
+      {!roleLoading && roleError && (
+        <div className="glass-strong rounded-2xl px-4 py-3 text-xs text-muted-foreground shadow-tile">
+          تعذّر جلب الصلاحيات الآن، أعد فتح الصفحة بعد ثوانٍ قليلة.
+        </div>
       )}
       {groups.map((g) => (
         <section key={g.title} className="space-y-2">
