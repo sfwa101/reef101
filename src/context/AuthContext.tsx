@@ -34,6 +34,31 @@ const normalizePhone = (raw: string): string => {
 };
 const phoneToEmail = (phone: string) => `${normalizePhone(phone)}@reef.local`;
 
+const ensureUserRecords = async (authUser: User) => {
+  const fullName = typeof authUser.user_metadata?.full_name === "string" ? authUser.user_metadata.full_name : null;
+  const phone = typeof authUser.user_metadata?.phone === "string" ? authUser.user_metadata.phone : authUser.phone ?? null;
+
+  await retryBackendCall(
+    async () => await supabase
+      .from("profiles")
+      .upsert({
+        id: authUser.id,
+        full_name: fullName,
+        phone,
+      }, { onConflict: "id" }),
+    6,
+    700,
+  );
+
+  await retryBackendCall(
+    async () => await supabase
+      .from("wallet_balances")
+      .upsert({ user_id: authUser.id }, { onConflict: "user_id" }),
+    6,
+    700,
+  ).catch(() => undefined);
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -63,7 +88,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        setTimeout(() => fetchProfile(s.user.id), 0);
+        setTimeout(() => {
+          void ensureUserRecords(s.user);
+          void fetchProfile(s.user.id);
+        }, 0);
       } else {
         setProfile(null);
       }
@@ -72,7 +100,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) fetchProfile(s.user.id);
+      if (s?.user) {
+        void ensureUserRecords(s.user);
+        void fetchProfile(s.user.id);
+      }
       setLoading(false);
     });
 
@@ -105,6 +136,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (signInResult.error && !isRetryableBackendError(signInResult.error)) {
       return { error: humanize(signInResult.error.message ?? "تعذّر تسجيل الدخول بعد إنشاء الحساب") };
+    }
+
+    const { data: currentUser } = await supabase.auth.getUser();
+    if (currentUser.user) {
+      await ensureUserRecords(currentUser.user);
     }
 
     return {};
