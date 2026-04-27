@@ -1,4 +1,4 @@
-import { Wallet as WalletIcon, Plus, ArrowDownRight, ArrowUpRight, Gift, CreditCard, Loader2 } from "lucide-react";
+import { Wallet as WalletIcon, Plus, ArrowDownRight, ArrowUpRight, Gift, CreditCard, Loader2, X, Banknote, Smartphone, Building2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toLatin, fmtMoney } from "@/lib/format";
@@ -24,6 +24,7 @@ const Wallet = () => {
   const [txs, setTxs] = useState<Tx[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showTopup, setShowTopup] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -44,16 +45,9 @@ const Wallet = () => {
     return () => { mounted = false; };
   }, []);
 
-  const addFunds = async () => {
+  const openTopup = () => {
     if (!userId) { toast.error("سجّل الدخول أولاً"); return; }
-    const amount = 100;
-    const { error: txErr } = await supabase.from("wallet_transactions").insert({ user_id: userId, kind: "credit", label: "شحن المحفظة", amount, source: "manual" });
-    if (txErr) { toast.error("تعذّر الشحن"); return; }
-    const newBal = (balance?.balance ?? 0) + amount;
-    await supabase.from("wallet_balances").upsert({ user_id: userId, balance: newBal, points: balance?.points ?? 0, coupons: balance?.coupons ?? 0, cashback: balance?.cashback ?? 0 });
-    setBalance((b) => ({ balance: newBal, points: b?.points ?? 0, coupons: b?.coupons ?? 0, cashback: b?.cashback ?? 0 }));
-    setTxs((prev) => [{ id: crypto.randomUUID(), kind: "credit", label: "شحن المحفظة", amount, created_at: new Date().toISOString() }, ...prev]);
-    toast.success(`تم شحن ${fmtMoney(amount)}`);
+    setShowTopup(true);
   };
 
   if (loading) {
@@ -80,7 +74,7 @@ const Wallet = () => {
           <p className="mt-3 font-display text-4xl font-extrabold text-white">{toLatin(Math.round(balance?.balance ?? 0))} <span className="text-base font-medium text-white/70">ج.م</span></p>
           <p className="mt-1 text-[11px] text-white/80">يمكنك الشحن أو التحويل في أي وقت</p>
           <div className="mt-5 flex gap-2">
-            <button onClick={addFunds} className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white py-2.5 text-xs font-bold text-foreground"><Plus className="h-3.5 w-3.5" /> شحن</button>
+            <button onClick={openTopup} className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white py-2.5 text-xs font-bold text-foreground"><Plus className="h-3.5 w-3.5" /> شحن</button>
             <button onClick={() => toast.info("التحويل قريباً")} className="flex-1 rounded-full bg-white/15 py-2.5 text-xs font-bold text-white backdrop-blur">تحويل</button>
           </div>
         </div>
@@ -125,7 +119,123 @@ const Wallet = () => {
           </div>
         )}
       </section>
+      {showTopup && <TopupDialog onClose={() => setShowTopup(false)} phone="201000000000" />}
     </div>
   );
 };
 export default Wallet;
+
+type PaymentMethod = { id: string; label: string; icon: any; sub: string };
+const paymentMethods: PaymentMethod[] = [
+  { id: "vodafone-cash", label: "فودافون كاش", icon: Smartphone, sub: "تحويل فوري" },
+  { id: "instapay", label: "إنستا باي", icon: Banknote, sub: "تحويل بنكي فوري" },
+  { id: "bank", label: "تحويل بنكي", icon: Building2, sub: "حساب البنك" },
+  { id: "cash", label: "كاش عند المندوب", icon: Banknote, sub: "تحصيل مباشر" },
+];
+
+const presets = [50, 100, 200, 500, 1000];
+
+const TopupDialog = ({ onClose, phone }: { onClose: () => void; phone: string }) => {
+  const [amount, setAmount] = useState<number>(100);
+  const [custom, setCustom] = useState("");
+  const [method, setMethod] = useState<string>(paymentMethods[0].id);
+
+  const finalAmount = custom ? Number(custom.replace(/\D/g, "")) : amount;
+
+  const submit = () => {
+    if (!finalAmount || finalAmount < 10) {
+      toast.error("الحد الأدنى للشحن 10 ج.م");
+      return;
+    }
+    const m = paymentMethods.find((p) => p.id === method)!;
+    const text = `مرحبًا، أرغب في شحن محفظتي بمبلغ ${finalAmount} ج.م عبر ${m.label}.`;
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center" onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-t-3xl bg-card p-5 shadow-float ring-1 ring-border/40 sm:rounded-3xl"
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="font-display text-lg font-extrabold">شحن المحفظة</h2>
+            <p className="text-[11px] text-muted-foreground">اختر القيمة وطريقة الدفع</p>
+          </div>
+          <button onClick={onClose} aria-label="إغلاق" className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground/5">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mb-3">
+          <p className="mb-2 text-[11px] font-bold text-muted-foreground">قيم سريعة (ج.م)</p>
+          <div className="grid grid-cols-5 gap-2">
+            {presets.map((p) => {
+              const active = !custom && amount === p;
+              return (
+                <button
+                  key={p}
+                  onClick={() => { setAmount(p); setCustom(""); }}
+                  className={`rounded-2xl py-2 text-xs font-bold transition ${active ? "bg-primary text-primary-foreground shadow-pill" : "bg-foreground/5 text-foreground"}`}
+                >
+                  {toLatin(p)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <label className="mb-4 block">
+          <span className="mb-1 block text-[11px] font-bold text-muted-foreground">مبلغ مخصص</span>
+          <div className="flex items-center gap-2 rounded-2xl bg-foreground/5 px-3 py-2.5">
+            <input
+              type="text"
+              inputMode="numeric"
+              value={custom}
+              onChange={(e) => setCustom(e.target.value.replace(/\D/g, ""))}
+              placeholder="مثال: 250"
+              className="flex-1 bg-transparent text-sm font-bold tabular-nums outline-none"
+              dir="ltr"
+            />
+            <span className="text-xs font-bold text-muted-foreground">ج.م</span>
+          </div>
+        </label>
+
+        <p className="mb-2 text-[11px] font-bold text-muted-foreground">طريقة الدفع</p>
+        <div className="mb-5 space-y-2">
+          {paymentMethods.map((m) => {
+            const Icon = m.icon;
+            const active = method === m.id;
+            return (
+              <button
+                key={m.id}
+                onClick={() => setMethod(m.id)}
+                className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-right transition ${active ? "border-primary bg-primary-soft" : "border-border bg-background"}`}
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${active ? "bg-primary text-primary-foreground" : "bg-foreground/5 text-foreground"}`}>
+                  <Icon className="h-4 w-4" strokeWidth={2.4} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold">{m.label}</p>
+                  <p className="text-[10px] text-muted-foreground">{m.sub}</p>
+                </div>
+                <div className={`h-4 w-4 rounded-full border-2 ${active ? "border-primary bg-primary" : "border-muted-foreground/40"}`} />
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={submit}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-extrabold text-primary-foreground shadow-pill"
+        >
+          متابعة عبر واتساب · {fmtMoney(finalAmount || 0)}
+        </button>
+        <p className="mt-2 text-center text-[10px] text-muted-foreground">سيتم تحويلك للواتساب لإتمام الدفع وإضافة الرصيد لمحفظتك</p>
+      </div>
+    </div>
+  );
+};
