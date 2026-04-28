@@ -1,14 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type ColorTheme =
-  | "sage"
-  | "ocean"
-  | "amber"
-  | "midnight"
-  | "blush"
-  | "lavender"
-  | "mint"
-  | "peach";
+export type ColorTheme = "sage" | "ocean" | "amber" | "rose" | "violet";
 export type Mode = "light" | "dark" | "system";
 
 type ThemeCtx = {

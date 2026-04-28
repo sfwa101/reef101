@@ -1,8 +1,5 @@
 import { Search, MapPin, Sparkles, Clock, Flame, Award, ChevronLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import ProductCarousel from "@/components/ProductCarousel";
 import ProductCard from "@/components/ProductCard";
 import { byBadge, products } from "@/lib/products";
@@ -39,48 +36,23 @@ const allStores = [
 ];
 
 const HomePage = () => {
-  const { user, profile } = useAuth();
-  const [defaultAddr, setDefaultAddr] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user) { setDefaultAddr(null); return; }
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("addresses")
-        .select("city,district")
-        .eq("user_id", user.id)
-        .eq("is_default", true)
-        .maybeSingle();
-      if (cancelled) return;
-      if (data) {
-        setDefaultAddr([data.district, data.city].filter(Boolean).join("، "));
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [user]);
-
-  const greetingName = profile?.full_name?.split(" ")[0];
-  const locationLabel = defaultAddr || "المعادي، القاهرة";
-
   return (
     <div className="space-y-6">
       <section className="animate-float-up">
         <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <MapPin className="h-3.5 w-3.5 text-primary" strokeWidth={2.4} />
           <span>التوصيل إلى</span>
-          <span className="font-bold text-foreground">{locationLabel}</span>
+          <span className="font-bold text-foreground">المعادي، القاهرة</span>
         </div>
         <h1 className="mt-2 font-display text-3xl font-extrabold leading-tight tracking-tight text-balance">
-          {greetingName ? `أهلًا ${greetingName}،` : "صباح الخير،"}
+          صباح الخير،
           <br />
           <span className="text-primary">ماذا نُحضّر اليوم؟</span>
         </h1>
       </section>
 
       <Link
-        to="/search"
-        search={{ q: "" }}
+        to="/sections"
         className="glass flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-right shadow-soft animate-float-up"
         style={{ animationDelay: "80ms" }}
       >

@@ -119,7 +119,7 @@ const Wallet = () => {
           </div>
         )}
       </section>
-      {showTopup && <TopupDialog onClose={() => setShowTopup(false)} phone="201080068689" />}
+      {showTopup && <TopupDialog onClose={() => setShowTopup(false)} phone="201000000000" />}
     </div>
   );
 };

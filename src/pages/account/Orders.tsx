@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import BackHeader from "@/components/BackHeader";
 import { Package, Truck, Check, RotateCcw, Clock, Loader2, ShoppingBag, MessageCircle, X } from "lucide-react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtMoney, toLatin } from "@/lib/format";
 import type { Database } from "@/integrations/supabase/types";
-import { useCart } from "@/context/CartContext";
-import { getById } from "@/lib/products";
-import { toast } from "sonner";
 
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
 type ItemRow = Database["public"]["Tables"]["order_items"]["Row"];
@@ -37,8 +34,6 @@ const formatDate = (iso: string) => {
 
 const Orders = () => {
   const { user } = useAuth();
-  const { add } = useCart();
-  const navigate = useNavigate();
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,36 +49,6 @@ const Orders = () => {
       setLoading(false);
     })();
   }, [user]);
-
-  const reorder = (o: OrderWithItems) => {
-    if (!o.order_items?.length) return;
-    let added = 0;
-    for (const it of o.order_items) {
-      const p = getById(it.product_id);
-      if (p) {
-        add(p, it.quantity);
-        added++;
-      } else {
-        // Fallback: synthesize a minimal product so the user can still re-order custom items
-        add({
-          id: it.product_id,
-          name: it.product_name,
-          unit: "",
-          price: Number(it.price),
-          image: it.product_image ?? "",
-          category: "إعادة طلب",
-          source: "supermarket",
-        }, it.quantity);
-        added++;
-      }
-    }
-    if (added === 0) {
-      toast.error("تعذّر إضافة المنتجات");
-      return;
-    }
-    toast.success("تمت الإضافة إلى السلة");
-    navigate({ to: "/cart" });
-  };
 
   if (loading) {
     return (
@@ -163,7 +128,7 @@ const Orders = () => {
                       <MessageCircle className="h-3 w-3" /> واتساب
                     </span>
                   )}
-                  <button onClick={() => reorder(o)} className="flex items-center gap-1 rounded-full bg-foreground/5 px-3 py-1.5 text-[11px] font-bold">
+                  <button className="flex items-center gap-1 rounded-full bg-foreground/5 px-3 py-1.5 text-[11px] font-bold">
                     <RotateCcw className="h-3 w-3" /> أعد الطلب
                   </button>
                 </div>
