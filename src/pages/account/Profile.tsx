@@ -34,15 +34,20 @@ const Profile = () => {
     setBusy(true);
     const { error } = await supabase
       .from("profiles")
-      .update({
-        full_name: name.trim() || null,
-        birth_date: birth || null,
-        gender,
-      })
-      .eq("id", user.id);
+      .upsert(
+        {
+          id: user.id,
+          full_name: name.trim() || null,
+          phone: phone || user.phone || null,
+          birth_date: birth || null,
+          gender,
+        },
+        { onConflict: "id" }
+      );
     setBusy(false);
     if (error) {
-      toast.error("تعذّر الحفظ — حاول لاحقاً");
+      console.error("profile save error", error);
+      toast.error(`تعذّر الحفظ — ${error.message}`);
       return;
     }
     await refreshProfile();

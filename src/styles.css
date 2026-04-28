@@ -149,52 +149,332 @@
 }
 
 /* Accent color theme variants — apply as data-theme on <html> */
+/* ============================================
+   THEMES — full-surface theming.
+   Each theme overrides background, foreground,
+   card, surfaces, primary, accent, gradient, border.
+============================================ */
+
+/* OCEAN — calm coastal blue */
 [data-theme="ocean"] {
-  --primary: 200 65% 42%;
-  --primary-glow: 195 70% 65%;
+  --background: 200 60% 97%;
+  --foreground: 215 35% 16%;
+  --card: 200 70% 99%;
+  --card-foreground: 215 35% 16%;
+  --popover: 200 70% 99%;
+  --popover-foreground: 215 35% 16%;
+  --primary: 200 70% 42%;
+  --primary-foreground: 200 80% 98%;
+  --primary-glow: 195 75% 65%;
   --primary-soft: 200 70% 92%;
-  --ring: 200 65% 42%;
-  --accent: 30 75% 60%;
+  --secondary: 200 40% 93%;
+  --secondary-foreground: 215 30% 18%;
+  --muted: 200 35% 92%;
+  --muted-foreground: 210 12% 42%;
+  --accent: 30 80% 60%;
+  --accent-foreground: 30 30% 12%;
+  --border: 200 35% 86%;
+  --input: 200 35% 86%;
+  --ring: 200 70% 42%;
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(200 70% 88% / 0.65), transparent 50%),
+                     radial-gradient(circle at 90% 30%, hsl(180 60% 88% / 0.55), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(210 65% 88% / 0.55), transparent 55%);
 }
 .dark[data-theme="ocean"] {
+  --background: 215 35% 8%;
+  --foreground: 200 25% 92%;
+  --card: 215 30% 12%;
+  --card-foreground: 200 25% 92%;
+  --popover: 215 30% 12%;
+  --popover-foreground: 200 25% 92%;
   --primary: 195 65% 58%;
   --primary-soft: 200 40% 18%;
+  --secondary: 215 25% 16%;
+  --secondary-foreground: 200 25% 92%;
+  --muted: 215 25% 16%;
+  --muted-foreground: 200 15% 62%;
+  --border: 215 25% 20%;
+  --input: 215 25% 20%;
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(200 50% 22% / 0.55), transparent 50%),
+                     radial-gradient(circle at 90% 30%, hsl(180 40% 22% / 0.45), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(210 40% 18% / 0.5), transparent 55%);
 }
 
+/* AMBER — warm desert sunset */
 [data-theme="amber"] {
-  --primary: 28 80% 48%;
+  --background: 38 65% 96%;
+  --foreground: 25 40% 16%;
+  --card: 40 80% 99%;
+  --card-foreground: 25 40% 16%;
+  --popover: 40 80% 99%;
+  --popover-foreground: 25 40% 16%;
+  --primary: 28 82% 48%;
+  --primary-foreground: 40 80% 98%;
   --primary-glow: 35 85% 65%;
   --primary-soft: 35 85% 93%;
-  --ring: 28 80% 48%;
-  --accent: 200 60% 50%;
+  --secondary: 38 50% 92%;
+  --secondary-foreground: 25 35% 18%;
+  --muted: 38 40% 91%;
+  --muted-foreground: 30 15% 42%;
+  --accent: 195 65% 50%;
+  --accent-foreground: 200 30% 12%;
+  --border: 38 35% 85%;
+  --input: 38 35% 85%;
+  --ring: 28 82% 48%;
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(35 85% 88% / 0.7), transparent 50%),
+                     radial-gradient(circle at 90% 30%, hsl(20 80% 88% / 0.55), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(45 80% 88% / 0.55), transparent 55%);
 }
 .dark[data-theme="amber"] {
-  --primary: 32 75% 58%;
-  --primary-soft: 30 40% 20%;
+  --background: 25 30% 9%;
+  --foreground: 38 30% 92%;
+  --card: 25 25% 13%;
+  --card-foreground: 38 30% 92%;
+  --popover: 25 25% 13%;
+  --popover-foreground: 38 30% 92%;
+  --primary: 32 80% 60%;
+  --primary-soft: 30 40% 22%;
+  --secondary: 25 20% 17%;
+  --secondary-foreground: 38 30% 92%;
+  --muted: 25 20% 17%;
+  --muted-foreground: 38 15% 62%;
+  --border: 25 20% 22%;
+  --input: 25 20% 22%;
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(30 50% 22% / 0.55), transparent 50%),
+                     radial-gradient(circle at 90% 30%, hsl(20 50% 22% / 0.45), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(45 40% 18% / 0.5), transparent 55%);
 }
 
-[data-theme="rose"] {
-  --primary: 340 70% 52%;
-  --primary-glow: 335 75% 70%;
-  --primary-soft: 340 75% 94%;
-  --ring: 340 70% 52%;
-  --accent: 160 55% 45%;
+/* BLUSH — soft pink, very feminine and cute */
+[data-theme="blush"] {
+  --background: 350 80% 97%;
+  --foreground: 340 35% 18%;
+  --card: 350 100% 99.5%;
+  --card-foreground: 340 35% 18%;
+  --popover: 350 100% 99.5%;
+  --popover-foreground: 340 35% 18%;
+  --primary: 340 70% 58%;
+  --primary-foreground: 350 100% 99%;
+  --primary-glow: 335 85% 78%;
+  --primary-soft: 345 90% 95%;
+  --secondary: 345 70% 94%;
+  --secondary-foreground: 340 35% 22%;
+  --muted: 345 50% 94%;
+  --muted-foreground: 340 15% 48%;
+  --accent: 25 90% 70%;
+  --accent-foreground: 25 35% 15%;
+  --border: 345 50% 90%;
+  --input: 345 50% 90%;
+  --ring: 340 70% 58%;
+  --radius: 1.75rem;
+  --gradient-aurora: radial-gradient(circle at 15% 0%, hsl(340 95% 92% / 0.85), transparent 55%),
+                     radial-gradient(circle at 90% 25%, hsl(25 95% 90% / 0.6), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(330 85% 92% / 0.7), transparent 55%);
+  --shadow-pill: 0 6px 22px -4px hsl(340 70% 60% / 0.4);
 }
-.dark[data-theme="rose"] {
-  --primary: 340 70% 62%;
-  --primary-soft: 335 40% 20%;
+.dark[data-theme="blush"] {
+  --background: 340 25% 10%;
+  --foreground: 345 30% 94%;
+  --card: 340 22% 14%;
+  --card-foreground: 345 30% 94%;
+  --popover: 340 22% 14%;
+  --popover-foreground: 345 30% 94%;
+  --primary: 340 75% 70%;
+  --primary-soft: 340 35% 22%;
+  --secondary: 340 18% 18%;
+  --secondary-foreground: 345 30% 94%;
+  --muted: 340 18% 18%;
+  --muted-foreground: 345 15% 64%;
+  --border: 340 18% 22%;
+  --input: 340 18% 22%;
+  --gradient-aurora: radial-gradient(circle at 15% 0%, hsl(340 50% 22% / 0.6), transparent 55%),
+                     radial-gradient(circle at 90% 25%, hsl(25 40% 22% / 0.4), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(330 40% 18% / 0.5), transparent 55%);
 }
 
-[data-theme="violet"] {
-  --primary: 265 60% 55%;
-  --primary-glow: 260 65% 70%;
-  --primary-soft: 265 70% 94%;
-  --ring: 265 60% 55%;
-  --accent: 40 75% 58%;
+/* LAVENDER — dreamy purple, soft and feminine */
+[data-theme="lavender"] {
+  --background: 270 60% 97%;
+  --foreground: 270 30% 18%;
+  --card: 280 80% 99.5%;
+  --card-foreground: 270 30% 18%;
+  --popover: 280 80% 99.5%;
+  --popover-foreground: 270 30% 18%;
+  --primary: 268 55% 60%;
+  --primary-foreground: 280 100% 99%;
+  --primary-glow: 275 75% 78%;
+  --primary-soft: 275 75% 95%;
+  --secondary: 275 50% 94%;
+  --secondary-foreground: 270 30% 22%;
+  --muted: 275 40% 94%;
+  --muted-foreground: 270 12% 48%;
+  --accent: 320 75% 70%;
+  --accent-foreground: 320 30% 15%;
+  --border: 275 40% 90%;
+  --input: 275 40% 90%;
+  --ring: 268 55% 60%;
+  --radius: 1.75rem;
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(275 85% 92% / 0.8), transparent 55%),
+                     radial-gradient(circle at 90% 30%, hsl(320 80% 92% / 0.6), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(255 80% 92% / 0.7), transparent 55%);
+  --shadow-pill: 0 6px 22px -4px hsl(268 60% 60% / 0.4);
 }
-.dark[data-theme="violet"] {
-  --primary: 260 60% 68%;
-  --primary-soft: 265 40% 22%;
+.dark[data-theme="lavender"] {
+  --background: 270 25% 10%;
+  --foreground: 275 25% 94%;
+  --card: 270 22% 14%;
+  --card-foreground: 275 25% 94%;
+  --popover: 270 22% 14%;
+  --popover-foreground: 275 25% 94%;
+  --primary: 270 65% 72%;
+  --primary-soft: 270 35% 22%;
+  --secondary: 270 18% 18%;
+  --secondary-foreground: 275 25% 94%;
+  --muted: 270 18% 18%;
+  --muted-foreground: 275 12% 64%;
+  --border: 270 18% 22%;
+  --input: 270 18% 22%;
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(275 45% 22% / 0.55), transparent 55%),
+                     radial-gradient(circle at 90% 30%, hsl(320 40% 22% / 0.4), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(255 40% 18% / 0.5), transparent 55%);
+}
+
+/* MINT — fresh, light girly mint */
+[data-theme="mint"] {
+  --background: 160 55% 96%;
+  --foreground: 170 30% 16%;
+  --card: 160 80% 99%;
+  --card-foreground: 170 30% 16%;
+  --popover: 160 80% 99%;
+  --popover-foreground: 170 30% 16%;
+  --primary: 168 55% 42%;
+  --primary-foreground: 160 80% 98%;
+  --primary-glow: 165 70% 70%;
+  --primary-soft: 162 70% 92%;
+  --secondary: 160 45% 93%;
+  --secondary-foreground: 170 30% 18%;
+  --muted: 160 35% 92%;
+  --muted-foreground: 170 12% 42%;
+  --accent: 340 75% 68%;
+  --accent-foreground: 340 30% 15%;
+  --border: 160 35% 86%;
+  --input: 160 35% 86%;
+  --ring: 168 55% 42%;
+  --radius: 1.75rem;
+  --gradient-aurora: radial-gradient(circle at 15% 0%, hsl(160 75% 90% / 0.8), transparent 55%),
+                     radial-gradient(circle at 90% 30%, hsl(190 70% 90% / 0.55), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(140 65% 90% / 0.6), transparent 55%);
+}
+.dark[data-theme="mint"] {
+  --background: 170 25% 9%;
+  --foreground: 160 25% 92%;
+  --card: 170 22% 13%;
+  --card-foreground: 160 25% 92%;
+  --popover: 170 22% 13%;
+  --popover-foreground: 160 25% 92%;
+  --primary: 165 60% 58%;
+  --primary-soft: 168 35% 20%;
+  --secondary: 170 18% 17%;
+  --secondary-foreground: 160 25% 92%;
+  --muted: 170 18% 17%;
+  --muted-foreground: 160 12% 62%;
+  --border: 170 18% 22%;
+  --input: 170 18% 22%;
+  --gradient-aurora: radial-gradient(circle at 15% 0%, hsl(160 45% 20% / 0.55), transparent 55%),
+                     radial-gradient(circle at 90% 30%, hsl(190 40% 22% / 0.4), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(140 40% 18% / 0.5), transparent 55%);
+}
+
+/* PEACH — warm girly peach */
+[data-theme="peach"] {
+  --background: 22 80% 97%;
+  --foreground: 18 40% 18%;
+  --card: 25 100% 99.5%;
+  --card-foreground: 18 40% 18%;
+  --popover: 25 100% 99.5%;
+  --popover-foreground: 18 40% 18%;
+  --primary: 14 80% 62%;
+  --primary-foreground: 20 100% 99%;
+  --primary-glow: 18 90% 78%;
+  --primary-soft: 22 95% 94%;
+  --secondary: 22 75% 93%;
+  --secondary-foreground: 18 40% 22%;
+  --muted: 22 55% 93%;
+  --muted-foreground: 18 15% 48%;
+  --accent: 200 70% 60%;
+  --accent-foreground: 200 30% 12%;
+  --border: 22 50% 88%;
+  --input: 22 50% 88%;
+  --ring: 14 80% 62%;
+  --radius: 1.75rem;
+  --gradient-aurora: radial-gradient(circle at 15% 0%, hsl(22 95% 90% / 0.85), transparent 55%),
+                     radial-gradient(circle at 90% 30%, hsl(0 90% 92% / 0.6), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(40 90% 90% / 0.65), transparent 55%);
+  --shadow-pill: 0 6px 22px -4px hsl(14 80% 62% / 0.4);
+}
+.dark[data-theme="peach"] {
+  --background: 18 28% 10%;
+  --foreground: 22 30% 94%;
+  --card: 18 25% 14%;
+  --card-foreground: 22 30% 94%;
+  --popover: 18 25% 14%;
+  --popover-foreground: 22 30% 94%;
+  --primary: 16 80% 68%;
+  --primary-soft: 18 40% 22%;
+  --secondary: 18 20% 18%;
+  --secondary-foreground: 22 30% 94%;
+  --muted: 18 20% 18%;
+  --muted-foreground: 22 15% 64%;
+  --border: 18 20% 22%;
+  --input: 18 20% 22%;
+  --gradient-aurora: radial-gradient(circle at 15% 0%, hsl(22 50% 22% / 0.55), transparent 55%),
+                     radial-gradient(circle at 90% 30%, hsl(0 40% 22% / 0.4), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(40 40% 18% / 0.5), transparent 55%);
+}
+
+/* MIDNIGHT — luxurious deep navy */
+[data-theme="midnight"] {
+  --background: 230 35% 96%;
+  --foreground: 230 40% 14%;
+  --card: 230 50% 99%;
+  --card-foreground: 230 40% 14%;
+  --popover: 230 50% 99%;
+  --popover-foreground: 230 40% 14%;
+  --primary: 232 60% 38%;
+  --primary-foreground: 230 80% 98%;
+  --primary-glow: 235 70% 62%;
+  --primary-soft: 230 70% 93%;
+  --secondary: 230 30% 93%;
+  --secondary-foreground: 230 40% 18%;
+  --muted: 230 25% 92%;
+  --muted-foreground: 230 12% 42%;
+  --accent: 45 90% 58%;
+  --accent-foreground: 35 40% 12%;
+  --border: 230 25% 86%;
+  --input: 230 25% 86%;
+  --ring: 232 60% 38%;
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(232 65% 88% / 0.7), transparent 50%),
+                     radial-gradient(circle at 90% 30%, hsl(45 85% 88% / 0.45), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(220 60% 88% / 0.6), transparent 55%);
+}
+.dark[data-theme="midnight"] {
+  --background: 232 40% 7%;
+  --foreground: 230 25% 94%;
+  --card: 232 35% 11%;
+  --card-foreground: 230 25% 94%;
+  --popover: 232 35% 11%;
+  --popover-foreground: 230 25% 94%;
+  --primary: 232 70% 65%;
+  --primary-soft: 232 40% 20%;
+  --secondary: 232 25% 16%;
+  --secondary-foreground: 230 25% 94%;
+  --muted: 232 25% 16%;
+  --muted-foreground: 230 15% 64%;
+  --border: 232 25% 20%;
+  --input: 232 25% 20%;
+  --gradient-aurora: radial-gradient(circle at 20% 0%, hsl(232 50% 22% / 0.6), transparent 50%),
+                     radial-gradient(circle at 90% 30%, hsl(45 50% 18% / 0.35), transparent 45%),
+                     radial-gradient(circle at 50% 100%, hsl(220 50% 16% / 0.55), transparent 55%);
 }
 
 @layer base {

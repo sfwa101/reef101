@@ -14,6 +14,8 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppWalletRouteImport } from './routes/_app/wallet'
 import { Route as AppSectionsRouteImport } from './routes/_app/sections'
+import { Route as AppSearchRouteImport } from './routes/_app/search'
+import { Route as AppOrderSuccessRouteImport } from './routes/_app/order-success'
 import { Route as AppOffersRouteImport } from './routes/_app/offers'
 import { Route as AppCartRouteImport } from './routes/_app/cart'
 import { Route as AppAccountRouteImport } from './routes/_app/account'
@@ -60,6 +62,16 @@ const AppWalletRoute = AppWalletRouteImport.update({
 const AppSectionsRoute = AppSectionsRouteImport.update({
   id: '/sections',
   path: '/sections',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSearchRoute = AppSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOrderSuccessRoute = AppOrderSuccessRouteImport.update({
+  id: '/order-success',
+  path: '/order-success',
   getParentRoute: () => AppRoute,
 } as any)
 const AppOffersRoute = AppOffersRouteImport.update({
@@ -184,6 +196,8 @@ export interface FileRoutesByFullPath {
   '/account': typeof AppAccountRouteWithChildren
   '/cart': typeof AppCartRoute
   '/offers': typeof AppOffersRoute
+  '/order-success': typeof AppOrderSuccessRoute
+  '/search': typeof AppSearchRoute
   '/sections': typeof AppSectionsRoute
   '/wallet': typeof AppWalletRoute
   '/account/addresses': typeof AppAccountAddressesRoute
@@ -211,6 +225,8 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cart': typeof AppCartRoute
   '/offers': typeof AppOffersRoute
+  '/order-success': typeof AppOrderSuccessRoute
+  '/search': typeof AppSearchRoute
   '/sections': typeof AppSectionsRoute
   '/wallet': typeof AppWalletRoute
   '/': typeof AppIndexRoute
@@ -242,6 +258,8 @@ export interface FileRoutesById {
   '/_app/account': typeof AppAccountRouteWithChildren
   '/_app/cart': typeof AppCartRoute
   '/_app/offers': typeof AppOffersRoute
+  '/_app/order-success': typeof AppOrderSuccessRoute
+  '/_app/search': typeof AppSearchRoute
   '/_app/sections': typeof AppSectionsRoute
   '/_app/wallet': typeof AppWalletRoute
   '/_app/': typeof AppIndexRoute
@@ -274,6 +292,8 @@ export interface FileRouteTypes {
     | '/account'
     | '/cart'
     | '/offers'
+    | '/order-success'
+    | '/search'
     | '/sections'
     | '/wallet'
     | '/account/addresses'
@@ -301,6 +321,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/offers'
+    | '/order-success'
+    | '/search'
     | '/sections'
     | '/wallet'
     | '/'
@@ -331,6 +353,8 @@ export interface FileRouteTypes {
     | '/_app/account'
     | '/_app/cart'
     | '/_app/offers'
+    | '/_app/order-success'
+    | '/_app/search'
     | '/_app/sections'
     | '/_app/wallet'
     | '/_app/'
@@ -396,6 +420,20 @@ declare module '@tanstack/react-router' {
       path: '/sections'
       fullPath: '/sections'
       preLoaderRoute: typeof AppSectionsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/search': {
+      id: '/_app/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AppSearchRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/order-success': {
+      id: '/_app/order-success'
+      path: '/order-success'
+      fullPath: '/order-success'
+      preLoaderRoute: typeof AppOrderSuccessRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/offers': {
@@ -594,6 +632,8 @@ interface AppRouteChildren {
   AppAccountRoute: typeof AppAccountRouteWithChildren
   AppCartRoute: typeof AppCartRoute
   AppOffersRoute: typeof AppOffersRoute
+  AppOrderSuccessRoute: typeof AppOrderSuccessRoute
+  AppSearchRoute: typeof AppSearchRoute
   AppSectionsRoute: typeof AppSectionsRoute
   AppWalletRoute: typeof AppWalletRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -614,6 +654,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppAccountRoute: AppAccountRouteWithChildren,
   AppCartRoute: AppCartRoute,
   AppOffersRoute: AppOffersRoute,
+  AppOrderSuccessRoute: AppOrderSuccessRoute,
+  AppSearchRoute: AppSearchRoute,
   AppSectionsRoute: AppSectionsRoute,
   AppWalletRoute: AppWalletRoute,
   AppIndexRoute: AppIndexRoute,
@@ -639,3 +681,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
