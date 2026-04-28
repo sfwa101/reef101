@@ -1,1 +1,0 @@
-REVOKE EXECUTE ON FUNCTION public.user_store_ids(uuid) FROM PUBLIC, anon, authenticated;

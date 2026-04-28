@@ -4,7 +4,6 @@ import { MapPin, Plus, Home, Briefcase, Trash2, Check, Loader2 } from "lucide-re
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { isRetryableBackendError, retryBackendCall } from "@/lib/backendRetry";
 
 type Addr = {
   id: string;
@@ -27,16 +26,12 @@ const Addresses = () => {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const { data } = await retryBackendCall(
-      async () => await supabase
-        .from("addresses")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("is_default", { ascending: false })
-        .order("created_at", { ascending: false }),
-      8,
-      700,
-    );
+    const { data } = await supabase
+      .from("addresses")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("is_default", { ascending: false })
+      .order("created_at", { ascending: false });
     setList((data as Addr[]) ?? []);
     setLoading(false);
   };
@@ -45,14 +40,14 @@ const Addresses = () => {
 
   const setDefault = async (id: string) => {
     if (!user) return;
-    await retryBackendCall(async () => await supabase.from("addresses").update({ is_default: false }).eq("user_id", user.id), 8, 700);
-    await retryBackendCall(async () => await supabase.from("addresses").update({ is_default: true }).eq("id", id), 8, 700);
+    await supabase.from("addresses").update({ is_default: false }).eq("user_id", user.id);
+    await supabase.from("addresses").update({ is_default: true }).eq("id", id);
     toast.success("تم تعيين العنوان الافتراضي");
     load();
   };
 
   const remove = async (id: string) => {
-    await retryBackendCall(async () => await supabase.from("addresses").delete().eq("id", id), 8, 700);
+    await supabase.from("addresses").delete().eq("id", id);
     toast("تم حذف العنوان");
     load();
   };
@@ -64,22 +59,18 @@ const Addresses = () => {
       return;
     }
     const isFirst = list.length === 0;
-    const { error } = await retryBackendCall(
-      async () => await supabase.from("addresses").insert({
-        user_id: user.id,
-        label: draft.label,
-        city: draft.city,
-        district: draft.district || null,
-        street: draft.street,
-        building: draft.building || null,
-        notes: draft.notes || null,
-        is_default: isFirst,
-      }),
-      8,
-      700,
-    );
+    const { error } = await supabase.from("addresses").insert({
+      user_id: user.id,
+      label: draft.label,
+      city: draft.city,
+      district: draft.district || null,
+      street: draft.street,
+      building: draft.building || null,
+      notes: draft.notes || null,
+      is_default: isFirst,
+    });
     if (error) {
-      toast.error(isRetryableBackendError(error) ? "الخدمة كانت بطيئة للحظات، أعد الحفظ الآن" : "تعذّرت الإضافة");
+      toast.error("تعذّرت الإضافة");
       return;
     }
     setDraft({ label: "المنزل", city: "القاهرة", district: "", street: "", building: "", notes: "" });
