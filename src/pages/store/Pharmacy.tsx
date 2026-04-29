@@ -623,7 +623,7 @@ const DetailedProductCard = ({ p, onOpen }: { p: RxProduct; onOpen: () => void }
           {qty === 0 ? (
             <button
               onClick={() =>
-                add({ id: p.id, name: p.name, price: p.price, image: p.image, unit: p.unit })
+                add({ id: p.id, name: p.name, price: p.price, image: p.image, unit: p.unit, category: "صيدلية", source: "pharmacy" })
               }
               className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-pill active:scale-90"
             >
@@ -836,7 +836,7 @@ const ProductOverlay = ({ p, onClose }: { p: RxProduct; onClose: () => void }) =
           {/* CTA */}
           <button
             onClick={() => {
-              add({ id: p.id, name: p.name, price: p.price, image: p.image, unit: p.unit });
+              add({ id: p.id, name: p.name, price: p.price, image: p.image, unit: p.unit, category: "صيدلية", source: "pharmacy" });
               toast.success("أُضيف للسلة", { description: p.name });
             }}
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-sm font-extrabold text-primary-foreground shadow-pill active:scale-[0.98]"
