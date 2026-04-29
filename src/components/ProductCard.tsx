@@ -6,6 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import { useFavorites } from "@/lib/favorites";
 import { toLatin } from "@/lib/format";
 import { useLocation } from "@/context/LocationContext";
+import {
+  fulfillmentMeta,
+  fulfillmentTypeFor,
+  isSweetsProduct,
+} from "@/lib/sweetsFulfillment";
+import SweetsBookingSheet from "@/components/sweets/SweetsBookingSheet";
 
 interface ProductCardProps {
   product: Product;
@@ -30,6 +36,16 @@ const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
 
   const unavailable = !zone.acceptsPerishables && isPerishable(product);
 
+  // Sweets fulfillment metadata: drives the small status badge under the
+  // category badge and forces a booking flow for Type C (pre-order) items.
+  const sweets = isSweetsProduct(product.source);
+  const fType = sweets
+    ? fulfillmentTypeFor(product.id, product.subCategory)
+    : null;
+  const fMeta = fType ? fulfillmentMeta[fType] : null;
+  const requiresBooking = fType === "C";
+  const [bookingOpen, setBookingOpen] = useState(false);
+
   const [pulse, setPulse] = useState(0);
   const lastQtyRef = useRef(qty);
   useEffect(() => {
@@ -42,11 +58,19 @@ const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (requiresBooking) {
+      setBookingOpen(true);
+      return;
+    }
     add(product);
   };
   const handleInc = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (requiresBooking) {
+      setBookingOpen(true);
+      return;
+    }
     add(product);
   };
   const handleDec = (e: React.MouseEvent) => {
@@ -83,6 +107,14 @@ const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
         {badge && (
           <span className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.cls}`}>
             {badge.label}
+          </span>
+        )}
+        {fMeta && (
+          <span
+            className={`absolute ${badge ? "right-2 top-8" : "right-2 top-2"} inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[9.5px] font-extrabold shadow-pill ${fMeta.badgeBg} ${fMeta.badgeText}`}
+          >
+            <span className="text-[10px] leading-none">{fMeta.emoji}</span>
+            {fMeta.badge}
           </span>
         )}
         {product.oldPrice && (
@@ -164,6 +196,13 @@ const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
           </div>
         </div>
       </div>
+      {requiresBooking && (
+        <SweetsBookingSheet
+          product={product}
+          open={bookingOpen}
+          onClose={() => setBookingOpen(false)}
+        />
+      )}
     </article>
   );
 };
