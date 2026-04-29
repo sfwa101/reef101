@@ -359,7 +359,7 @@ const Profile = () => {
 
       {/* Hero */}
       <section className="overflow-hidden rounded-[2rem] border border-border/60 bg-card shadow-tile" style={{ backgroundImage: "var(--gradient-aurora)" }}>
-        <div className="space-y-4 bg-background/70 p-5 backdrop-blur-sm">
+        <div className="space-y-4 bg-background/70 p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-card/85 px-3 py-1 text-[11px] font-extrabold text-primary shadow-soft">
@@ -378,7 +378,7 @@ const Profile = () => {
           </div>
 
           {/* Progress */}
-          <div className="rounded-[1.4rem] bg-card/85 p-3 shadow-soft backdrop-blur-sm">
+          <div className="rounded-[1.4rem] bg-card/85 p-3 shadow-soft">
             <div className="flex items-center justify-between text-[11px] font-extrabold">
               <span className="inline-flex items-center gap-1 text-foreground"><Trophy className="h-3.5 w-3.5 text-accent" /> اكتمال الملف</span>
               <span className="text-primary">{completion}%</span>
@@ -394,7 +394,7 @@ const Profile = () => {
       </section>
 
       {/* Tabs */}
-      <nav className="sticky top-2 z-10 flex gap-1.5 overflow-x-auto rounded-full border border-border/60 bg-card/90 p-1.5 shadow-soft backdrop-blur">
+      <nav className="sticky top-2 z-10 flex gap-1.5 overflow-x-auto rounded-full border border-border/60 bg-card/90 p-1.5 shadow-soft">
         {TABS.map((t) => {
           const Icon = t.icon;
           const active = tab === t.key;

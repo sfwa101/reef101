@@ -1,4 +1,4 @@
-import reefLogo from "@/assets/reef-logo.png";
+import reefLogo from "@/assets/reef-logo.webp";
 
 const SplashScreen = () => {
   return (

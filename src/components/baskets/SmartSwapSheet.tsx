@@ -36,7 +36,7 @@ const SmartSwapSheet = ({ open, originalId, currentId, qty, onClose, onSwap }: P
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 backdrop-blur-sm sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 sm:items-center"
         >
           <motion.div
             initial={{ y: 80, opacity: 0 }}
@@ -46,7 +46,7 @@ const SmartSwapSheet = ({ open, originalId, currentId, qty, onClose, onSwap }: P
             onClick={(e) => e.stopPropagation()}
             className="relative max-h-[88vh] w-full max-w-md overflow-y-auto rounded-t-[28px] bg-card shadow-float sm:rounded-[28px]"
           >
-            <header className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border/60 bg-card/95 p-4 backdrop-blur">
+            <header className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border/60 bg-card/95 p-4">
               <div className="min-w-0">
                 <p className="text-[10.5px] font-extrabold text-emerald-700 dark:text-emerald-300">
                   استبدال ذكي
@@ -115,7 +115,7 @@ const SmartSwapSheet = ({ open, originalId, currentId, qty, onClose, onSwap }: P
               })}
             </div>
 
-            <div className="sticky bottom-0 border-t border-border/60 bg-card/95 p-4 backdrop-blur">
+            <div className="sticky bottom-0 border-t border-border/60 bg-card/95 p-4">
               <button
                 onClick={() => picked && onSwap(picked)}
                 disabled={!picked}

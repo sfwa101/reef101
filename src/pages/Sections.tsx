@@ -256,7 +256,7 @@ const Sections = () => {
         }}
       />
       {card.badge && (
-        <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-extrabold text-foreground shadow-sm backdrop-blur">
+        <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-extrabold text-foreground shadow-sm">
           {card.badge}
         </span>
       )}

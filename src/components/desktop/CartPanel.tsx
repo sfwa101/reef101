@@ -7,7 +7,7 @@ const CartPanel = () => {
   const { lines, total, count, setQty, remove } = useCart();
 
   return (
-    <aside className="sticky top-[80px] hidden h-[calc(100vh-100px)] w-[320px] shrink-0 flex-col overflow-hidden rounded-3xl bg-card/60 shadow-soft ring-1 ring-border/40 backdrop-blur lg:flex">
+    <aside className="sticky top-[80px] hidden h-[calc(100vh-100px)] w-[320px] shrink-0 flex-col overflow-hidden rounded-3xl bg-card/60 shadow-soft ring-1 ring-border/40 lg:flex">
       <header className="flex items-center justify-between border-b border-border/60 px-4 py-3">
         <div>
           <p className="font-display text-base font-extrabold">سلتي</p>

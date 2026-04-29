@@ -16,7 +16,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         unstyled: false,
         classNames: {
           toast:
-            "group toast !rounded-2xl !border !border-primary/15 !bg-card/95 !text-foreground !shadow-[0_18px_40px_-18px_hsl(var(--primary)/0.35)] backdrop-blur-xl",
+            "group toast !rounded-2xl !border !border-primary/15 !bg-card/95 !text-foreground !shadow-[0_18px_40px_-18px_hsl(var(--primary)/0.35)]",
           title: "!font-extrabold !text-[13.5px] !leading-tight",
           description: "!text-muted-foreground !text-[12px] !mt-0.5",
           actionButton:

@@ -65,7 +65,7 @@ const Offers = () => {
         <div className="relative">
           <div className="flex items-center gap-2 text-[10px] font-bold text-white/90"><Flame className="h-3 w-3" /> عرض الفلاش</div>
           <h2 className="mt-1 font-display text-2xl font-extrabold text-white text-balance">خصومات حتى 40٪</h2>
-          <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur">
+          <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold text-white">
             <Clock className="h-3.5 w-3.5" /> ينتهي خلال <span className="tabular-nums">{countdown}</span>
           </div>
         </div>
@@ -86,7 +86,7 @@ const Offers = () => {
               <Icon className="absolute -bottom-3 -left-2 h-20 w-20 text-white/15" />
               <p className="text-[10px] font-bold opacity-90">{c.title}</p>
               <p className="font-display text-xl font-extrabold">{c.desc}</p>
-              <p className="mt-2 inline-block rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold backdrop-blur">{c.code}</p>
+              <p className="mt-2 inline-block rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold">{c.code}</p>
             </div>
           );
         })}

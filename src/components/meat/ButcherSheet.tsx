@@ -185,7 +185,7 @@ const ButcherSheet = ({ product, open, onClose }: Props) => {
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 backdrop-blur-sm sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 sm:items-center"
         >
           <motion.div
             initial={{ y: 80, opacity: 0 }}
@@ -202,7 +202,7 @@ const ButcherSheet = ({ product, open, onClose }: Props) => {
               <button
                 onClick={onClose}
                 aria-label="إغلاق"
-                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 text-foreground shadow-pill backdrop-blur"
+                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 text-foreground shadow-pill"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -224,7 +224,7 @@ const ButcherSheet = ({ product, open, onClose }: Props) => {
                   <p className="text-[11px] text-muted-foreground">{product.unit} · {toLatin(product.price)} ج.م للكيلو</p>
                 </div>
                 {product.rating && (
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-foreground/85 px-2 py-1 text-[10px] font-extrabold text-background backdrop-blur">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-foreground/85 px-2 py-1 text-[10px] font-extrabold text-background">
                     <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                     {toLatin(product.rating)}
                   </span>
@@ -530,7 +530,7 @@ const ButcherSheet = ({ product, open, onClose }: Props) => {
             </div>
 
             {/* Sticky footer */}
-            <div className="sticky bottom-0 border-t border-border/60 bg-card/95 p-4 backdrop-blur">
+            <div className="sticky bottom-0 border-t border-border/60 bg-card/95 p-4">
               <button
                 onClick={confirm}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-600 py-3 font-display text-sm font-extrabold text-white shadow-pill transition active:scale-[0.98]"

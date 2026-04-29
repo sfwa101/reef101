@@ -108,13 +108,13 @@ const MealSheet = ({ meal, open, onClose, weeklyDay, weeklyDayLabel }: Props) =>
             <button
               onClick={onClose}
               aria-label="إغلاق"
-              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-foreground shadow-lg backdrop-blur"
+              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-foreground shadow-lg"
             >
               <X className="h-4 w-4" strokeWidth={2.5} />
             </button>
             <div className="absolute inset-x-0 bottom-0 p-4 text-white">
               {weeklyDayLabel && (
-                <span className="mb-1 inline-block rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-bold backdrop-blur">
+                <span className="mb-1 inline-block rounded-full bg-primary/90 px-2.5 py-0.5 text-[10px] font-bold">
                   {weeklyDayLabel}
                 </span>
               )}
@@ -231,7 +231,7 @@ const MealSheet = ({ meal, open, onClose, weeklyDay, weeklyDayLabel }: Props) =>
           </div>
 
           {/* Sticky footer: qty + total + add */}
-          <div className="absolute inset-x-0 bottom-0 border-t border-border/60 bg-background/95 p-4 backdrop-blur">
+          <div className="absolute inset-x-0 bottom-0 border-t border-border/60 bg-background/95 p-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1 rounded-full bg-foreground/5 p-1">
                 <button

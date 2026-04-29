@@ -119,7 +119,7 @@ const Village = () => {
           }}
         />
         <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-          <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold backdrop-blur">
+          <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold">
             <Leaf className="h-3 w-3" />
             بوتيك ريف المدينة
           </div>
@@ -303,7 +303,7 @@ const VillageCard = ({
           {/* Trust badges — single, smaller, top-right */}
           {meta?.trust && meta.trust.length > 0 && (
             <span
-              className="absolute right-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8.5px] font-extrabold shadow-pill backdrop-blur-md"
+              className="absolute right-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8.5px] font-extrabold shadow-pill"
               style={{ background: "rgba(255,253,248,0.92)", color: "#3A341E" }}
               title={TRUST_BADGE_META[meta.trust[0]].label}
             >
@@ -336,7 +336,7 @@ const VillageCard = ({
           <button
             onClick={(e) => { e.preventDefault(); toggle(product.id); }}
             aria-label="مفضلة"
-            className="absolute top-1.5 left-1.5 flex h-7 w-7 items-center justify-center rounded-full backdrop-blur-md transition active:scale-90"
+            className="absolute top-1.5 left-1.5 flex h-7 w-7 items-center justify-center rounded-full transition active:scale-90"
             style={{ background: fav ? "#A04040" : "rgba(255,253,248,0.9)", color: fav ? "#fff" : "#3A341E" }}
           >
             <Heart className={`h-3.5 w-3.5 ${fav ? "fill-white" : ""}`} strokeWidth={2.4} />

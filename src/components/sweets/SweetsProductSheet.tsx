@@ -133,7 +133,7 @@ const SweetsProductSheet = ({ product, open, onClose }: Props) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 backdrop-blur-sm sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 sm:items-center"
         >
           <motion.div
             initial={{ y: 80, opacity: 0 }}
@@ -154,7 +154,7 @@ const SweetsProductSheet = ({ product, open, onClose }: Props) => {
               <button
                 onClick={onClose}
                 aria-label="إغلاق"
-                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 text-foreground shadow-pill backdrop-blur"
+                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 text-foreground shadow-pill"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -173,7 +173,7 @@ const SweetsProductSheet = ({ product, open, onClose }: Props) => {
                   </p>
                 </div>
                 {product.rating && (
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-foreground/85 px-2 py-1 text-[10px] font-extrabold text-background backdrop-blur">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-foreground/85 px-2 py-1 text-[10px] font-extrabold text-background">
                     <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                     {toLatin(product.rating)}
                   </span>
@@ -573,7 +573,7 @@ const SweetsProductSheet = ({ product, open, onClose }: Props) => {
 
             {/* Sticky CTA */}
             <div
-              className="sticky bottom-0 border-t border-border/40 bg-card/95 p-3 backdrop-blur"
+              className="sticky bottom-0 border-t border-border/40 bg-card/95 p-3"
               style={{
                 paddingBottom:
                   "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)",
@@ -593,7 +593,7 @@ const SweetsProductSheet = ({ product, open, onClose }: Props) => {
                   <ShoppingBag className="h-5 w-5" />
                   {isBooking ? "تأكيد الحجز" : "أضف إلى السلة"}
                 </span>
-                <span className="rounded-[12px] bg-white/15 px-3 py-1.5 text-sm tabular-nums backdrop-blur">
+                <span className="rounded-[12px] bg-white/15 px-3 py-1.5 text-sm tabular-nums">
                   {fmtMoney(lineTotal)}
                 </span>
               </button>

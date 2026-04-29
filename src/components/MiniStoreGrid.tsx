@@ -30,7 +30,7 @@ const MiniStoreGrid = ({ items }: { items: Item[] }) => {
               {s.title}
             </span>
             {s.unavailable && (
-              <span className="absolute inset-x-1.5 top-1.5 rounded-full bg-background/90 px-1.5 py-0.5 text-center text-[9px] font-bold text-muted-foreground backdrop-blur">
+              <span className="absolute inset-x-1.5 top-1.5 rounded-full bg-background/90 px-1.5 py-0.5 text-center text-[9px] font-bold text-muted-foreground">
                 قريبًا
               </span>
             )}

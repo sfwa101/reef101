@@ -52,7 +52,7 @@ const BasketsSubs = () => {
         <div className="absolute -top-6 -right-6 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
         <div className="relative flex items-end justify-between gap-3">
           <div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-extrabold backdrop-blur">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-extrabold">
               <Sparkles className="h-3 w-3" /> مرونة كاملة
             </span>
             <h2 className="mt-2 font-display text-2xl font-extrabold leading-tight">
@@ -61,7 +61,7 @@ const BasketsSubs = () => {
             <p className="text-[11px] opacity-90">أوقف، أجّل، أو ألغِ في أي وقت</p>
           </div>
           {totalCashback > 0 && (
-            <div className="rounded-2xl bg-white/15 px-3 py-2 text-center backdrop-blur">
+            <div className="rounded-2xl bg-white/15 px-3 py-2 text-center">
               <Wallet className="mx-auto h-4 w-4" />
               <p className="mt-1 text-[9px] font-bold opacity-90">كاشباك التوصيلة</p>
               <p className="font-display text-sm font-extrabold tabular-nums">+{toLatin(totalCashback)} ج</p>

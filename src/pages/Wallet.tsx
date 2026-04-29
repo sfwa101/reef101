@@ -205,14 +205,14 @@ const Wallet = () => {
         <div className="relative">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 backdrop-blur">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20">
                 <WalletIcon className="h-3.5 w-3.5 text-white" />
               </div>
               <span className="text-[11px] font-bold tracking-wider text-white/85">REEF · WALLET</span>
             </div>
             <div className="flex items-center gap-2">
               {tier && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-extrabold text-white backdrop-blur">
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-extrabold text-white">
                   {tier.label} · {toLatin(tier.multiplier)}x
                 </span>
               )}
@@ -230,7 +230,7 @@ const Wallet = () => {
             {toLatin(Math.round(balance?.balance ?? 0))} <span className="text-base font-medium text-white/70">ج.م</span>
           </motion.p>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-white/10 p-2.5 backdrop-blur-sm ring-1 ring-white/10">
+          <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-white/10 p-2.5 ring-1 ring-white/10">
             <div className="flex items-center gap-2">
               <Sparkles className="h-3.5 w-3.5 text-white/80" />
               <div>
@@ -251,13 +251,13 @@ const Wallet = () => {
             <button onClick={openTopup} className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white py-2.5 text-xs font-extrabold text-foreground shadow-pill transition active:scale-95">
               <Plus className="h-3.5 w-3.5" /> شحن الرصيد
             </button>
-            <button onClick={() => setShowTransfer(true)} className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/15 py-2.5 text-xs font-extrabold text-white backdrop-blur transition active:scale-95">
+            <button onClick={() => setShowTransfer(true)} className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/15 py-2.5 text-xs font-extrabold text-white transition active:scale-95">
               <Send className="h-3.5 w-3.5" /> تحويل
             </button>
           </div>
 
           {trustLimit > 0 && (
-            <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-white/10 p-2 backdrop-blur ring-1 ring-white/15">
+            <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-white/10 p-2 ring-1 ring-white/15">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-white/90" />
               <p className="flex-1 text-[10px] font-bold text-white/90">
                 رصيد ثقة متاح حتى <span className="font-extrabold tabular-nums">{toLatin(trustLimit)} ج.م</span> · يُستخدم تلقائيًا عند الحاجة
@@ -525,7 +525,7 @@ const TopupDialog = ({ onClose, phone, userId }: { onClose: () => void; phone: s
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center"
       onClick={onClose}
     >
       <motion.div
@@ -711,7 +711,7 @@ const SavingsJarDialog = ({ onClose, userId, jar, txs, onUpdate }: {
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center"
       onClick={onClose}
     >
       <motion.div
@@ -736,7 +736,7 @@ const SavingsJarDialog = ({ onClose, userId, jar, txs, onUpdate }: {
         <div className="relative mb-4 overflow-hidden rounded-2xl p-5 text-white" style={{ background: "linear-gradient(135deg, hsl(220 25% 12%), hsl(150 35% 18%) 60%, hsl(45 55% 28%))" }}>
           <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-[hsl(45_80%_55%)]/20 blur-2xl" />
           <div className="relative flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
               <PiggyBank className="h-7 w-7 text-white" strokeWidth={2.2} />
             </div>
             <div className="flex-1">
@@ -890,7 +890,7 @@ const AffiliateDialog = ({ onClose, code, referrals, totalCommission }: { onClos
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center"
       onClick={onClose}
     >
       <motion.div
@@ -919,7 +919,7 @@ const AffiliateDialog = ({ onClose, code, referrals, totalCommission }: { onClos
           <p className="text-[10px] font-bold uppercase tracking-wider text-white/75">كود الدعوة الخاص بك</p>
           <p className="my-2 font-display text-3xl font-extrabold tracking-[0.2em]">{code}</p>
           <div className="flex gap-2">
-            <button onClick={copyCode} className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/20 py-2 text-[11px] font-extrabold text-white backdrop-blur transition active:scale-95">
+            <button onClick={copyCode} className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/20 py-2 text-[11px] font-extrabold text-white transition active:scale-95">
               <Copy className="h-3.5 w-3.5" /> نسخ
             </button>
             <button onClick={share} className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white py-2 text-[11px] font-extrabold text-foreground transition active:scale-95">
@@ -1011,7 +1011,7 @@ const TransferDialog = ({ onClose, balance, onDone }: { onClose: () => void; bal
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center"
       onClick={onClose}
     >
       <motion.div

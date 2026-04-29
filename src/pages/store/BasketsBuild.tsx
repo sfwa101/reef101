@@ -137,7 +137,7 @@ const BasketsBuild = () => {
       </section>
 
       {/* Sticky cats */}
-      <div className="sticky top-14 z-20 -mx-4 border-y border-border/40 bg-background/85 px-4 py-2 backdrop-blur-md shadow-[0_4px_12px_-8px_rgba(0,0,0,0.15)]">
+      <div className="sticky top-14 z-20 -mx-4 border-y border-border/40 bg-background/85 px-4 py-2 shadow-[0_4px_12px_-8px_rgba(0,0,0,0.15)]">
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 scrollbar-hide">
           {cats.map((c) => (
             <button

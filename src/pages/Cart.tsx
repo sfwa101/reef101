@@ -1593,7 +1593,7 @@ const Cart = () => {
                 {submitting ? "جارٍ تجهيز الفاتورة ⏳" : "إتمام عبر واتساب"}
               </span>
             </span>
-            <span className="rounded-[12px] bg-primary-foreground/15 px-3 py-1.5 text-sm font-extrabold backdrop-blur">
+            <span className="rounded-[12px] bg-primary-foreground/15 px-3 py-1.5 text-sm font-extrabold">
               {fmtMoney(grand)}
             </span>
           </motion.button>
@@ -1637,7 +1637,7 @@ const RechargeDialog = ({ onClose, userId, currentBalance, shortfall }: { onClos
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center"
       onClick={onClose}
     >
       <motion.div

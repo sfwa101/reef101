@@ -43,7 +43,7 @@ const Wholesale = () => (
         <div className="relative">
           <div className="mb-2 flex items-center gap-2">
             <Crown className="h-4 w-4 text-accent" />
-            <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+            <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
               عضويّة ريف
             </span>
           </div>

@@ -99,7 +99,7 @@ const Subscriptions = () => {
         style={{ background: "linear-gradient(135deg, hsl(330 60% 35%), hsl(310 50% 50%) 60%, hsl(45 70% 60%))" }}>
         <div className="absolute -bottom-12 -right-10 h-44 w-44 rounded-full bg-white/15 blur-3xl" />
         <div className="relative">
-          <span className="inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur">عرض البداية</span>
+          <span className="inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold text-white">عرض البداية</span>
           <h2 className="mt-3 font-display text-2xl font-extrabold text-white text-balance">
             خصم 25% على<br />أول شهر اشتراك
           </h2>
@@ -358,14 +358,14 @@ const Subscriptions = () => {
       {/* Meal picker bottom-sheet */}
       {pickerDay && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 animate-in fade-in"
           onClick={() => setPickerDay(null)}
         >
           <div
             className="max-h-[85vh] w-full max-w-md overflow-hidden rounded-t-[2rem] bg-background shadow-float animate-in slide-in-from-bottom"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/95 p-4 backdrop-blur">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/95 p-4">
               <div>
                 <h4 className="font-display text-lg font-extrabold">اختر وجبة {weekDays.find((d) => d.id === pickerDay)?.long}</h4>
                 <p className="text-[11px] text-muted-foreground">السعر داخل الاشتراك مختلف عن الطلب الفردي</p>

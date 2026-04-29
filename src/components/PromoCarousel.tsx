@@ -64,7 +64,7 @@ const PromoCarousel = () => {
               <div className="absolute -bottom-12 -right-10 h-36 w-36 rounded-full bg-white/20 blur-3xl" />
               <div className="relative flex items-center justify-between gap-3">
                 <div className="flex-1">
-                  <span className="inline-block rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+                  <span className="inline-block rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
                     {s.badge}
                   </span>
                   <h3 className="mt-2 font-display text-lg font-extrabold leading-tight text-white text-balance">

@@ -69,7 +69,7 @@ const SmartBanners = ({ walletBalance, hasReferralCode }: Props) => {
                 className="group flex min-w-[260px] items-center gap-3 rounded-2xl px-3.5 py-2.5 ring-1 ring-border/60 shadow-soft"
                 style={{ background: b.tint }}
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background/80 ring-1 ring-border/40 backdrop-blur">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background/80 ring-1 ring-border/40">
                   <Icon className="h-4 w-4 text-primary" strokeWidth={2.4} />
                 </span>
                 <span className="flex-1 min-w-0">

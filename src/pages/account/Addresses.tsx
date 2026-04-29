@@ -179,7 +179,7 @@ const MiniMap = ({ zoneId, district }: { zoneId: ZoneId; district: string }) => 
         </div>
       </motion.div>
       {/* Zone chip */}
-      <div className="absolute right-2 top-2 rounded-full bg-card/85 px-2.5 py-1 text-[10px] font-extrabold backdrop-blur ring-1 ring-border/40">
+      <div className="absolute right-2 top-2 rounded-full bg-card/85 px-2.5 py-1 text-[10px] font-extrabold ring-1 ring-border/40">
         نطاق {z.id} · {z.shortName}
       </div>
     </div>

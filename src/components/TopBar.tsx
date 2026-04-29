@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ShoppingBag, Wallet as WalletIcon } from "lucide-react";
-import reefLogo from "@/assets/reef-logo.png";
+import reefLogo from "@/assets/reef-logo.webp";
 import { useCartCount, useCartTotal } from "@/context/CartContext";
 import { fmtMoney } from "@/lib/format";
 import { useEffect, useState } from "react";

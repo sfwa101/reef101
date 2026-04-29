@@ -213,7 +213,7 @@ const ProductDetail = () => {
                 <button
                   onClick={() => router.history.back()}
                   aria-label="رجوع"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white shadow-soft backdrop-blur-xl ring-1 ring-white/30 transition active:scale-90"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white shadow-soft ring-1 ring-white/30 transition active:scale-90"
                 >
                   <ArrowRight className="h-4 w-4" strokeWidth={2.6} />
                 </button>
@@ -221,14 +221,14 @@ const ProductDetail = () => {
                   <button
                     onClick={handleShare}
                     aria-label="مشاركة"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white shadow-soft backdrop-blur-xl ring-1 ring-white/30 transition active:scale-90"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white shadow-soft ring-1 ring-white/30 transition active:scale-90"
                   >
                     <Share2 className="h-4 w-4" strokeWidth={2.4} />
                   </button>
                   <button
                     onClick={() => toggle(product.id)}
                     aria-label="مفضلة"
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white shadow-soft backdrop-blur-xl ring-1 ring-white/30 transition active:scale-90"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white shadow-soft ring-1 ring-white/30 transition active:scale-90"
                   >
                     <Heart className={`h-4 w-4 transition ${fav ? "fill-white" : ""}`} strokeWidth={2.4} />
                   </button>
@@ -241,14 +241,14 @@ const ProductDetail = () => {
               <>
                 <button
                   onClick={goPrev}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-foreground shadow-soft backdrop-blur-md ring-1 ring-border/40 transition active:scale-90"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-foreground shadow-soft ring-1 ring-border/40 transition active:scale-90"
                   aria-label="السابق"
                 >
                   <ChevronRight className="h-4 w-4" strokeWidth={2.4} />
                 </button>
                 <button
                   onClick={goNext}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-foreground shadow-soft backdrop-blur-md ring-1 ring-border/40 transition active:scale-90"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-foreground shadow-soft ring-1 ring-border/40 transition active:scale-90"
                   aria-label="التالي"
                 >
                   <ChevronLeft className="h-4 w-4" strokeWidth={2.4} />
@@ -260,7 +260,7 @@ const ProductDetail = () => {
             {!isVillage && (
               <button
                 onClick={() => setZoomOpen(true)}
-                className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-background/85 px-3 py-1.5 text-[10px] font-extrabold text-foreground shadow-soft backdrop-blur-md ring-1 ring-border/40"
+                className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-background/85 px-3 py-1.5 text-[10px] font-extrabold text-foreground shadow-soft ring-1 ring-border/40"
               >
                 <ZoomIn className="h-3 w-3" strokeWidth={2.6} />
                 تكبير
@@ -717,7 +717,7 @@ const ProductDetail = () => {
       <AnimatePresence>
         {zoomOpen && (
           <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -736,7 +736,7 @@ const ProductDetail = () => {
             />
             <button
               onClick={() => setZoomOpen(false)}
-              className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md ring-1 ring-white/30 transition active:scale-90"
+              className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/30 transition active:scale-90"
               aria-label="إغلاق"
             >
               <X className="h-5 w-5" strokeWidth={2.4} />

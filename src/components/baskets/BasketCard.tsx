@@ -36,7 +36,7 @@ const BasketCard = ({ product }: { product: Product }) => {
           <img src={product.image} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
           {m && (
-            <span className={`absolute right-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-extrabold shadow-pill ring-1 backdrop-blur ${toneClass(m.badgeTone)}`}>
+            <span className={`absolute right-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-extrabold shadow-pill ring-1 ${toneClass(m.badgeTone)}`}>
               <Sparkles className="h-3 w-3" />{m.badge}
             </span>
           )}

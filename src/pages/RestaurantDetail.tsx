@@ -79,7 +79,7 @@ const RestaurantDetail = () => {
       <header className="relative px-4 pb-6 pt-4 text-white" style={{ background: banner }}>
         <button
           onClick={() => navigate({ to: "/store/restaurants" })}
-          className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 backdrop-blur transition active:scale-95"
+          className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/25 transition active:scale-95"
           aria-label="رجوع"
         >
           <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
@@ -94,15 +94,15 @@ const RestaurantDetail = () => {
             <h1 className="font-display text-xl font-extrabold drop-shadow-sm">{r.name}</h1>
             <p className="mt-0.5 text-[12px] font-medium text-white/90">{r.tagline}</p>
             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5 backdrop-blur">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5">
                 <Star className="h-3 w-3 fill-yellow-300 text-yellow-300" />
                 {toLatin(r.rating)} ({toLatin(r.reviews)})
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5 backdrop-blur">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5">
                 <Clock className="h-3 w-3" />
                 {r.etaLabel}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5 backdrop-blur">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5">
                 <Wallet className="h-3 w-3" />
                 كاش باك {toLatin(r.cashbackPct)}٪
               </span>
@@ -110,7 +110,7 @@ const RestaurantDetail = () => {
           </div>
         </div>
         {r.hook && (
-          <p className="mt-3 rounded-2xl bg-white/15 px-3 py-2 text-[12px] font-bold backdrop-blur">
+          <p className="mt-3 rounded-2xl bg-white/15 px-3 py-2 text-[12px] font-bold">
             ✨ {r.hook}
           </p>
         )}
@@ -119,7 +119,7 @@ const RestaurantDetail = () => {
       {/* ===== Sticky tabs ===== */}
       <div
         ref={tabsRef}
-        className="sticky top-14 z-40 border-b border-border/40 bg-background/95 backdrop-blur"
+        className="sticky top-14 z-40 border-b border-border/40 bg-background/95"
       >
         <div
           className="flex gap-2 overflow-x-auto px-4 py-2.5 no-scrollbar"

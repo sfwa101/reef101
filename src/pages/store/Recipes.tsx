@@ -482,7 +482,7 @@ const Recipes = () => {
           style={{ background: "linear-gradient(135deg, hsl(150 40% 25%), hsl(160 30% 35%))" }}
         >
           <div className="absolute -bottom-12 -right-10 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
-          <span className="inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+          <span className="inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold text-white">
             وصفات الشيف
           </span>
           <h2 className="mt-3 font-display text-2xl font-extrabold text-white text-balance">
@@ -738,13 +738,13 @@ function RecipeModal({ recipe, onClose }: { recipe: Recipe; onClose: () => void 
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm animate-float-up" />
+      <div className="absolute inset-0 bg-foreground/40 animate-float-up" />
       <div
         className="relative mx-auto flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[2rem] bg-background shadow-float animate-float-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between bg-background/90 p-3 backdrop-blur">
+        <div className="flex items-center justify-between bg-background/90 p-3">
           <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground/5">
             <X className="h-4 w-4" />
           </button>
@@ -1159,7 +1159,7 @@ function DailyBrowser({
                   <img src={r.image} alt={r.name} loading="lazy" className="h-full w-full object-cover" />
                   {/* Sold-today chip on image */}
                   {m.soldToday && (
-                    <span className="absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+                    <span className="absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white">
                       <TrendingUp className="h-3 w-3" /> {toLatin(m.soldToday)} اليوم
                     </span>
                   )}

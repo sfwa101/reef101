@@ -59,7 +59,7 @@ const Kitchen = () => {
         }}
       >
         <div className="absolute -bottom-12 -right-10 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
-        <span className="inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+        <span className="inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold text-white">
           مطبخ السحاب الذكي
         </span>
         <h2 className="mt-3 font-display text-2xl font-extrabold text-white text-balance">
@@ -76,7 +76,7 @@ const Kitchen = () => {
       </section>
 
       {/* Sticky tabs */}
-      <div className="sticky top-[56px] z-30 -mx-4 mb-3 bg-background/85 px-4 py-2 backdrop-blur">
+      <div className="sticky top-[56px] z-30 -mx-4 mb-3 bg-background/85 px-4 py-2">
         <div className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1">
           <TabBtn active={tab === "daily"} onClick={() => setTab("daily")}>
             وجبات فورية

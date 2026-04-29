@@ -167,7 +167,7 @@ const BasketSheet = ({ product, open, onClose }: Props) => {
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-40 flex items-end justify-center bg-black/55 backdrop-blur-sm sm:items-center"
+          className="fixed inset-0 z-40 flex items-end justify-center bg-black/55 sm:items-center"
         >
           <motion.div
             initial={{ y: 80, opacity: 0 }}
@@ -183,7 +183,7 @@ const BasketSheet = ({ product, open, onClose }: Props) => {
               <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
               <button
                 onClick={onClose} aria-label="إغلاق"
-                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 text-foreground shadow-pill backdrop-blur"
+                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 text-foreground shadow-pill"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -411,7 +411,7 @@ const BasketSheet = ({ product, open, onClose }: Props) => {
             </div>
 
             {/* Sticky footer */}
-            <div className="sticky bottom-0 border-t border-border/60 bg-card/95 p-4 backdrop-blur">
+            <div className="sticky bottom-0 border-t border-border/60 bg-card/95 p-4">
               <button
                 onClick={handleConfirm}
                 className={`flex w-full items-center justify-center gap-2 rounded-2xl py-3 font-display text-sm font-extrabold text-white shadow-pill transition active:scale-[0.98] ${

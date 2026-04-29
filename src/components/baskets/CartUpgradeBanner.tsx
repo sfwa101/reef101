@@ -49,7 +49,7 @@ const CartUpgradeBanner = () => {
         <div className="relative flex gap-3">
           <img src={basket.image} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover ring-2 ring-white/40" />
           <div className="min-w-0 flex-1">
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-extrabold backdrop-blur">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-extrabold">
               <Sparkles className="h-2.5 w-2.5" /> اقتراح ذكي
             </span>
             <p className="mt-1 font-display text-[13px] font-extrabold leading-tight">
@@ -67,7 +67,7 @@ const CartUpgradeBanner = () => {
               </button>
               <Link
                 to="/store/baskets"
-                className="flex items-center justify-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-[11px] font-extrabold backdrop-blur"
+                className="flex items-center justify-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-[11px] font-extrabold"
               >
                 <ShoppingBasket className="h-3 w-3" /> تصفّح
               </Link>

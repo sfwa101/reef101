@@ -41,7 +41,7 @@ const Baskets = () => {
         <div className="absolute -bottom-12 -right-10 h-44 w-44 rounded-full bg-white/15 blur-3xl" />
         <div className="absolute -top-8 -left-6 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
         <div className="relative">
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/25 px-2.5 py-0.5 text-[10px] font-extrabold text-white backdrop-blur">
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/25 px-2.5 py-0.5 text-[10px] font-extrabold text-white">
             <Sparkles className="h-3 w-3" /> وفّر بالكمية
           </span>
           <h2 className="mt-3 font-display text-2xl font-extrabold leading-tight text-white text-balance">
@@ -107,7 +107,7 @@ const Baskets = () => {
       )}
 
       {/* Sticky category bar */}
-      <div className="sticky top-14 z-20 -mx-4 border-y border-border/40 bg-background/85 px-4 py-2 backdrop-blur-md shadow-[0_4px_12px_-8px_rgba(0,0,0,0.15)]">
+      <div className="sticky top-14 z-20 -mx-4 border-y border-border/40 bg-background/85 px-4 py-2 shadow-[0_4px_12px_-8px_rgba(0,0,0,0.15)]">
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 scrollbar-hide">
           {categories.map((c) => (
             <button

@@ -42,7 +42,7 @@ const SectionsPanel = () => {
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
   return (
-    <aside className="sticky top-[80px] hidden h-[calc(100vh-100px)] w-[260px] shrink-0 flex-col gap-1 overflow-y-auto rounded-3xl bg-card/60 p-3 shadow-soft ring-1 ring-border/40 backdrop-blur lg:flex">
+    <aside className="sticky top-[80px] hidden h-[calc(100vh-100px)] w-[260px] shrink-0 flex-col gap-1 overflow-y-auto rounded-3xl bg-card/60 p-3 shadow-soft ring-1 ring-border/40 lg:flex">
       <p className="px-2 pb-1 pt-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
         المتاجر
       </p>

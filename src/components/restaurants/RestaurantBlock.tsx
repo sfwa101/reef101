@@ -105,7 +105,7 @@ const RestaurantBlock = ({ restaurant: r, unavailable = false }: Props) => {
       }`}
     >
       {unavailable && (
-        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-background/40 backdrop-blur-[1px]">
+        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-background/40-[1px]">
           <span className="rounded-full bg-foreground/85 px-3 py-1.5 text-[10px] font-extrabold text-background shadow-pill">
             قريبًا في منطقتك
           </span>
@@ -133,15 +133,15 @@ const RestaurantBlock = ({ restaurant: r, unavailable = false }: Props) => {
             {r.hook ?? r.tagline}
           </p>
           <div className="mt-1 flex items-center gap-2 text-[10px] font-bold text-white/95">
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-white/25 px-1.5 py-0.5 backdrop-blur">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-white/25 px-1.5 py-0.5">
               <Star className="h-2.5 w-2.5 fill-yellow-300 text-yellow-300" />
               <span className="tabular-nums">{toLatin(r.rating)}</span>
             </span>
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-white/25 px-1.5 py-0.5 backdrop-blur">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-white/25 px-1.5 py-0.5">
               <Clock className="h-2.5 w-2.5" />
               {r.etaLabel}
             </span>
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-white/25 px-1.5 py-0.5 backdrop-blur">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-white/25 px-1.5 py-0.5">
               <Wallet className="h-2.5 w-2.5" />
               {toLatin(r.cashbackPct)}٪
             </span>
