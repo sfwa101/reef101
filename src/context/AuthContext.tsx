@@ -52,10 +52,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    let active = true;
+
     // Order: subscribe first, then read existing session
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      if (!active) return;
       setSession(s);
       setUser(s?.user ?? null);
+      setLoading(false);
       if (s?.user) {
         setTimeout(() => fetchProfile(s.user.id), 0);
       } else {
@@ -63,14 +67,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) fetchProfile(s.user.id);
-      setLoading(false);
-    });
+    const failSafe = window.setTimeout(() => {
+      if (active) setLoading(false);
+    }, 2500);
 
-    return () => sub.subscription.unsubscribe();
+    supabase.auth.getSession()
+      .then(({ data: { session: s } }) => {
+        if (!active) return;
+        setSession(s);
+        setUser(s?.user ?? null);
+        if (s?.user) fetchProfile(s.user.id);
+      })
+      .catch(() => {
+        if (!active) return;
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+        window.clearTimeout(failSafe);
+      });
+
+    return () => {
+      active = false;
+      window.clearTimeout(failSafe);
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const signUpWithPhone: AuthCtx["signUpWithPhone"] = async (phone, password, fullName) => {
