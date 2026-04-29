@@ -124,6 +124,22 @@ const CartLineItem = ({
             </button>
           </div>
           <p className="text-[10px] text-muted-foreground">{l.product.unit}</p>
+          {l.meta?.kind === "borrow" && (
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-extrabold text-blue-700">📚 استعارة · {toLatin(l.meta.borrowDays ?? 0)} يوم</span>
+              {l.meta.borrowDeposit ? (
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">تأمين مسترد {fmtMoney(l.meta.borrowDeposit)}</span>
+              ) : null}
+            </div>
+          )}
+          {l.meta?.kind === "print" && (
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold text-sky-700">🖨️ طباعة سحابية</span>
+              {l.meta.prepHours ? (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">⏱️ تجهيز {toLatin(l.meta.prepHours)} ساعات</span>
+              ) : null}
+            </div>
+          )}
           {/* Selected variant + addons */}
           {(l.meta?.variantId || l.meta?.addonIds?.length) && (
             <div className="mt-1 flex flex-wrap gap-1">

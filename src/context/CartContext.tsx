@@ -25,6 +25,24 @@ export type CartLineMeta = {
   unitPrice?: number;
   payDeposit?: boolean;
   shipMode?: "split" | "wait";
+  /** Line kind: regular purchase, library borrow, or print job. */
+  kind?: "buy" | "borrow" | "print";
+  /** Borrow metadata */
+  borrowDuration?: "3d" | "7d" | "14d";
+  borrowDays?: number;
+  borrowDeposit?: number;
+  /** Print metadata */
+  printConfig?: {
+    pages: number;
+    copies: number;
+    colorMode: "bw" | "color";
+    sided: "single" | "double";
+    binding: "none" | "spiral" | "plastic" | "thermal";
+    fileName?: string;
+    filePath?: string;
+  };
+  /** Estimated prep time (hours) — used for print jobs */
+  prepHours?: number;
 };
 
 type CartLine = { product: Product; qty: number; meta?: CartLineMeta };
