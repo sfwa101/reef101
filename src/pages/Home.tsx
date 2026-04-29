@@ -141,7 +141,7 @@ const HomePage = () => {
   const greeting = mounted ? getSmartGreeting() : "أهلًا بك";
   const welcome = mounted ? getWelcomeLine() : "تسوّق ما يناسب يومك";
   // Use a fixed slot during SSR/first render to avoid hydration mismatch.
-  const slot = mounted ? getTimeSlot() : "morning";
+  const slot = (mounted ? getTimeSlot() : "breakfast") as ReturnType<typeof getTimeSlot>;
   const meta = slotMeta[slot];
 
   // Filter out perishables for far zones so we don't tease the user
