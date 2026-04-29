@@ -7,6 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/lib/favorites";
 import {
   Star, Truck, ShieldCheck, Heart, Minus, Plus, ZoomIn, X, ChevronLeft, ChevronRight, Sparkles,
+  ArrowRight, Share2, Repeat, Check,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fmtMoney, toLatin } from "@/lib/format";
@@ -17,6 +18,7 @@ import {
   chefBlockFor,
   relatedProductsFor,
 } from "@/lib/productEnrichment";
+import { villageMetaFor } from "@/lib/villageMeta";
 
 const ProductDetail = () => {
   const { productId } = useParams({ from: "/_app/product/$productId" });
