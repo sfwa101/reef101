@@ -36,9 +36,9 @@ const TopBar = ({ title = "ريف المدينة", subtitle = "عبق الريف
           to="/cart"
           aria-label="السلة"
           dir="rtl"
-          className="relative flex flex-row-reverse items-center gap-2 rounded-md bg-primary/10 px-2.5 py-1.5 ring-1 ring-primary/15 transition hover:bg-primary/15 ease-apple shadow-soft lg:hidden"
+          className="relative flex flex-row-reverse items-center gap-2 rounded-[10px] bg-primary/10 px-2.5 py-1.5 ring-1 ring-primary/15 transition hover:bg-primary/15 ease-apple shadow-soft lg:hidden"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-primary text-primary-foreground shadow-pill">
+          <div className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-primary text-primary-foreground shadow-pill">
             <ShoppingBag className="h-4 w-4" strokeWidth={2.2} />
           </div>
           {count > 0 && (
