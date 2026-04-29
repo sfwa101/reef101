@@ -20,9 +20,9 @@ import {
   Minus,
   Sparkles,
   Repeat,
-  ChevronDown,
   ShieldCheck,
   Leaf,
+  Check,
 } from "lucide-react";
 
 /* ---------------- Routine store (localStorage) ---------------- */
