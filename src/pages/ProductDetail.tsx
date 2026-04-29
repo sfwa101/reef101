@@ -91,6 +91,8 @@ const ProductDetail = () => {
   const badges = trustBadgesFor(product);
   const chef = chefBlockFor(product);
   const related = relatedProductsFor(product, 4);
+  const village = villageMetaFor(product.id);
+  const isVillage = !!village;
   /* Gallery: replicate single image into a 3-frame slider for the "carousel" feel */
   const gallery = [product.image, product.image, product.image];
 
