@@ -40,6 +40,7 @@ import { Route as AppStoreBasketsBuildRouteImport } from './routes/_app/store.ba
 import { Route as AppStoreBasketsRouteImport } from './routes/_app/store.baskets'
 import { Route as AppRestaurantIdRouteImport } from './routes/_app/restaurant.$id'
 import { Route as AppProductProductIdRouteImport } from './routes/_app/product.$productId'
+import { Route as AppAccountVerificationRouteImport } from './routes/_app/account.verification'
 import { Route as AppAccountSettingsRouteImport } from './routes/_app/account.settings'
 import { Route as AppAccountProfileRouteImport } from './routes/_app/account.profile'
 import { Route as AppAccountPaymentsRouteImport } from './routes/_app/account.payments'
@@ -203,6 +204,11 @@ const AppProductProductIdRoute = AppProductProductIdRouteImport.update({
   path: '/product/$productId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAccountVerificationRoute = AppAccountVerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
+  getParentRoute: () => AppAccountRoute,
+} as any)
 const AppAccountSettingsRoute = AppAccountSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -262,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/account/payments': typeof AppAccountPaymentsRoute
   '/account/profile': typeof AppAccountProfileRoute
   '/account/settings': typeof AppAccountSettingsRoute
+  '/account/verification': typeof AppAccountVerificationRoute
   '/product/$productId': typeof AppProductProductIdRoute
   '/restaurant/$id': typeof AppRestaurantIdRoute
   '/store/baskets': typeof AppStoreBasketsRoute
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/account/payments': typeof AppAccountPaymentsRoute
   '/account/profile': typeof AppAccountProfileRoute
   '/account/settings': typeof AppAccountSettingsRoute
+  '/account/verification': typeof AppAccountVerificationRoute
   '/product/$productId': typeof AppProductProductIdRoute
   '/restaurant/$id': typeof AppRestaurantIdRoute
   '/store/baskets': typeof AppStoreBasketsRoute
@@ -343,6 +351,7 @@ export interface FileRoutesById {
   '/_app/account/payments': typeof AppAccountPaymentsRoute
   '/_app/account/profile': typeof AppAccountProfileRoute
   '/_app/account/settings': typeof AppAccountSettingsRoute
+  '/_app/account/verification': typeof AppAccountVerificationRoute
   '/_app/product/$productId': typeof AppProductProductIdRoute
   '/_app/restaurant/$id': typeof AppRestaurantIdRoute
   '/_app/store/baskets': typeof AppStoreBasketsRoute
@@ -385,6 +394,7 @@ export interface FileRouteTypes {
     | '/account/payments'
     | '/account/profile'
     | '/account/settings'
+    | '/account/verification'
     | '/product/$productId'
     | '/restaurant/$id'
     | '/store/baskets'
@@ -424,6 +434,7 @@ export interface FileRouteTypes {
     | '/account/payments'
     | '/account/profile'
     | '/account/settings'
+    | '/account/verification'
     | '/product/$productId'
     | '/restaurant/$id'
     | '/store/baskets'
@@ -465,6 +476,7 @@ export interface FileRouteTypes {
     | '/_app/account/payments'
     | '/_app/account/profile'
     | '/_app/account/settings'
+    | '/_app/account/verification'
     | '/_app/product/$productId'
     | '/_app/restaurant/$id'
     | '/_app/store/baskets'
@@ -712,6 +724,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProductProductIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/account/verification': {
+      id: '/_app/account/verification'
+      path: '/verification'
+      fullPath: '/account/verification'
+      preLoaderRoute: typeof AppAccountVerificationRouteImport
+      parentRoute: typeof AppAccountRoute
+    }
     '/_app/account/settings': {
       id: '/_app/account/settings'
       path: '/settings'
@@ -780,6 +799,7 @@ interface AppAccountRouteChildren {
   AppAccountPaymentsRoute: typeof AppAccountPaymentsRoute
   AppAccountProfileRoute: typeof AppAccountProfileRoute
   AppAccountSettingsRoute: typeof AppAccountSettingsRoute
+  AppAccountVerificationRoute: typeof AppAccountVerificationRoute
   AppAccountIndexRoute: typeof AppAccountIndexRoute
 }
 
@@ -792,6 +812,7 @@ const AppAccountRouteChildren: AppAccountRouteChildren = {
   AppAccountPaymentsRoute: AppAccountPaymentsRoute,
   AppAccountProfileRoute: AppAccountProfileRoute,
   AppAccountSettingsRoute: AppAccountSettingsRoute,
+  AppAccountVerificationRoute: AppAccountVerificationRoute,
   AppAccountIndexRoute: AppAccountIndexRoute,
 }
 

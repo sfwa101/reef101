@@ -252,7 +252,7 @@ const ImageDrop = ({
   preview: string | null;
   disabled?: boolean;
   onPick: (f: File | null) => void;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   onClear: () => void;
 }) => {
   return (
