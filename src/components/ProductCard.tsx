@@ -155,8 +155,17 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
           <Heart className={`h-3.5 w-3.5 ${fav ? "fill-white" : ""}`} strokeWidth={2.4} />
         </span>
         {volumeBadge && (
-          <span className="absolute bottom-2 right-2 rounded-full bg-foreground/90 px-2 py-0.5 text-[9.5px] font-extrabold text-background shadow-pill tabular-nums">
-            اشترِ {toLatin(volumeBadge.buy)} ووفر {toLatin(volumeBadge.save)} ج.م
+          <span
+            className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[9.5px] font-extrabold text-primary-foreground shadow-pill tabular-nums ring-1 ring-white/30"
+            style={{
+              background:
+                "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%)",
+            }}
+          >
+            <span aria-hidden className="text-[11px] leading-none">📦</span>
+            <span>×{toLatin(volumeBadge.buy)}</span>
+            <span className="opacity-80">·</span>
+            <span>وفّر {toLatin(volumeBadge.save)}</span>
           </span>
         )}
         </button>
@@ -208,8 +217,17 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
             <Heart className={`h-3.5 w-3.5 ${fav ? "fill-white" : ""}`} strokeWidth={2.4} />
           </button>
           {volumeBadge && (
-            <span className="absolute bottom-2 right-2 rounded-full bg-foreground/90 px-2 py-0.5 text-[9.5px] font-extrabold text-background shadow-pill tabular-nums">
-              اشترِ {toLatin(volumeBadge.buy)} ووفر {toLatin(volumeBadge.save)} ج.م
+            <span
+              className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[9.5px] font-extrabold text-primary-foreground shadow-pill tabular-nums ring-1 ring-white/30"
+              style={{
+                background:
+                  "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%)",
+              }}
+            >
+              <span aria-hidden className="text-[11px] leading-none">📦</span>
+              <span>×{toLatin(volumeBadge.buy)}</span>
+              <span className="opacity-80">·</span>
+              <span>وفّر {toLatin(volumeBadge.save)}</span>
             </span>
           )}
         </Link>

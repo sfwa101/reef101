@@ -21,10 +21,12 @@ interface DualNavStoreProps {
   products: Product[];
 }
 
-const HEADER_OFFSET = 56;
-const MAIN_BAR = 48;
-const SUB_BAR = 42;
-const STICKY_TOTAL = HEADER_OFFSET + MAIN_BAR + SUB_BAR + 8;
+// Header height + visual gap between header and dual rail.
+const HEADER_OFFSET = 64;
+const HEADER_GAP = 10;
+const MAIN_BAR = 46;
+const SUB_BAR = 40;
+const STICKY_TOTAL = HEADER_OFFSET + HEADER_GAP + MAIN_BAR + SUB_BAR + 6;
 
 const DualNavStore = ({
   themeKey,
@@ -41,6 +43,8 @@ const DualNavStore = ({
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const mainBarRef = useRef<HTMLDivElement>(null);
   const subBarRef = useRef<HTMLDivElement>(null);
+  const tickingRef = useRef(false);
+  const userJumpUntilRef = useRef(0);
 
   const grouped = useMemo(
     () => groupBySupermarketTaxonomy(products, query),
@@ -66,31 +70,38 @@ const DualNavStore = ({
     return g?.subs.map((s) => s.sub) ?? [];
   }, [grouped, activeGroup]);
 
-  // ScrollSpy: pick the lowest sub-section whose top has crossed the trigger line
+  // ScrollSpy: rAF-throttled, picks the lowest section whose top has crossed
+  // the trigger line. Suspended briefly after user-initiated jumps so the
+  // smooth scroll animation doesn't fight a flicker of the wrong active id.
   useEffect(() => {
-    const onScroll = () => {
-      const trigger = STICKY_TOTAL + 12;
-      let current = activeSub;
-      for (const g of grouped) {
-        for (const { sub } of g.subs) {
-          const el = sectionRefs.current[sub.id];
-          if (!el) continue;
-          const top = el.getBoundingClientRect().top;
-          if (top - trigger <= 0) current = sub.id;
-          else {
-            if (current) {
-              setActiveSub(current);
-              return;
-            }
-          }
-        }
+    const flatSubs: { id: string }[] = [];
+    for (const g of grouped) for (const { sub } of g.subs) flatSubs.push({ id: sub.id });
+    if (flatSubs.length === 0) return;
+
+    const compute = () => {
+      tickingRef.current = false;
+      if (Date.now() < userJumpUntilRef.current) return;
+      const trigger = STICKY_TOTAL + 16;
+      let current = flatSubs[0].id;
+      for (const { id } of flatSubs) {
+        const el = sectionRefs.current[id];
+        if (!el) continue;
+        const top = el.getBoundingClientRect().top;
+        if (top - trigger <= 0) current = id;
+        else break;
       }
-      if (current) setActiveSub(current);
+      setActiveSub((prev) => (prev === current ? prev : current));
+    };
+
+    const onScroll = () => {
+      if (tickingRef.current) return;
+      tickingRef.current = true;
+      requestAnimationFrame(compute);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    compute();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [grouped, activeSub]);
+  }, [grouped]);
 
   // Auto-center active chips
   useEffect(() => {
@@ -107,6 +118,9 @@ const DualNavStore = ({
   const jumpToSub = (id: string) => {
     const el = sectionRefs.current[id];
     if (!el) return;
+    // Optimistically set + suppress scrollspy briefly so smooth-scroll wins.
+    setActiveSub(id);
+    userJumpUntilRef.current = Date.now() + 700;
     const top = el.getBoundingClientRect().top + window.scrollY - STICKY_TOTAL;
     window.scrollTo({ top, behavior: "smooth" });
   };
@@ -135,16 +149,17 @@ const DualNavStore = ({
 
       {intro}
 
-      {/* Sticky DUAL nav — main rail + sub rail */}
-      <div className="fixed inset-x-0 z-30" style={{ top: `${HEADER_OFFSET}px` }}>
+      {/* Sticky DUAL nav — main rail + sub rail (offset slightly below header) */}
+      <div className="fixed inset-x-0 z-30" style={{ top: `${HEADER_OFFSET + HEADER_GAP}px` }}>
         <div className="mx-auto max-w-md">
           {/* Main rail */}
           <div
-            className="px-3 pt-2 pb-1.5"
+            className="rounded-t-[20px] px-3 pt-2 pb-1.5"
             style={{
-              background: `hsl(var(--card) / 0.98)`,
+              background: `hsl(var(--card) / 0.96)`,
               backdropFilter: "saturate(180%) blur(24px)",
               WebkitBackdropFilter: "saturate(180%) blur(24px)",
+              boxShadow: "0 4px 14px -10px rgba(0,0,0,0.18)",
             }}
           >
             <div ref={mainBarRef} className="-mx-3 flex gap-1.5 overflow-x-auto px-3 no-scrollbar">
@@ -157,7 +172,8 @@ const DualNavStore = ({
                     data-main={g.id}
                     onClick={() => enabled && jumpToGroup(g.id)}
                     disabled={!enabled}
-                    className={`shrink-0 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-extrabold transition ease-apple ${
+                    type="button"
+                    className={`shrink-0 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-extrabold transition-colors duration-150 active:scale-[0.97] touch-manipulation ${
                       enabled ? "" : "opacity-35"
                     } ${isActive ? "shadow-pill" : "bg-foreground/5 text-foreground/80"}`}
                     style={
@@ -180,7 +196,7 @@ const DualNavStore = ({
 
           {/* Sub rail */}
           <div
-            className="px-3 py-1.5"
+            className="rounded-b-[20px] px-3 py-1.5"
             style={{
               background: `hsl(var(--background) / 0.95)`,
               backdropFilter: "saturate(180%) blur(20px)",
@@ -199,8 +215,9 @@ const DualNavStore = ({
                     <button
                       key={s.id}
                       data-sub={s.id}
+                      type="button"
                       onClick={() => jumpToSub(s.id)}
-                      className="relative shrink-0 py-1 text-[12px] font-bold transition ease-apple"
+                      className="relative shrink-0 py-1 text-[12px] font-bold transition-colors duration-150 active:scale-[0.97] touch-manipulation"
                       style={{
                         color: isActive ? `hsl(${activeGroup.color.hue})` : `hsl(var(--muted-foreground))`,
                       }}
@@ -222,7 +239,7 @@ const DualNavStore = ({
       </div>
 
       {/* Spacer so first section isn't hidden under the dual rail */}
-      <div style={{ height: MAIN_BAR + SUB_BAR + 12 }} />
+      <div style={{ height: MAIN_BAR + SUB_BAR + HEADER_GAP + 14 }} />
 
       {/* Sections — flat list of all subs grouped under their main group */}
       <div className="space-y-8">
