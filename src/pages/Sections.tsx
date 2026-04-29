@@ -8,9 +8,7 @@ import {
   Nut,
   CupSoda,
   SprayCan,
-  CookingPot,
   Baby,
-  HeartPulse,
   Sparkles,
   PartyPopper,
   type LucideIcon,
@@ -28,25 +26,29 @@ type LargeSection = {
 };
 
 // Bento grid (3 columns). Rows MUST sum to 3 to avoid gaps.
-// Palette: refined earthy/forest tones — no clashing saturated colors.
+// Palette: calm & refined — muted sage, warm taupe, dusty teal, soft clay.
 const largeSections: LargeSection[] = [
   // Row 1 — full width hero
-  { id: "supermarket", title: "السوبر ماركت",       subtitle: "كل مقاضي البيت في مكان واحد", to: "/store/supermarket", emoji: "🏪", bg: "#2F6E3F", span: "full" },
+  { id: "supermarket",   title: "السوبر ماركت",         subtitle: "كل مقاضي البيت في مكان واحد", to: "/store/supermarket",   emoji: "🏪", bg: "#4A6B52", span: "full" },
   // Row 2 — 2/3 + 1/3
-  { id: "kitchen",     title: "مطبخ ريف المدينة",  subtitle: "مشويات وساندوتشات",            to: "/store/kitchen",     emoji: "🍱", bg: "#C2553F", span: "two" },
-  { id: "village",     title: "منتجات القرية",      subtitle: "خيرات الريف",                  to: "/store/village",     emoji: "🍯", bg: "#F4F1EA", ink: "#3B2A1A", span: "one" },
+  { id: "kitchen",       title: "مطبخ ريف المدينة",     subtitle: "مشويات وساندوتشات",          to: "/store/kitchen",       emoji: "🍱", bg: "#B07A5B", span: "two" },
+  { id: "subscriptions", title: "اشتراكات الريف",       subtitle: "وفّر شهرياً",                  to: "/store/subscription",  emoji: "🎟️", bg: "#EFE7DA", ink: "#3B2A1A", span: "one" },
   // Row 3 — 1/3 + 2/3
-  { id: "wholesale",   title: "قسم الجملة",          subtitle: "وفّر بالكمية",                 to: "/store/wholesale",   emoji: "📦", bg: "#EFE7DA", ink: "#3B2A1A", span: "one" },
-  { id: "baskets",     title: "سلال الريف",           subtitle: "وفّر أسبوعياً",                 to: "/store/baskets",     emoji: "🧺", bg: "#D89B3C", span: "two" },
+  { id: "restaurants",   title: "مطاعم",                 subtitle: "مختارة",                     to: "/store/restaurants",   emoji: "🍽️", bg: "#3E5C66", span: "one" },
+  { id: "produce",       title: "الخضراوات والفواكه",  subtitle: "حصاد اليوم من المزرعة",       to: "/store/produce",       emoji: "🥗", bg: "#6B8E5A", span: "two" },
   // Row 4 — 2/3 + 1/3
-  { id: "produce",     title: "الخضراوات والفواكه", subtitle: "حصاد اليوم من المزرعة",        to: "/store/produce",     emoji: "🥗", bg: "#3F8F4D", span: "two" },
-  { id: "dairy",       title: "منتجات الألبان",       subtitle: "من المزرعة",                   to: "/store/dairy",       emoji: "🥛", bg: "#E8B547", span: "one" },
+  { id: "dairy",         title: "منتجات الألبان",       subtitle: "من المزرعة",                  to: "/store/dairy",         emoji: "🥛", bg: "#D9B679", span: "two" },
+  { id: "meat",          title: "اللحوم والمجمدات",    subtitle: "طازجة بأعلى جودة",           to: "/store/meat",          emoji: "🥩", bg: "#8C4A4A", span: "one" },
   // Row 5 — 1/3 + 2/3
-  { id: "restaurants", title: "مطاعم",                 subtitle: "مختارة",                       to: "/store/restaurants", emoji: "🍽️", bg: "#1F4E5A", span: "one" },
-  { id: "meat",        title: "اللحوم والمجمدات",    subtitle: "طازجة بأعلى جودة",             to: "/store/meat",        emoji: "🥩", bg: "#8E2F2F", span: "two" },
+  { id: "wholesale",     title: "قسم الجملة",           subtitle: "وفّر بالكمية",                 to: "/store/wholesale",     emoji: "📦", bg: "#3D4F66", span: "one" },
+  { id: "baskets",       title: "سلال الريف",           subtitle: "وفّر أسبوعياً",                 to: "/store/baskets",       emoji: "🧺", bg: "#C9A36A", span: "two" },
   // Row 6 — 2/3 + 1/3
-  { id: "sweets",      title: "الحلويات والتورتة",   subtitle: "لكل مناسبة لمسة حلوة",         to: "/store/sweets",      emoji: "🎂", bg: "#C76B8E", span: "two" },
-  { id: "pharmacy",    title: "الصيدلية",              subtitle: "صحتك أولاً",                   to: "/store/pharmacy",    emoji: "💊", bg: "#2E8C9A", span: "one" },
+  { id: "village",       title: "منتجات القرية",        subtitle: "خيرات الريف",                 to: "/store/village",       emoji: "🍯", bg: "#F4F1EA", ink: "#3B2A1A", span: "two" },
+  { id: "sweets",        title: "الحلويات والتورتة",   subtitle: "لمسة حلوة لكل مناسبة",         to: "/store/sweets",        emoji: "🎂", bg: "#B98897", span: "one" },
+  // Row 7 — three equal
+  { id: "pharmacy",      title: "الصيدلية",              subtitle: "صحتك أولاً",                   to: "/store/pharmacy",      emoji: "💊", bg: "#5C8A93", span: "one" },
+  { id: "personal",      title: "العناية الشخصية",      subtitle: "إطلالة وراحة",                 to: "/sub/personal",        emoji: "🧴", bg: "#A87C8E", span: "one" },
+  { id: "kitchenTools",  title: "أدوات المطبخ",         subtitle: "كل ما تحتاجه",                 to: "/sub/kitchen-tools",   emoji: "🍳", bg: "#7A8C8E", span: "one" },
 ];
 
 type SmallSection = {
@@ -58,20 +60,19 @@ type SmallSection = {
   ink: string; // icon color
 };
 
+// Calm, harmonious soft tones — all low saturation, gentle on the eye.
 const smallSections: SmallSection[] = [
-  { id: "village", title: "منتجات القرية", to: "/store/village", icon: Sprout, tint: "85 65% 92%", ink: "85 55% 32%" },
-  { id: "rice", title: "أرز وبقالة", to: "/sub/rice", icon: Wheat, tint: "38 80% 92%", ink: "30 70% 38%" },
-  { id: "canned", title: "معلبات", to: "/sub/canned", icon: Boxes, tint: "200 60% 92%", ink: "200 60% 38%" },
-  { id: "bakery", title: "مخبوزات", to: "/sub/bakery", icon: Cookie, tint: "28 80% 92%", ink: "22 70% 40%" },
-  { id: "treats", title: "مفرحات", to: "/sub/treats", icon: PartyPopper, tint: "330 80% 93%", ink: "330 65% 50%" },
-  { id: "snacks", title: "تسالي ومكسرات", to: "/sub/snacks", icon: Nut, tint: "35 75% 90%", ink: "30 65% 38%" },
-  { id: "drinks", title: "مشروبات", to: "/sub/drinks", icon: CupSoda, tint: "190 70% 92%", ink: "195 65% 38%" },
-  { id: "paper", title: "ورقيات ومنظفات", to: "/sub/paper", icon: SprayCan, tint: "210 60% 93%", ink: "215 55% 40%" },
-  { id: "kitchenTools", title: "أدوات المطبخ", to: "/sub/kitchen-tools", icon: CookingPot, tint: "15 70% 92%", ink: "15 65% 42%" },
-  { id: "baby", title: "العناية بالطفل", to: "/sub/baby", icon: Baby, tint: "200 80% 93%", ink: "200 70% 42%" },
-  { id: "personal", title: "العناية الشخصية", to: "/sub/personal", icon: HeartPulse, tint: "340 75% 94%", ink: "340 65% 50%" },
-  { id: "women", title: "عالم المرأة", to: "/sub/women", icon: Sparkles, tint: "300 70% 94%", ink: "300 55% 48%" },
-  { id: "gifts", title: "الهدايا والتغليف", to: "/sub/gifts", icon: Gift, tint: "265 65% 94%", ink: "265 55% 50%" },
+  { id: "village",      title: "منتجات القرية",            to: "/store/village",     icon: Sprout,      tint: "85 28% 90%",  ink: "95 30% 32%" },
+  { id: "rice",         title: "أرز وبقالة",                to: "/sub/rice",          icon: Wheat,       tint: "38 35% 90%",  ink: "32 35% 36%" },
+  { id: "canned",       title: "معلبات",                    to: "/sub/canned",        icon: Boxes,       tint: "200 25% 90%", ink: "205 30% 36%" },
+  { id: "bakery",       title: "مخبوزات",                   to: "/sub/bakery",        icon: Cookie,      tint: "28 38% 90%",  ink: "22 35% 38%" },
+  { id: "treats",       title: "مفرحات",                    to: "/sub/treats",        icon: PartyPopper, tint: "335 30% 92%", ink: "335 28% 44%" },
+  { id: "snacks",       title: "تسالي ومكسرات",            to: "/sub/snacks",        icon: Nut,         tint: "30 32% 90%",  ink: "28 32% 36%" },
+  { id: "drinks",       title: "مشروبات",                   to: "/sub/drinks",        icon: CupSoda,     tint: "190 28% 90%", ink: "195 30% 36%" },
+  { id: "paper",        title: "ورقيات ومنظفات",           to: "/sub/paper",         icon: SprayCan,    tint: "215 22% 91%", ink: "218 28% 38%" },
+  { id: "baby",         title: "العناية بالطفل",            to: "/sub/baby",          icon: Baby,        tint: "200 35% 91%", ink: "205 35% 40%" },
+  { id: "women",        title: "عالم المرأة والإكسسوارات", to: "/sub/women",         icon: Sparkles,    tint: "320 22% 92%", ink: "320 28% 44%" },
+  { id: "gifts",        title: "الهدايا والتغليف",          to: "/sub/gifts",         icon: Gift,        tint: "260 22% 92%", ink: "260 28% 44%" },
 ];
 
 const Sections = () => {
