@@ -1,6 +1,6 @@
 import BackHeader from "@/components/BackHeader";
 import { useCart } from "@/context/CartContext";
-import { Minus, Plus, Trash2, Tag, ShoppingBag, MessageCircle, Truck, Clock, MapPin, Banknote, Smartphone, CreditCard, Wallet as WalletIcon, Sparkles, Gift, X, Check, PiggyBank, Store, ChefHat, Utensils } from "lucide-react";
+import { Minus, Plus, Trash2, Tag, ShoppingBag, MessageCircle, Truck, Clock, MapPin, Banknote, Smartphone, CreditCard, Wallet as WalletIcon, Sparkles, Gift, X, Check, PiggyBank, Store, ChefHat, Utensils, CalendarDays, Cake, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { fmtMoney, toLatin } from "@/lib/format";
@@ -18,9 +18,20 @@ import {
   vendorBrandHue,
   type VendorKey,
 } from "@/lib/restaurants";
+import {
+  computeSweetsRules,
+  fulfillmentTypeFor,
+  fulfillmentMeta,
+  isSweetsProduct,
+  bookingTimeSlots,
+  formatBookingShort,
+  DEPOSIT_THRESHOLD,
+} from "@/lib/sweetsFulfillment";
 
 const WA_NUMBER = "201080068689";
 const GIFT_BONUS = 200; // gift threshold = free-delivery + this
+/** Mock WhatsApp endpoint for the home-producers desk that handles Type C */
+const HOME_PRODUCERS_WA = "201080068690";
 
 type Addr = {
   id: string; label: string; city: string; district: string | null;
@@ -180,6 +191,81 @@ const Cart = () => {
       : zone.deliveryFee;
   const grand = Math.max(0, subtotal - discount + delivery + tip);
 
+  /* ============ Sweets fulfillment segmentation ============
+   * Walk every cart line and classify into:
+   *   - bookingLines (Type C — pre-order from home producers)
+   *   - sameDayFreshLines (Type B — Reef Kitchen same-day)
+   *   - instantLines (Type A — ready stock)
+   * Used to: render the "split shipment" notice, force COD off when any
+   * Type C exists, and decide whether deposit is mandatory.
+   */
+  type BookingMeta = { date?: string; slot?: string; note?: string };
+  type SweetsBucket = {
+    type: "A" | "B" | "C";
+    lines: { product: Product; qty: number; meta?: BookingMeta }[];
+    subtotal: number;
+  };
+  const sweetsBuckets = useMemo(() => {
+    const buckets: Record<"A" | "B" | "C", SweetsBucket> = {
+      A: { type: "A", lines: [], subtotal: 0 },
+      B: { type: "B", lines: [], subtotal: 0 },
+      C: { type: "C", lines: [], subtotal: 0 },
+    };
+    for (const l of lines) {
+      if (!isSweetsProduct(l.product.source)) continue;
+      const t = fulfillmentTypeFor(l.product.id, l.product.subCategory);
+      buckets[t].lines.push({
+        product: l.product,
+        qty: l.qty,
+        meta: {
+          date: l.meta?.bookingDate,
+          slot: l.meta?.bookingSlot,
+          note: l.meta?.bookingNote,
+        },
+      });
+      buckets[t].subtotal += l.product.price * l.qty;
+    }
+    return buckets;
+  }, [lines]);
+
+  const sweetsRules = useMemo(
+    () => computeSweetsRules(sweetsBuckets.C.subtotal, grand),
+    [sweetsBuckets.C.subtotal, grand],
+  );
+  const hasInstantSweets = sweetsBuckets.A.lines.length > 0;
+  const hasFreshSweets = sweetsBuckets.B.lines.length > 0;
+  const hasBooking = sweetsBuckets.C.lines.length > 0;
+  const isSplitShipment =
+    hasBooking && (hasInstantSweets || hasFreshSweets || lines.some(
+      (l) => !isSweetsProduct(l.product.source),
+    ));
+
+  /* Deposit toggle (when not mandatory the user can opt in). */
+  const [payDeposit, setPayDeposit] = useState<boolean>(false);
+  // Force-on when threshold hit
+  useEffect(() => {
+    if (sweetsRules.depositRequired) setPayDeposit(true);
+  }, [sweetsRules.depositRequired]);
+
+  /* Final amount the customer pays NOW (deposit) vs. on delivery */
+  const payNowAmount = payDeposit && sweetsRules.hasBooking
+    ? sweetsRules.depositAmount + Math.max(0, grand - sweetsRules.bookingSubtotal)
+    : grand;
+  const payOnDelivery = grand - payNowAmount;
+
+  /* Auto-disable COD when any Type C booking exists */
+  useEffect(() => {
+    if (sweetsRules.blockCOD && payment === "cash") {
+      setPayment("wallet");
+      toast.message("الدفع عند الاستلام غير متاح للحجوزات المسبقة 🍰", {
+        description: "تم التحويل إلى المحفظة الذكية",
+      });
+    }
+    if (sweetsRules.blockCOD && secondaryPayment === "cash") {
+      setSecondaryPayment("instapay");
+    }
+  }, [sweetsRules.blockCOD, payment, secondaryPayment]);
+
   /* Savings on this bill: discount + (free delivery saved) */
   const billSavings = discount + (subtotal >= FREE_DELIVERY_THRESHOLD && subtotal > 0 ? zone.deliveryFee : 0);
 
@@ -316,6 +402,8 @@ const Cart = () => {
         !selectedAddr && guestNotes ? `العنوان: ${guestNotes}` : null,
         isSplit ? `دفع مُجزّأ: محفظة ${Math.round(walletApplied)} + ${secondaryLabel} ${Math.round(walletShortfall)}` : null,
         showChangeJar && saveChange ? `ادخار الفكة: ${changeRemainder} ج.م للحصّالة` : null,
+        sweetsRules.hasBooking ? `حجوزات: ${fmtMoney(sweetsRules.bookingSubtotal)}` : null,
+        payDeposit && sweetsRules.hasBooking ? `عربون مُسدّد: ${fmtMoney(sweetsRules.depositAmount)}` : null,
       ].filter(Boolean);
 
       const { data: order, error } = await supabase
@@ -437,12 +525,27 @@ const Cart = () => {
             `\n\n`
           : "") +
         `🛒 *المنتجات:*\n${lineItems}\n\n` +
+        (sweetsRules.hasBooking
+          ? `📅 *حجوزات الحلويات (${toLatin(sweetsBuckets.C.lines.length)}):*\n` +
+            sweetsBuckets.C.lines
+              .map((l) => {
+                const slot = bookingTimeSlots.find((s) => s.id === l.meta?.slot)?.label ?? "—";
+                const day = l.meta?.date ? formatBookingShort(new Date(l.meta.date)) : "—";
+                return `• ${l.product.name} × ${toLatin(l.qty)} → ${day} · ${slot}`;
+              })
+              .join("\n") +
+            `\n\n`
+          : "") +
         `━━━━━━━━━━━━━━\n` +
         `💵 المجموع الفرعي: ${fmtMoney(subtotal)}\n` +
         (discount > 0 ? `🏷️ خصم (${appliedPromo?.code}): -${fmtMoney(discount)}\n` : "") +
         `🚚 التوصيل: ${delivery === 0 ? "مجاني" : fmtMoney(delivery)}\n` +
         (tip > 0 ? `💚 إكرامية: ${fmtMoney(tip)}\n` : "") +
         `\n*💰 الإجمالي:* *${fmtMoney(grand)}*\n\n` +
+        (payDeposit && sweetsRules.hasBooking
+          ? `🔒 *عربون مسدّد الآن:* ${fmtMoney(sweetsRules.depositAmount)}\n` +
+            `📦 *يُحصّل عند التوصيل:* ${fmtMoney(payOnDelivery)}\n\n`
+          : "") +
         (isSplit
           ? `💳 *طريقة الدفع:* مُجزّأ\n   • محفظة: ${fmtMoney(walletApplied)}\n   • ${secondaryLabel}: ${fmtMoney(walletShortfall)}\n`
           : `💳 *طريقة الدفع:* ${paymentLabel}\n`) +
@@ -491,6 +594,35 @@ const Cart = () => {
         // Stagger to bypass popup blocking
         setTimeout(() => window.open(vUrl, "_blank"), 600 * (idx + 1));
       });
+
+      /* ============ Type C → Home producers WhatsApp routing ============ */
+      if (sweetsBuckets.C.lines.length > 0) {
+        const producerLines = sweetsBuckets.C.lines
+          .map((l, i) => {
+            const slot = bookingTimeSlots.find((s) => s.id === l.meta?.slot)?.label ?? "—";
+            const day = l.meta?.date ? formatBookingShort(new Date(l.meta.date)) : "—";
+            const note = l.meta?.note ? `\n   📝 ملاحظة: ${l.meta.note}` : "";
+            return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(l.product.price * l.qty)}\n   📅 ${day} · ${slot}${note}`;
+          })
+          .join("\n\n");
+        const producerMsg =
+          `🎂 *حجز جديد — الأسر المنتجة*\n` +
+          `━━━━━━━━━━━━━━\n` +
+          `🆔 *رقم الطلب:* ${orderNum}\n\n` +
+          `🛒 *الحجوزات:*\n${producerLines}\n\n` +
+          `━━━━━━━━━━━━━━\n` +
+          `💵 إجمالي الحجز: ${fmtMoney(sweetsBuckets.C.subtotal)}\n` +
+          (payDeposit
+            ? `🔒 عربون مُسدّد: ${fmtMoney(sweetsRules.depositAmount)}\n`
+            : `⚠️ لم يُدفع عربون — تأكّد قبل البدء\n`) +
+          `\n📍 *عنوان التوصيل:*\n${addrLine}\n\n` +
+          `✅ برجاء البدء بالتجهيز`;
+        const pUrl = `https://wa.me/${HOME_PRODUCERS_WA}?text=${encodeURIComponent(producerMsg)}`;
+        setTimeout(
+          () => window.open(pUrl, "_blank"),
+          600 * (restaurantGroups.length + 1),
+        );
+      }
 
       const orderId = order.id;
       const orderTotal = grand;
