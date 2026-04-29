@@ -153,6 +153,9 @@ const Recipes = () => {
   const [filter, setFilter] = useState(filters[0]);
   const [open, setOpen] = useState<Recipe | null>(null);
 
+  // Subscription mode toggle (browse-daily vs subscribe-weekly)
+  const [mode, setMode] = useState<"daily" | "weekly">("daily");
+
   // Weekly meal plan: { [day]: { breakfast?, lunch?, dinner? } }
   type DayPlan = Partial<Record<Recipe["section"], string>>;
   const [plan, setPlan] = useState<Record<string, DayPlan>>(() =>
@@ -233,16 +236,40 @@ const Recipes = () => {
         >
           <div className="absolute -bottom-12 -right-10 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
           <span className="inline-block rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur">
-            خطة الأسبوع
+            وصفات الشيف
           </span>
           <h2 className="mt-3 font-display text-2xl font-extrabold text-white text-balance">
-            3 وجبات يوميًا<br />بأسلوب شيف خاص
+            تصفّح يوميًا<br />واطلب ما يحلو لك
           </h2>
-          <p className="mt-1 text-xs text-white/80">جدولة مرنة · إلغاء في أي وقت</p>
+          <p className="mt-1 text-xs text-white/80">3 وجبات/يوم · أو اشترك بخطة الأسبوع</p>
         </section>
 
-        {/* Weekly meal-plan builder */}
+        {/* Mode switcher: daily browsing (default) vs weekly subscription */}
+        <div className="glass-strong flex rounded-full p-1 shadow-soft">
+          <button
+            onClick={() => setMode("daily")}
+            className={`flex-1 rounded-full py-2 text-xs font-extrabold transition ${
+              mode === "daily" ? "bg-foreground text-background shadow-pill" : "text-muted-foreground"
+            }`}
+          >
+            اطلب اليوم
+          </button>
+          <button
+            onClick={() => setMode("weekly")}
+            className={`flex-1 rounded-full py-2 text-xs font-extrabold transition ${
+              mode === "weekly" ? "bg-foreground text-background shadow-pill" : "text-muted-foreground"
+            }`}
+          >
+            اشترك أسبوعيًا
+          </button>
+        </div>
+
+        {/* Weekly meal-plan builder (only in weekly mode) */}
+        {mode === "weekly" && (
         <section className="space-y-3">
+          <div className="rounded-2xl bg-primary-soft/60 p-3 text-[11px] leading-relaxed text-foreground/80">
+            اختر وجبات الأسبوع كاملة وسنرسلها إليك <b>فور تأكيد الاشتراك</b> في بداية الأسبوع. يمكنك تعديل أي وجبة قبل ٨ ساعات من موعد الاستلام.
+          </div>
           <div className="flex items-baseline justify-between px-1">
             <h3 className="font-display text-xl font-extrabold flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" /> منيو الأسبوع
@@ -328,6 +355,13 @@ const Recipes = () => {
             </div>
           </div>
         </section>
+        )}
+
+        {mode === "daily" && (
+          <div className="rounded-2xl bg-primary-soft/60 p-3 text-[11px] leading-relaxed text-foreground/80">
+            تصفّح وجبات اليوم بحسب الوجبة (إفطار · غداء · عشاء)، خصّص المكونات، وأضف ما تريد للسلة. أو فعّل <b>الاشتراك الأسبوعي</b> أعلاه لإرسال وجبات أسبوع كامل دفعة واحدة.
+          </div>
+        )}
 
         {/* Filters */}
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 no-scrollbar">
@@ -379,21 +413,23 @@ const Recipes = () => {
         {open && <RecipeModal recipe={open} onClose={() => setOpen(null)} />}
       </div>
 
-      {/* Sticky weekly-plan CTA */}
-      <BottomCTA>
-        <button
-          onClick={subscribePlan}
-          disabled={planMealsCount === 0}
-          className="flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-4 font-bold text-primary-foreground shadow-pill transition active:scale-[0.98] disabled:opacity-50"
-        >
-          <span className="text-sm">
-            {planMealsCount > 0
-              ? `اشترك بالخطة · ${toLatin(planMealsCount)} وجبة`
-              : "اختر وجبات للأسبوع"}
-          </span>
-          <span className="font-display text-base font-extrabold tabular-nums">{toLatin(planTotal)} ج.م</span>
-        </button>
-      </BottomCTA>
+      {/* Sticky CTA — only meaningful in weekly mode */}
+      {mode === "weekly" && (
+        <BottomCTA>
+          <button
+            onClick={subscribePlan}
+            disabled={planMealsCount === 0}
+            className="flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-4 font-bold text-primary-foreground shadow-pill transition active:scale-[0.98] disabled:opacity-50"
+          >
+            <span className="text-sm">
+              {planMealsCount > 0
+                ? `أرسل وجبات الأسبوع الآن · ${toLatin(planMealsCount)} وجبة`
+                : "اختر وجبات للأسبوع"}
+            </span>
+            <span className="font-display text-base font-extrabold tabular-nums">{toLatin(planTotal)} ج.م</span>
+          </button>
+        </BottomCTA>
+      )}
     </>
   );
 };
