@@ -40,6 +40,18 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
+  --color-surface: hsl(var(--surface));
+  --color-surface-muted: hsl(var(--surface-muted));
+  --color-foreground-secondary: hsl(var(--foreground-secondary));
+  --color-foreground-tertiary: hsl(var(--foreground-tertiary));
+  --color-info: hsl(var(--info));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-purple: hsl(var(--purple));
+  --color-pink: hsl(var(--pink));
+  --color-teal: hsl(var(--teal));
+  --color-indigo: hsl(var(--indigo));
+
   --font-display: 'Tajawal', 'Cairo', system-ui, -apple-system, sans-serif;
 }
 
