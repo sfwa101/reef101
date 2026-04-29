@@ -12,6 +12,7 @@ import { products as allProducts, type Product } from "@/lib/products";
 import { fireConfetti, fireMiniConfetti } from "@/lib/confetti";
 import { useLocation } from "@/context/LocationContext";
 import { detectZoneFromAddress } from "@/lib/geoZones";
+import CartUpgradeBanner from "@/components/baskets/CartUpgradeBanner";
 import {
   vendorForProduct,
   vendorLabel,
@@ -903,6 +904,9 @@ const Cart = () => {
           />
         </div>
       </motion.div>
+
+      {/* ============ Smart Basket Upgrade Suggestion ============ */}
+      <CartUpgradeBanner />
 
       {/* ============ Multi-vendor Cart Lines ============ */}
       <div className="space-y-4">

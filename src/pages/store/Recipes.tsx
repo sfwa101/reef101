@@ -371,7 +371,7 @@ function minutesUntilClose(s: Recipe["section"], d: Date) {
 const Recipes = () => {
   const { add } = useCart();
   const search = useSearch({ from: "/_app/store/recipes" }) as { tag?: string };
-  const navigate = useNavigate({ from: "/_app/store/recipes" });
+  const navigate = useNavigate({ from: "/store/recipes" });
   const tag = (search.tag ?? "").trim();
   const [filter, setFilter] = useState(filters[0]);
   const [open, setOpen] = useState<Recipe | null>(null);

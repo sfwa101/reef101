@@ -283,7 +283,7 @@ const HomePage = () => {
             </h3>
             <p className="mt-0.5 text-[10px] text-white/85">عند اشتراكك في باقة الأسبوع الأول</p>
           </div>
-          <Link to="/store/recipes" className="shrink-0 rounded-full bg-white px-3.5 py-2 text-[11px] font-bold text-primary shadow-pill">
+          <Link to="/store/recipes" search={{ tag: "" }} className="shrink-0 rounded-full bg-white px-3.5 py-2 text-[11px] font-bold text-primary shadow-pill">
             اطلب
           </Link>
         </div>
