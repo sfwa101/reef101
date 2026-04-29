@@ -31,6 +31,8 @@ const largeSections: LargeSection[] = [
   // Row 2 — 2/3 + 1/3
   { id: "kitchen",       title: "مطبخ ريف المدينة",     subtitle: "مشويات وساندوتشات",          to: "/store/kitchen",       emoji: "🍱", bg: "#D85A3C", span: "two" },
   { id: "subscriptions", title: "اشتراكات الطعام",      subtitle: "وفّر شهرياً",                  to: "/store/subscription",  emoji: "🎟️", bg: "#6B4FB8", span: "one" },
+  // Row 2.5 — full width chef recipes bar
+  { id: "recipes",       title: "وصفات الشيف",          subtitle: "أطباق مختارة بخطوات سهلة",     to: "/store/recipes",       emoji: "👨‍🍳", bg: "#B8341F", span: "full" },
   // Row 3 — 1/3 + 2/3
   { id: "restaurants",   title: "مطاعم",                 subtitle: "مختارة",                     to: "/store/restaurants",   emoji: "🍽️", bg: "#0F4C5C", span: "one" },
   { id: "produce",       title: "الخضراوات والفواكه",  subtitle: "حصاد اليوم من المزرعة",       to: "/store/produce",       emoji: "🥗", bg: "#4E9F3D", span: "two" },
