@@ -280,9 +280,9 @@ const DailyView = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {meals.length === 0 && (
-          <p className="rounded-2xl bg-muted p-6 text-center text-sm text-muted-foreground">
+          <p className="col-span-full rounded-2xl bg-muted p-6 text-center text-sm text-muted-foreground">
             لا توجد وجبات مطابقة.
           </p>
         )}
