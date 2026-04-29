@@ -5,13 +5,15 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCarousel from "@/components/ProductCarousel";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/lib/products";
+import { products, isPerishable } from "@/lib/products";
 import {
   getSmartGreeting,
   getTimeSlot,
   getWelcomeLine,
   personalizedProducts,
   productsForSlot,
+  rankCategoriesForProfile,
+  SEARCH_PLACEHOLDERS,
   slotMeta,
   smartOffers,
 } from "@/lib/personalize";
@@ -20,6 +22,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import SmartBanners from "@/components/SmartBanners";
+import RotatingPlaceholder from "@/components/RotatingPlaceholder";
+import { useLocation } from "@/context/LocationContext";
 
 import tileSupermarket from "@/assets/tile-supermarket.jpg";
 import tileKitchen from "@/assets/tile-kitchen.jpg";
@@ -62,8 +67,11 @@ type Addr = {
 
 const HomePage = () => {
   const { user, profile } = useAuth();
+  const { zone } = useLocation();
   const [addresses, setAddresses] = useState<Addr[]>([]);
   const [activeAddrId, setActiveAddrId] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [hasReferralCode, setHasReferralCode] = useState(false);
   const [, force] = useState(0);
 
   // Re-evaluate time-based content every 5 min
@@ -73,18 +81,37 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    if (!user) { setAddresses([]); setActiveAddrId(null); return; }
+    if (!user) {
+      setAddresses([]); setActiveAddrId(null);
+      setWalletBalance(0); setHasReferralCode(false);
+      return;
+    }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("addresses")
-        .select("id,label,city,district,is_default")
-        .eq("user_id", user.id)
-        .order("is_default", { ascending: false });
-      if (cancelled || !data) return;
-      setAddresses(data as Addr[]);
-      const def = (data as Addr[]).find((a) => a.is_default) ?? data[0];
+      const [addrRes, walletRes, refRes] = await Promise.all([
+        supabase
+          .from("addresses")
+          .select("id,label,city,district,is_default")
+          .eq("user_id", user.id)
+          .order("is_default", { ascending: false }),
+        supabase
+          .from("wallet_balances")
+          .select("balance")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("referral_codes")
+          .select("code")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+      ]);
+      if (cancelled) return;
+      const addrs = (addrRes.data as Addr[] | null) ?? [];
+      setAddresses(addrs);
+      const def = addrs.find((a) => a.is_default) ?? addrs[0];
       setActiveAddrId(def?.id ?? null);
+      setWalletBalance(Number(walletRes.data?.balance ?? 0));
+      setHasReferralCode(!!refRes.data?.code);
     })();
     return () => { cancelled = true; };
   }, [user]);
@@ -108,17 +135,51 @@ const HomePage = () => {
   const slot = getTimeSlot();
   const meta = slotMeta[slot];
 
-  const recommended = useMemo(() => personalizedProducts(profile, { limit: 10 }), [profile]);
-  const slotPicks = useMemo(() => productsForSlot(slot, 10), [slot]);
+  // Filter out perishables for far zones so we don't tease the user
+  const zoneSafePool = useMemo(
+    () => (zone.acceptsPerishables ? products : products.filter((p) => !isPerishable(p))),
+    [zone.acceptsPerishables],
+  );
+
+  const recommended = useMemo(
+    () => personalizedProducts(profile, { limit: 10, pool: zoneSafePool }),
+    [profile, zoneSafePool],
+  );
+  const slotPicks = useMemo(
+    () => productsForSlot(slot, 16).filter((p) => zone.acceptsPerishables || !isPerishable(p)).slice(0, 10),
+    [slot, zone.acceptsPerishables],
+  );
   const personalizedOffers = useMemo(() => smartOffers(profile, 10), [profile]);
   const trending = useMemo(
-    () => personalizedProducts(profile, { limit: 10, pool: products.filter((p) => p.badge === "trending" || p.badge === "best") }),
-    [profile],
+    () => personalizedProducts(profile, { limit: 10, pool: zoneSafePool.filter((p) => p.badge === "trending" || p.badge === "best") }),
+    [profile, zoneSafePool],
   );
   const newForYou = useMemo(
-    () => personalizedProducts(profile, { limit: 10, pool: products.filter((p) => p.badge === "new" || p.badge === "premium") }),
-    [profile],
+    () => personalizedProducts(profile, { limit: 10, pool: zoneSafePool.filter((p) => p.badge === "new" || p.badge === "premium") }),
+    [profile, zoneSafePool],
   );
+
+  // Smart category ordering (and zone-aware availability)
+  const categoryRanks = useMemo(() => rankCategoriesForProfile(profile), [profile]);
+  const PERISHABLE_STORE_IDS = new Set(["produce", "dairy", "kitchen", "recipes"]);
+  const sortedStores = useMemo(() => {
+    return [...allStores]
+      .map((s) => ({
+        ...s,
+        unavailable: !zone.acceptsPerishables && PERISHABLE_STORE_IDS.has(s.id),
+        rank: categoryRanks[s.id] ?? 0,
+      }))
+      .sort((a, b) => {
+        // Available first, then by rank desc
+        if (a.unavailable !== b.unavailable) return a.unavailable ? 1 : -1;
+        return b.rank - a.rank;
+      });
+  }, [categoryRanks, zone.acceptsPerishables]);
+  const sortedShortcuts = useMemo(() => {
+    return [...quickShortcuts].sort(
+      (a, b) => (categoryRanks[b.id] ?? 0) - (categoryRanks[a.id] ?? 0),
+    );
+  }, [categoryRanks]);
 
   return (
     <div className="space-y-6">
@@ -190,8 +251,14 @@ const HomePage = () => {
         style={{ animationDelay: "80ms" }}
       >
         <Search className="h-4 w-4 text-muted-foreground" strokeWidth={2.4} />
-        <span className="text-sm text-muted-foreground">ابحث عن منتج، وصفة، أو قسم…</span>
+        <RotatingPlaceholder
+          options={SEARCH_PLACEHOLDERS}
+          className="text-sm text-muted-foreground"
+        />
       </Link>
+
+      {/* Smart contextual banners (wallet / zone / partner) */}
+      <SmartBanners walletBalance={walletBalance} hasReferralCode={hasReferralCode} />
 
       <section
         className="relative overflow-hidden rounded-[1.5rem] p-4 shadow-tile animate-float-up"
@@ -220,12 +287,12 @@ const HomePage = () => {
       </section>
 
       <section className="animate-float-up" style={{ animationDelay: "160ms" }}>
-        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar">
-          {quickShortcuts.map((s) => (
+        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar snap-x snap-mandatory scroll-smooth">
+          {sortedShortcuts.map((s) => (
             <Link
               key={s.id}
               to={s.to}
-              className="group relative flex h-24 w-32 shrink-0 flex-col justify-end overflow-hidden rounded-2xl shadow-soft tile-overlay"
+              className="group relative flex h-24 w-32 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-2xl shadow-soft tile-overlay transition active:scale-[0.98]"
             >
               <img src={s.img} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
               <span className="relative z-10 p-2.5 font-display text-sm font-bold text-white drop-shadow">
@@ -255,9 +322,9 @@ const HomePage = () => {
             </Link>
           </div>
         </div>
-        <div className="mt-3 -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar">
+        <div className="mt-3 -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar snap-x snap-mandatory scroll-smooth">
           {slotPicks.slice(0, 8).map((p) => (
-            <div key={p.id} className="w-40 shrink-0">
+            <div key={p.id} className="w-40 shrink-0 snap-start">
               <ProductCard product={p} />
             </div>
           ))}
@@ -309,18 +376,38 @@ const HomePage = () => {
           </Link>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
-          {allStores.map((s) => (
-            <Link
-              key={s.id}
-              to={s.to}
-              className="group relative flex aspect-square flex-col justify-end overflow-hidden rounded-2xl shadow-soft tile-overlay"
-            >
-              <img src={s.img} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-apple group-hover:scale-110" />
-              <span className="relative z-10 p-2 font-display text-[11px] font-bold leading-tight text-white drop-shadow">
-                {s.title}
-              </span>
-            </Link>
-          ))}
+          {sortedStores.map((s) => {
+            if (s.unavailable) {
+              return (
+                <div
+                  key={s.id}
+                  aria-disabled="true"
+                  title="قريبًا في منطقتك"
+                  className="relative flex aspect-square flex-col justify-end overflow-hidden rounded-2xl shadow-soft tile-overlay opacity-60 grayscale"
+                >
+                  <img src={s.img} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                  <span className="relative z-10 p-2 font-display text-[11px] font-bold leading-tight text-white drop-shadow">
+                    {s.title}
+                  </span>
+                  <span className="absolute inset-x-1.5 top-1.5 z-20 rounded-full bg-background/85 px-1.5 py-0.5 text-center text-[9px] font-bold text-foreground backdrop-blur">
+                    قريبًا في منطقتك
+                  </span>
+                </div>
+              );
+            }
+            return (
+              <Link
+                key={s.id}
+                to={s.to}
+                className="group relative flex aspect-square flex-col justify-end overflow-hidden rounded-2xl shadow-soft tile-overlay transition active:scale-[0.97]"
+              >
+                <img src={s.img} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-apple group-hover:scale-110" />
+                <span className="relative z-10 p-2 font-display text-[11px] font-bold leading-tight text-white drop-shadow">
+                  {s.title}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
