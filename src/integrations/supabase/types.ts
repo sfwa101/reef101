@@ -842,6 +842,11 @@ export type Database = {
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       user_store_ids: { Args: { _user_id: string }; Returns: string[] }
       user_total_spent: { Args: { _user_id: string }; Returns: number }
+      user_trust_limit: { Args: { _user_id: string }; Returns: number }
+      wallet_transfer: {
+        Args: { _amount: number; _note?: string; _recipient_phone: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role:
