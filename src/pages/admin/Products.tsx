@@ -1,66 +1,45 @@
-import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Package, Image as ImageIcon } from "lucide-react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { Plus, Search, Package, Image as ImageIcon, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTopbar } from "@/components/admin/MobileTopbar";
 import { IOSCard } from "@/components/ios/IOSCard";
 import { fmtMoney, fmtNum } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-type Product = {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  compare_at_price: number | null;
-  stock: number;
-  image_url: string | null;
-  status: "active" | "draft" | "archived" | "out_of_stock";
-  unit: string | null;
-  category_id: string | null;
-};
+import { ProductEditor, type ProductRow } from "@/components/admin/ProductEditor";
+import { toast } from "sonner";
 
 type Category = { id: string; name: string; icon: string | null };
 
-const statusBadge: Record<string, string> = {
-  active: "bg-success/12 text-success",
-  draft: "bg-muted text-muted-foreground",
-  archived: "bg-foreground-tertiary/15 text-foreground-secondary",
-  out_of_stock: "bg-destructive/12 text-destructive",
-};
-const statusLabel: Record<string, string> = {
-  active: "نشط", draft: "مسودة", archived: "مؤرشف", out_of_stock: "نفد",
-};
-
 export default function Products() {
-  const [products, setProducts] = useState<Product[] | null>(null);
+  const [products, setProducts] = useState<ProductRow[] | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [stores, setStores] = useState<{ id: string; name: string }[]>([]);
   const [cat, setCat] = useState<string>("all");
   const [q, setQ] = useState("");
+  const [editing, setEditing] = useState<ProductRow | null>(null);
+  const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("products").select("id,name,description,price,compare_at_price,stock,image,image_url,is_active,unit,category_id").order("created_at", { ascending: false }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("categories").select("id,name,icon").order("sort_order"),
-    ]).then(([p, c]: any[]) => {
-      const rows = (p.data ?? []).map((r: any) => ({
-        ...r,
-        image_url: r.image_url ?? r.image ?? null,
-        status: !r.is_active ? "archived" : (r.stock ?? 0) <= 0 ? "out_of_stock" : "active",
-      }));
-      setProducts(rows);
-      setCategories(c.data ?? []);
-    });
+  const load = useCallback(async () => {
+    setProducts(null);
+    const [p, c, s] = await Promise.all([
+      supabase.from("products").select("*").order("sort_order", { ascending: true }).limit(2000),
+      supabase.from("categories").select("id,name,icon").order("sort_order"),
+      supabase.from("stores").select("id,name").eq("is_active", true).order("name"),
+    ]);
+    setProducts((p.data ?? []) as ProductRow[]);
+    setCategories((c.data ?? []) as Category[]);
+    setStores((s.data ?? []) as { id: string; name: string }[]);
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   const filtered = useMemo(() => {
     if (!products) return null;
     let r = products;
-    if (cat !== "all") r = r.filter(p => p.category_id === cat);
+    if (cat !== "all") r = r.filter((p) => p.category === cat || p.category_id === cat);
     if (q.trim()) {
       const t = q.trim().toLowerCase();
-      r = r.filter(p => p.name.toLowerCase().includes(t));
+      r = r.filter((p) => p.name.toLowerCase().includes(t) || (p.brand ?? "").toLowerCase().includes(t));
     }
     return r;
   }, [products, cat, q]);
@@ -69,9 +48,36 @@ export default function Products() {
     if (!products) return { total: 0, active: 0, low: 0 };
     return {
       total: products.length,
-      active: products.filter(p => p.status === "active").length,
-      low: products.filter(p => p.stock > 0 && p.stock < 20).length,
+      active: products.filter((p) => p.is_active).length,
+      low: products.filter((p) => (p.stock ?? 0) > 0 && (p.stock ?? 0) < 20).length,
     };
+  }, [products]);
+
+  const handleDelete = async (p: ProductRow) => {
+    if (!confirm(`حذف "${p.name}"؟`)) return;
+    const { error } = await supabase.from("products").delete().eq("id", p.id);
+    if (error) {
+      toast.error("فشل الحذف: " + error.message);
+      return;
+    }
+    toast.success("تم الحذف");
+    load();
+  };
+
+  const handleToggle = async (p: ProductRow) => {
+    const { error } = await supabase.from("products").update({ is_active: !p.is_active }).eq("id", p.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(p.is_active ? "تم إيقاف المنتج" : "تم تفعيل المنتج");
+    load();
+  };
+
+  const cats = useMemo(() => {
+    const set = new Set<string>();
+    (products ?? []).forEach((p) => p.category && set.add(p.category));
+    return Array.from(set).sort();
   }, [products]);
 
   return (
@@ -81,11 +87,19 @@ export default function Products() {
         <div className="flex gap-2 mb-3">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder="ابحث عن منتج"
-              className="w-full bg-surface-muted rounded-2xl h-11 pr-10 pl-4 text-[14px] placeholder:text-foreground-tertiary border-0 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="ابحث عن منتج (اسم/علامة)"
+              className="w-full bg-surface-muted rounded-2xl h-11 pr-10 pl-4 text-[14px] placeholder:text-foreground-tertiary border-0 focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
           </div>
-          <button className="h-11 w-11 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center press shadow-sm">
-            <Plus className="h-5 w-5" />
+          <button
+            onClick={() => setCreating(true)}
+            className="h-11 px-4 rounded-2xl bg-primary text-primary-foreground flex items-center gap-1.5 press shadow-sm font-semibold text-[13px]"
+          >
+            <Plus className="h-4 w-4" />
+            <span>جديد</span>
           </button>
         </div>
 
@@ -94,7 +108,7 @@ export default function Products() {
             { l: "الإجمالي", v: stats.total, t: "text-foreground" },
             { l: "نشطة", v: stats.active, t: "text-success" },
             { l: "مخزون منخفض", v: stats.low, t: "text-warning" },
-          ].map(s => (
+          ].map((s) => (
             <div key={s.l} className="bg-surface rounded-2xl border border-border/40 p-3 text-center">
               <p className={cn("font-display text-[22px] leading-none num", s.t)}>{fmtNum(s.v)}</p>
               <p className="text-[11px] text-foreground-tertiary mt-1">{s.l}</p>
@@ -105,66 +119,113 @@ export default function Products() {
         <div className="overflow-x-auto -mx-4 px-4 mb-4 no-scrollbar">
           <div className="inline-flex gap-1.5">
             <Pill active={cat === "all"} onClick={() => setCat("all")} icon="📦" label="الكل" />
-            {categories.map(c => (
-              <Pill key={c.id} active={cat === c.id} onClick={() => setCat(c.id)} icon={c.icon ?? "•"} label={c.name} />
+            {cats.map((c) => (
+              <Pill key={c} active={cat === c} onClick={() => setCat(c)} icon="•" label={c} />
             ))}
           </div>
         </div>
 
         {filtered === null ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {[...Array(6)].map((_, i) => <div key={i} className="aspect-[3/4] rounded-2xl bg-surface-muted animate-pulse" />)}
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="aspect-[3/4] rounded-2xl bg-surface-muted animate-pulse" />
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="bg-surface rounded-3xl p-10 text-center border border-border/40">
             <Package className="h-10 w-10 mx-auto text-foreground-tertiary mb-3" />
             <p className="font-display text-[16px] mb-1">لا توجد منتجات</p>
-            <p className="text-[13px] text-foreground-secondary">أضف منتجاً جديداً أو غيّر التصفية.</p>
+            <p className="text-[13px] text-foreground-secondary">أضف منتجاً جديداً.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {filtered.map(p => {
-              const lowStock = p.stock > 0 && p.stock < 20;
+            {filtered.map((p) => {
+              const lowStock = (p.stock ?? 0) > 0 && (p.stock ?? 0) < 20;
+              const out = (p.stock ?? 0) <= 0;
+              const status = !p.is_active ? "archived" : out ? "out_of_stock" : "active";
+              const statusBadge: Record<string, string> = {
+                active: "bg-success/12 text-success",
+                archived: "bg-foreground-tertiary/15 text-foreground-secondary",
+                out_of_stock: "bg-destructive/12 text-destructive",
+              };
+              const statusLabel: Record<string, string> = { active: "نشط", archived: "موقوف", out_of_stock: "نفد" };
               return (
-                <button key={p.id} className="text-right press">
+                <div key={p.id} className="text-right">
                   <IOSCard padded={false} className="overflow-hidden">
-                    <div className="aspect-square bg-gradient-to-br from-surface-muted to-secondary flex items-center justify-center relative">
-                      {p.image_url ? <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
-                        : <ImageIcon className="h-10 w-10 text-foreground-tertiary opacity-40" />}
-                      <span className={cn("absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full", statusBadge[p.status])}>
-                        {statusLabel[p.status]}
-                      </span>
-                    </div>
-                    <div className="p-3">
-                      <p className="text-[13.5px] font-semibold truncate mb-1">{p.name}</p>
-                      <div className="flex items-baseline gap-1.5 mb-1.5">
-                        <span className="font-display text-[15px] num tracking-tight">{fmtMoney(p.price)}</span>
-                        {p.compare_at_price && Number(p.compare_at_price) > Number(p.price) && (
-                          <span className="text-[10.5px] text-foreground-tertiary line-through num">{fmtMoney(p.compare_at_price)}</span>
+                    <button onClick={() => setEditing(p)} className="block w-full press">
+                      <div className="aspect-square bg-gradient-to-br from-surface-muted to-secondary flex items-center justify-center relative">
+                        {p.image_url || p.image ? (
+                          <img src={p.image_url || p.image || ""} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                        ) : (
+                          <ImageIcon className="h-10 w-10 text-foreground-tertiary opacity-40" />
                         )}
+                        <span className={cn("absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full", statusBadge[status])}>
+                          {statusLabel[status]}
+                        </span>
                       </div>
-                      <p className={cn("text-[11px]", lowStock ? "text-warning" : "text-foreground-tertiary")}>
-                        المخزون: <span className="num font-semibold">{fmtNum(p.stock)}</span> {p.unit}
-                      </p>
+                      <div className="p-3 text-right">
+                        <p className="text-[13.5px] font-semibold truncate mb-1">{p.name}</p>
+                        <div className="flex items-baseline gap-1.5 mb-1.5">
+                          <span className="font-display text-[15px] num tracking-tight">{fmtMoney(Number(p.price))}</span>
+                          {p.old_price && Number(p.old_price) > Number(p.price) && (
+                            <span className="text-[10.5px] text-foreground-tertiary line-through num">{fmtMoney(Number(p.old_price))}</span>
+                          )}
+                        </div>
+                        <p className={cn("text-[11px]", lowStock ? "text-warning" : "text-foreground-tertiary")}>
+                          المخزون: <span className="num font-semibold">{fmtNum(p.stock ?? 0)}</span> {p.unit}
+                        </p>
+                      </div>
+                    </button>
+                    <div className="flex border-t border-border/40">
+                      <button onClick={() => setEditing(p)} className="flex-1 h-9 text-[12px] font-semibold text-primary press flex items-center justify-center gap-1">
+                        <Pencil className="h-3.5 w-3.5" /> تعديل
+                      </button>
+                      <button onClick={() => handleToggle(p)} className="flex-1 h-9 text-[12px] font-semibold text-foreground-secondary press border-r border-border/40">
+                        {p.is_active ? "إيقاف" : "تفعيل"}
+                      </button>
+                      <button onClick={() => handleDelete(p)} className="h-9 w-10 text-destructive press border-r border-border/40 flex items-center justify-center">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </IOSCard>
-                </button>
+                </div>
               );
             })}
           </div>
         )}
       </div>
+
+      {(creating || editing) && (
+        <ProductEditor
+          product={editing}
+          categories={categories}
+          stores={stores}
+          onClose={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
+          onSaved={() => {
+            setCreating(false);
+            setEditing(null);
+            load();
+          }}
+        />
+      )}
     </>
   );
 }
 
 function Pill({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: string; label: string }) {
   return (
-    <button onClick={onClick} className={cn(
-      "flex items-center gap-1.5 h-9 px-4 rounded-full text-[12.5px] font-semibold whitespace-nowrap transition-base press border",
-      active ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-surface text-foreground-secondary border-border/40"
-    )}>
-      <span>{icon}</span>{label}
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-1.5 h-9 px-4 rounded-full text-[12.5px] font-semibold whitespace-nowrap transition-base press border",
+        active ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-surface text-foreground-secondary border-border/40",
+      )}
+    >
+      <span>{icon}</span>
+      {label}
     </button>
   );
 }
