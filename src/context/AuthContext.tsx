@@ -9,7 +9,7 @@ export type Profile = {
   avatar_url: string | null;
   birth_date: string | null;
   gender: string | null;
-  email: string | null;
+  email?: string | null;
   occupation?: string | null;
   household_size?: number | null;
   lifestyle_tags?: string[] | null;
@@ -146,7 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUpWithPhone: AuthCtx["signUpWithPhone"] = async (phone, password, fullName) => {
     const email = phoneToEmail(phone);
     const normalized = normalizePhone(phone);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -155,13 +155,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       },
     });
     if (error) return { error: humanize(error.message) };
+    if (data.session?.user) await ensureProfile(data.session.user, fullName);
     return {};
   };
 
   const signInWithPhone: AuthCtx["signInWithPhone"] = async (phone, password) => {
     const email = phoneToEmail(phone);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: humanize(error.message) };
+    if (data.user) await ensureProfile(data.user);
     return {};
   };
 
