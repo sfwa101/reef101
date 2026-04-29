@@ -203,6 +203,8 @@ type Occupation = string | null | undefined;
 const RANK_BY_PROFILE = (
   occupation: Occupation,
   tags: string[],
+  householdSize: number,
+  budget: string,
 ): Record<string, number> => {
   const occ = (occupation ?? "").toLowerCase();
   const tagText = tags.join(" ").toLowerCase();
@@ -212,10 +214,9 @@ const RANK_BY_PROFILE = (
     rank[id] = (rank[id] ?? 0) + n;
   };
 
-  // Default baseline: keep the editorial order roughly intact
   ["supermarket", "produce", "dairy", "kitchen", "recipes", "subscription",
    "wholesale", "pharmacy", "library", "home"].forEach((id, i) => {
-    rank[id] = -i; // first items already preferred
+    rank[id] = -i;
   });
 
   if (/منزل|ربة|أم|housewife|home/i.test(occ) || /عائل|منزل|طبخ/.test(tagText)) {
@@ -240,13 +241,37 @@ const RANK_BY_PROFILE = (
     boost("library", 30); boost("pharmacy", 20);
   }
 
+  // Household size — large families lean to wholesale/baskets
+  if (householdSize >= 5) {
+    boost("wholesale", 60); boost("supermarket", 25); boost("produce", 20);
+  } else if (householdSize >= 3) {
+    boost("supermarket", 20); boost("produce", 15);
+  }
+
+  // Budget — saver pushes wholesale & subscription first
+  if (/saver|اقتصاد|توفير|محدود/i.test(budget)) {
+    boost("wholesale", 70); boost("subscription", 30); boost("supermarket", 15);
+  } else if (/premium|جودة|فاخر/i.test(budget)) {
+    boost("recipes", 30); boost("dairy", 20); boost("produce", 15);
+  }
+
   return rank;
 };
 
 export const rankCategoriesForProfile = (
-  profile: { occupation?: string | null; lifestyle_tags?: string[] | null } | null | undefined,
+  profile: {
+    occupation?: string | null;
+    lifestyle_tags?: string[] | null;
+    household_size?: number | null;
+    budget_range?: string | null;
+  } | null | undefined,
 ): Record<string, number> =>
-  RANK_BY_PROFILE(profile?.occupation, profile?.lifestyle_tags ?? []);
+  RANK_BY_PROFILE(
+    profile?.occupation,
+    profile?.lifestyle_tags ?? [],
+    profile?.household_size ?? 0,
+    profile?.budget_range ?? "",
+  );
 
 /* ============================================================================
  * Rotating search placeholders — used in HomePage hero search bar.
