@@ -821,10 +821,6 @@
   }
   .animate-glow-pulse { animation: glow-pulse 2.6s var(--ease-apple) infinite; }
 }
-
-/* Hide the appended utilities from being grouped under this comment block */
-@layer utilities {
-}
 /* Hide scrollbar utility (used by wheel pickers) */
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
