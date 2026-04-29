@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -31,8 +31,16 @@ type AuthCtx = {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
+const arabicIndicDigits: Record<string, string> = {
+  "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
+  "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
+  "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4",
+  "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9",
+};
+
 const normalizePhone = (raw: string): string => {
-  const digits = raw.replace(/\D/g, "");
+  const latin = raw.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (d) => arabicIndicDigits[d] ?? d);
+  const digits = latin.replace(/\D/g, "");
   if (digits.startsWith("20")) return digits;
   if (digits.startsWith("0")) return "20" + digits.slice(1);
   return "20" + digits;
