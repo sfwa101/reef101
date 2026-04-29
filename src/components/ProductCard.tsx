@@ -125,16 +125,16 @@ const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
               <button
                 onClick={handleAdd}
                 aria-label="أضف إلى السلة"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-pill transition ease-apple active:scale-90"
+                className="flex h-9 w-9 items-center justify-center rounded-none bg-primary text-primary-foreground shadow-pill transition ease-apple active:scale-90"
               >
                 <Plus className="h-4 w-4" strokeWidth={3} />
               </button>
             ) : (
-              <div className="animate-qty-capsule flex h-9 items-center gap-1 rounded-xl bg-primary text-primary-foreground shadow-pill">
+              <div className="animate-qty-capsule flex h-9 items-center gap-1 rounded-none bg-primary text-primary-foreground shadow-pill">
                 <button
                   onClick={handleDec}
                   aria-label="إنقاص"
-                  className="flex h-9 w-8 items-center justify-center rounded-lg transition ease-apple active:scale-90"
+                  className="flex h-9 w-8 items-center justify-center rounded-none transition ease-apple active:scale-90"
                 >
                   <Minus className="h-3.5 w-3.5" strokeWidth={3} />
                 </button>
@@ -144,7 +144,7 @@ const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
                 <button
                   onClick={handleInc}
                   aria-label="زيادة"
-                  className="flex h-9 w-8 items-center justify-center rounded-lg transition ease-apple active:scale-90"
+                  className="flex h-9 w-8 items-center justify-center rounded-none transition ease-apple active:scale-90"
                 >
                   <Plus className="h-3.5 w-3.5" strokeWidth={3} />
                 </button>
