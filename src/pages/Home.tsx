@@ -26,7 +26,6 @@ import SmartBanners from "@/components/SmartBanners";
 import TypewriterPlaceholder from "@/components/TypewriterPlaceholder";
 import ReefStories from "@/components/ReefStories";
 import PromoCarousel from "@/components/PromoCarousel";
-import PremiumZoneBadge from "@/components/PremiumZoneBadge";
 import MiniStoreGrid from "@/components/MiniStoreGrid";
 import { buyAgainProducts } from "@/lib/buyAgain";
 import { useLocation } from "@/context/LocationContext";
