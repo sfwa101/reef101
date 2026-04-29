@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useCartActions, useCartLineQty } from "@/context/CartContext";
+import type { Product } from "@/lib/products";
 import BackHeader from "@/components/BackHeader";
 import { storeThemes } from "@/lib/storeThemes";
 import { toast } from "sonner";
