@@ -56,6 +56,41 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_tasks: {
         Row: {
           created_at: string
@@ -370,9 +405,13 @@ export type Database = {
           badge: string | null
           brand: string | null
           category: string
+          category_id: string | null
+          compare_at_price: number | null
           created_at: string
+          description: string | null
           id: string
           image: string | null
+          image_url: string | null
           is_active: boolean
           name: string
           old_price: number | null
@@ -392,9 +431,13 @@ export type Database = {
           badge?: string | null
           brand?: string | null
           category?: string
+          category_id?: string | null
+          compare_at_price?: number | null
           created_at?: string
+          description?: string | null
           id: string
           image?: string | null
+          image_url?: string | null
           is_active?: boolean
           name: string
           old_price?: number | null
@@ -414,9 +457,13 @@ export type Database = {
           badge?: string | null
           brand?: string | null
           category?: string
+          category_id?: string | null
+          compare_at_price?: number | null
           created_at?: string
+          description?: string | null
           id?: string
           image?: string | null
+          image_url?: string | null
           is_active?: boolean
           name?: string
           old_price?: number | null
@@ -432,6 +479,13 @@ export type Database = {
           variants?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_store_id_fkey"
             columns: ["store_id"]
