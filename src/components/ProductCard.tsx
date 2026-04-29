@@ -115,7 +115,7 @@ const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
               <span
                 key={pulse}
                 aria-hidden
-                className="animate-plus-one pointer-events-none absolute -top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-extrabold text-primary-foreground shadow-pill"
+                className="animate-plus-one pointer-events-none absolute -top-2 left-1/2 z-10 -translate-x-1/2 rounded-md bg-primary px-2 py-0.5 text-[10px] font-extrabold text-primary-foreground shadow-pill"
               >
                 +1
               </span>
