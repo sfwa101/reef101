@@ -78,6 +78,11 @@ const ProductDetail = () => {
     setPriceFlash((x) => x + 1);
   }, [variantId, addonIds.join(","), qty]);
 
+  /* Subscription mode toggle (for Village products with routine) */
+  const [subMode, setSubMode] = useState(false);
+  /* Add-to-cart success micro-interaction */
+  const [addBurst, setAddBurst] = useState(false);
+
   if (!product) {
     return (
       <div>
