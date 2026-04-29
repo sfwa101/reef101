@@ -464,10 +464,10 @@ const Cart = () => {
   const hasInstantSweets = sweetsBuckets.A.lines.length > 0;
   const hasFreshSweets = sweetsBuckets.B.lines.length > 0;
   const hasBooking = sweetsBuckets.C.lines.length > 0;
-  const isSplitShipment =
-    hasBooking && (hasInstantSweets || hasFreshSweets || lines.some(
-      (l) => !isSweetsProduct(l.product.source),
-    ));
+  const hasNonBookingItems =
+    hasInstantSweets ||
+    hasFreshSweets ||
+    lines.some((l) => !isSweetsProduct(l.product.source));
 
   /* Whether ANY booking line opted into deposit (drives copy in summary) */
   const payDeposit = bookingLinesMeta.some((b) => b.payDeposit);
