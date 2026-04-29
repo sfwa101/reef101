@@ -628,7 +628,7 @@ const Cart = () => {
         isSplit ? `دفع مُجزّأ: محفظة ${Math.round(walletApplied)} + ${secondaryLabel} ${Math.round(walletShortfall)}` : null,
         showChangeJar && saveChange ? `ادخار الفكة: ${changeRemainder} ج.م للحصّالة` : null,
         sweetsRules.hasBooking ? `حجوزات: ${fmtMoney(sweetsRules.bookingSubtotal)}` : null,
-        payDeposit && sweetsRules.hasBooking ? `عربون مُسدّد: ${fmtMoney(sweetsRules.depositAmount)}` : null,
+        sweetsRules.hasBooking ? `يُدفع الآن من الحجوزات: ${fmtMoney(aggregateDeposit)}` : null,
       ].filter(Boolean);
 
       const { data: order, error } = await supabase
@@ -728,7 +728,10 @@ const Cart = () => {
       }
 
       const lineItems = lines
-        .map((l, i) => `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(l.product.price * l.qty)}`)
+        .map((l, i) => {
+          const unit = l.meta?.unitPrice ?? l.product.price;
+          return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(unit * l.qty)}`;
+        })
         .join("\n");
       const addrLine = selectedAddr
         ? `${[selectedAddr.label, selectedAddr.street, selectedAddr.building, selectedAddr.district, selectedAddr.city].filter(Boolean).join("، ")}`
@@ -767,9 +770,11 @@ const Cart = () => {
         `🚚 التوصيل: ${delivery === 0 ? "مجاني" : fmtMoney(delivery)}\n` +
         (tip > 0 ? `💚 إكرامية: ${fmtMoney(tip)}\n` : "") +
         `\n*💰 الإجمالي:* *${fmtMoney(grand)}*\n\n` +
-        (payDeposit && sweetsRules.hasBooking
-          ? `🔒 *عربون مسدّد الآن:* ${fmtMoney(sweetsRules.depositAmount)}\n` +
-            `📦 *يُحصّل عند التوصيل:* ${fmtMoney(payOnDelivery)}\n\n`
+        (sweetsRules.hasBooking
+          ? `🔒 *يُدفع الآن من الحجوزات:* ${fmtMoney(aggregateDeposit)}\n` +
+            (payOnDelivery > 0
+              ? `📦 *يُحصّل عند التوصيل:* ${fmtMoney(payOnDelivery)}\n\n`
+              : "\n")
           : "") +
         (isSplit
           ? `💳 *طريقة الدفع:* مُجزّأ\n   • محفظة: ${fmtMoney(walletApplied)}\n   • ${secondaryLabel}: ${fmtMoney(walletShortfall)}\n`
@@ -796,12 +801,10 @@ const Cart = () => {
         const commission = Math.round((g.subtotal * r.commissionPct) / 100);
         const netToVendor = g.subtotal - commission;
         const vendorLines = g.lines
-          .map(
-            (l, i) =>
-              `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(
-                l.product.price * l.qty,
-              )}`,
-          )
+          .map((l, i) => {
+            const unit = l.meta?.unitPrice ?? l.product.price;
+            return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(unit * l.qty)}`;
+          })
           .join("\n");
         const vendorMsg =
           `🍽️ *طلب جديد عبر ريف المدينة*\n` +
@@ -827,7 +830,8 @@ const Cart = () => {
             const slot = bookingTimeSlots.find((s) => s.id === l.meta?.slot)?.label ?? "—";
             const day = l.meta?.date ? formatBookingShort(new Date(l.meta.date)) : "—";
             const note = l.meta?.note ? `\n   📝 ملاحظة: ${l.meta.note}` : "";
-            return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(l.product.price * l.qty)}\n   📅 ${day} · ${slot}${note}`;
+            const lineUnit = lines.find((x) => x.product.id === l.product.id)?.meta?.unitPrice ?? l.product.price;
+            return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(lineUnit * l.qty)}\n   📅 ${day} · ${slot}${note}`;
           })
           .join("\n\n");
         const producerMsg =
@@ -837,9 +841,7 @@ const Cart = () => {
           `🛒 *الحجوزات:*\n${producerLines}\n\n` +
           `━━━━━━━━━━━━━━\n` +
           `💵 إجمالي الحجز: ${fmtMoney(sweetsBuckets.C.subtotal)}\n` +
-          (payDeposit
-            ? `🔒 عربون مُسدّد: ${fmtMoney(sweetsRules.depositAmount)}\n`
-            : `⚠️ لم يُدفع عربون — تأكّد قبل البدء\n`) +
+          `🔒 يُدفع الآن: ${fmtMoney(aggregateDeposit)}\n` +
           `\n📍 *عنوان التوصيل:*\n${addrLine}\n\n` +
           `✅ برجاء البدء بالتجهيز`;
         const pUrl = `https://wa.me/${HOME_PRODUCERS_WA}?text=${encodeURIComponent(producerMsg)}`;
