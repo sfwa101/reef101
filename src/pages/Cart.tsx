@@ -1475,7 +1475,7 @@ const Cart = () => {
 
       <button onClick={() => clear()} className="w-full rounded-2xl bg-foreground/5 py-3 text-xs font-bold text-muted-foreground">تفريغ السلة</button>
 
-      {/* ============ Sticky Bottom Bar ============ */}
+      {/* ============ Sticky Bottom Bar — theme-aware checkout button ============ */}
       <motion.div
         initial={{ y: 80 }}
         animate={{ y: 0 }}
@@ -1483,20 +1483,27 @@ const Cart = () => {
         className="fixed inset-x-0 bottom-0 z-40 px-3 pb-3 pt-2"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
       >
-        <div className="mx-auto max-w-md rounded-[20px] bg-gradient-to-r from-[hsl(142_70%_38%)] via-[hsl(150_65%_42%)] to-[hsl(142_70%_38%)] p-0.5 shadow-[0_10px_30px_-10px_hsl(142_70%_42%/0.55)]">
-          <button
+        <div className="mx-auto max-w-md rounded-[20px] bg-gradient-to-r from-primary via-[hsl(var(--primary)/0.85)] to-primary p-0.5 shadow-[0_10px_30px_-10px_hsl(var(--primary)/0.55)]">
+          <motion.button
+            whileTap={{ scale: 0.98 }}
             onClick={checkoutWA}
             disabled={submitting}
-            className="flex w-full items-center justify-between gap-3 rounded-[18px] bg-[hsl(142_70%_42%)] px-4 py-3.5 font-extrabold text-white transition active:scale-[0.98] disabled:opacity-60"
+            className="flex w-full items-center justify-between gap-3 rounded-[18px] bg-primary px-4 py-3.5 font-extrabold text-primary-foreground transition disabled:opacity-90"
           >
             <span className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5" />
-              <span className="text-sm">{submitting ? "جارٍ الإرسال…" : "إتمام عبر واتساب"}</span>
+              {submitting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <MessageCircle className="h-5 w-5" />
+              )}
+              <span className="text-sm">
+                {submitting ? "جارٍ تجهيز الفاتورة ⏳" : "إتمام عبر واتساب"}
+              </span>
             </span>
-            <span className="rounded-[12px] bg-white/15 px-3 py-1.5 text-sm font-extrabold backdrop-blur">
+            <span className="rounded-[12px] bg-primary-foreground/15 px-3 py-1.5 text-sm font-extrabold backdrop-blur">
               {fmtMoney(grand)}
             </span>
-          </button>
+          </motion.button>
         </div>
       </motion.div>
 
