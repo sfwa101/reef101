@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Phone, Lock, User, Sparkles, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import reefLogo from "@/assets/reef-logo.png";
+import reefLogo from "@/assets/reef-logo.webp";
 import { useAuth } from "@/context/AuthContext";
 
 const Auth = () => {
