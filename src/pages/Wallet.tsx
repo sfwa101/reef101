@@ -90,6 +90,7 @@ const Wallet = () => {
       setJar((jarRow ?? { balance: 0, auto_save_enabled: false, round_to: 5, goal: null, goal_label: null }) as SavingsJar);
       setJarTxs((jarTx ?? []) as SavingsTx[]);
       setTier(tierProgress(Number(spent ?? 0)).tier);
+      setTrustLimit(Number(trust ?? 0));
 
       // detect previous successful commission to celebrate on entry
       const lastReward = (tx ?? []).find((t: any) => t.kind === "reward" && t.source === "referral");
