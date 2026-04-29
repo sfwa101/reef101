@@ -187,7 +187,7 @@ const personalRail: PantryChip[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/* Lazy image with shimmer skeleton                                    */
+/* Lazy image — native lazy, no React state churn                      */
 /* ------------------------------------------------------------------ */
 
 const LazyImg = ({
@@ -198,32 +198,123 @@ const LazyImg = ({
   src: string;
   alt?: string;
   className?: string;
+}) => (
+  <img
+    src={src}
+    alt={alt}
+    loading="lazy"
+    decoding="async"
+    width={1024}
+    height={768}
+    className={className}
+  />
+);
+
+/* ------------------------------------------------------------------ */
+/* Tiles — defined OUTSIDE the page so they don't re-create per render */
+/* ------------------------------------------------------------------ */
+
+const TILE_SHADOW = "0 8px 22px -14px rgba(0,0,0,.22)";
+
+const HeroTile = ({
+  card,
+  className,
+  onPick,
+}: {
+  card: HeroCard;
+  className: string;
+  onPick: (to: string) => void;
+}) => (
+  <button
+    onClick={() => onPick(card.to)}
+    className={`relative overflow-hidden rounded-[24px] text-right ring-1 ring-black/5 transition-transform duration-200 ease-apple active:scale-[0.97] ${className}`}
+    style={{ boxShadow: TILE_SHADOW, contain: "layout paint" }}
+    aria-label={card.title}
+  >
+    <LazyImg
+      src={card.image}
+      className="absolute inset-0 h-full w-full object-cover"
+    />
+    <span
+      aria-hidden
+      className="absolute inset-0"
+      style={{
+        background: `linear-gradient(180deg, hsl(${card.overlay} / 0.05) 0%, hsl(${card.overlay} / 0.45) 55%, hsl(${card.overlay} / 0.88) 100%)`,
+      }}
+    />
+    {card.badge && (
+      <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-extrabold text-foreground shadow-sm">
+        {card.badge}
+      </span>
+    )}
+    <div className="relative flex h-full w-full flex-col justify-end p-4">
+      <h3 className="font-display text-[19px] font-extrabold leading-tight text-white drop-shadow-sm">
+        {card.title}
+      </h3>
+      <p className="mt-1 text-[12px] font-medium leading-snug text-white/85 line-clamp-2">
+        {card.desc}
+      </p>
+    </div>
+  </button>
+);
+
+const SmartTile = ({
+  s,
+  onPick,
+}: {
+  s: SmartCard;
+  onPick: (to: string) => void;
+}) => (
+  <button
+    onClick={() => onPick(s.to)}
+    className="relative h-[150px] overflow-hidden rounded-[22px] text-right ring-1 ring-black/5 transition-transform duration-200 ease-apple active:scale-[0.97]"
+    style={{ boxShadow: TILE_SHADOW, contain: "layout paint" }}
+    aria-label={s.title}
+  >
+    <LazyImg
+      src={s.image}
+      className="absolute inset-0 h-full w-full object-cover opacity-50"
+    />
+    <span aria-hidden className="absolute inset-0" style={{ background: s.gradient, opacity: 0.85 }} />
+    <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-foreground shadow-sm">
+      💸 {s.saving}
+    </span>
+    <div className="relative flex h-full w-full flex-col justify-between p-4">
+      <s.icon className="h-6 w-6 text-white/95" strokeWidth={2.2} />
+      <div>
+        <h3 className="font-display text-[18px] font-extrabold leading-tight text-white drop-shadow-sm">
+          {s.title}
+        </h3>
+        <p className="mt-1 text-[11.5px] font-medium leading-snug text-white/85 line-clamp-2">
+          {s.pitch}
+        </p>
+        <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-white/95">
+          ابدأ التوفير <ArrowLeft className="h-3 w-3" />
+        </span>
+      </div>
+    </div>
+  </button>
+);
+
+const RailChip = ({
+  c,
+  onPick,
+}: {
+  c: PantryChip;
+  onPick: (to: string) => void;
 }) => {
-  const [loaded, setLoaded] = useState(false);
+  const a = accents[c.accent];
   return (
-    <>
-      {!loaded && (
-        <div
-          aria-hidden
-          className="absolute inset-0 animate-shimmer"
-          style={{
-            background:
-              "linear-gradient(110deg, hsl(var(--muted)) 8%, hsl(var(--muted-foreground) / 0.08) 18%, hsl(var(--muted)) 33%)",
-            backgroundSize: "200% 100%",
-          }}
-        />
-      )}
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        decoding="async"
-        width={1024}
-        height={768}
-        onLoad={() => setLoaded(true)}
-        className={`${className} ${loaded ? "opacity-100" : "opacity-0"} transition-opacity duration-500`}
-      />
-    </>
+    <button
+      onClick={() => onPick(c.to)}
+      className="flex shrink-0 snap-start items-center gap-2 rounded-full px-3.5 py-2 ring-1 ring-border/50 transition-transform duration-150 ease-apple active:scale-95"
+      style={{ background: `hsl(${a.surface})` }}
+    >
+      <c.icon className="h-3.5 w-3.5" strokeWidth={2.2} style={{ color: `hsl(${a.ink})` }} />
+      <span className="whitespace-nowrap text-[11.5px] font-bold" style={{ color: `hsl(${a.ink})` }}>
+        {c.title}
+      </span>
+    </button>
   );
 };
 
@@ -232,108 +323,6 @@ const LazyImg = ({
 const Sections = () => {
   const navigate = useNavigate();
   const go = (to: string) => navigate({ to: to as never });
-
-  // Image hero card
-  const HeroTile = ({ card, className }: { card: HeroCard; className: string }) => (
-    <button
-      onClick={() => go(card.to)}
-      className={`group relative overflow-hidden rounded-[26px] text-right ring-1 ring-black/5 transition-all duration-300 ease-apple hover:-translate-y-1 active:scale-[0.98] ${className}`}
-      style={{
-        boxShadow:
-          "0 1px 2px rgba(0,0,0,.04), 0 8px 22px -10px rgba(0,0,0,.18), 0 22px 50px -22px rgba(0,0,0,.22)",
-      }}
-      aria-label={card.title}
-    >
-      <LazyImg
-        src={card.image}
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-      />
-      <span
-        aria-hidden
-        className="absolute inset-0"
-        style={{
-          background: `linear-gradient(180deg, hsl(${card.overlay} / 0.05) 0%, hsl(${card.overlay} / 0.45) 55%, hsl(${card.overlay} / 0.88) 100%)`,
-        }}
-      />
-      {card.badge && (
-        <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-extrabold text-foreground shadow-sm">
-          {card.badge}
-        </span>
-      )}
-      <div className="relative flex h-full w-full flex-col justify-end p-4">
-        <h3 className="font-display text-[19px] font-extrabold leading-tight text-white drop-shadow-sm">
-          {card.title}
-        </h3>
-        <p className="mt-1 text-[12px] font-medium leading-snug text-white/85 line-clamp-2">
-          {card.desc}
-        </p>
-      </div>
-    </button>
-  );
-
-  // Smart-shopping card (gradient + image, value-led)
-  const SmartTile = ({ s }: { s: SmartCard }) => (
-    <button
-      onClick={() => go(s.to)}
-      className="group relative h-[150px] overflow-hidden rounded-[24px] text-right ring-1 ring-black/5 transition-all duration-300 ease-apple hover:-translate-y-1 active:scale-[0.98]"
-      style={{
-        boxShadow:
-          "0 1px 2px rgba(0,0,0,.04), 0 10px 26px -12px rgba(0,0,0,.22), 0 28px 60px -28px rgba(0,0,0,.28)",
-      }}
-      aria-label={s.title}
-    >
-      <LazyImg
-        src={s.image}
-        className="absolute inset-0 h-full w-full object-cover opacity-50 transition-transform duration-700 group-hover:scale-110"
-      />
-      <span aria-hidden className="absolute inset-0" style={{ background: s.gradient, opacity: 0.85 }} />
-      {/* shimmer light */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -inset-1 opacity-30"
-        style={{
-          background:
-            "radial-gradient(60% 50% at 80% 0%, rgba(255,255,255,.45) 0%, transparent 60%)",
-        }}
-      />
-      <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-foreground shadow-sm">
-        💸 {s.saving}
-      </span>
-      <div className="relative flex h-full w-full flex-col justify-between p-4">
-        <s.icon className="h-6 w-6 text-white/95" strokeWidth={2.2} />
-        <div>
-          <h3 className="font-display text-[18px] font-extrabold leading-tight text-white drop-shadow-sm">
-            {s.title}
-          </h3>
-          <p className="mt-1 text-[11.5px] font-medium leading-snug text-white/85 line-clamp-2">
-            {s.pitch}
-          </p>
-          <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-white/95">
-            ابدأ التوفير <ArrowLeft className="h-3 w-3" />
-          </span>
-        </div>
-      </div>
-    </button>
-  );
-
-  const RailChip = ({ c }: { c: PantryChip }) => {
-    const a = accents[c.accent];
-    return (
-      <button
-        onClick={() => go(c.to)}
-        className="flex shrink-0 snap-start items-center gap-2 rounded-full px-3.5 py-2 ring-1 ring-border/50 transition-all duration-200 ease-apple active:scale-95"
-        style={{
-          background: `hsl(${a.surface})`,
-          boxShadow: `0 4px 12px -8px hsl(${a.shadow} / 0.3)`,
-        }}
-      >
-        <c.icon className="h-3.5 w-3.5" strokeWidth={2.2} style={{ color: `hsl(${a.ink})` }} />
-        <span className="whitespace-nowrap text-[11.5px] font-bold" style={{ color: `hsl(${a.ink})` }}>
-          {c.title}
-        </span>
-      </button>
-    );
-  };
 
   return (
     <div className="space-y-7 pb-6">
@@ -348,12 +337,12 @@ const Sections = () => {
       </header>
 
       {/* ═════ Bento Grid: Primary Heroes ═════ */}
-      <section className="animate-float-up">
+      <section>
         <div className="grid grid-cols-2 gap-3">
-          <HeroTile card={heroPrimary[0]} className="col-span-2 h-[210px]" />
-          <HeroTile card={heroPrimary[1]} className="row-span-2 h-[232px]" />
-          <HeroTile card={heroPrimary[2]} className="h-[110px]" />
-          <HeroTile card={heroPrimary[3]} className="h-[110px]" />
+          <HeroTile card={heroPrimary[0]} onPick={go} className="col-span-2 h-[210px]" />
+          <HeroTile card={heroPrimary[1]} onPick={go} className="row-span-2 h-[232px]" />
+          <HeroTile card={heroPrimary[2]} onPick={go} className="h-[110px]" />
+          <HeroTile card={heroPrimary[3]} onPick={go} className="h-[110px]" />
         </div>
 
         {/* Pantry rail */}
@@ -364,7 +353,7 @@ const Sections = () => {
             </span>
             <button
               onClick={() => go("/store/supermarket")}
-              className="flex items-center gap-0.5 text-[11px] font-bold text-foreground/70 hover:text-foreground"
+              className="flex items-center gap-0.5 text-[11px] font-bold text-foreground/70"
             >
               الكل <ChevronLeft className="h-3 w-3" />
             </button>
@@ -372,7 +361,7 @@ const Sections = () => {
           <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex snap-x gap-2">
               {pantryRail.map((c) => (
-                <RailChip key={c.id} c={c} />
+                <RailChip key={c.id} c={c} onPick={go} />
               ))}
             </div>
           </div>
@@ -380,46 +369,42 @@ const Sections = () => {
       </section>
 
       {/* ═════ Curated Experiences ═════ */}
-      <section className="animate-float-up" style={{ animationDelay: "120ms" }}>
-        <div className="mb-3 flex items-end justify-between px-1">
-          <div>
-            <h2 className="font-display text-[17px] font-extrabold leading-tight text-foreground">
-              تجارب مختارة
-            </h2>
-            <p className="mt-0.5 text-[11.5px] font-medium text-muted-foreground">
-              نكهات وأقسام بهوية مميزة
-            </p>
-          </div>
+      <section>
+        <div className="mb-3 px-1">
+          <h2 className="font-display text-[17px] font-extrabold leading-tight text-foreground">
+            تجارب مختارة
+          </h2>
+          <p className="mt-0.5 text-[11.5px] font-medium text-muted-foreground">
+            نكهات وأقسام بهوية مميزة
+          </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {heroSecondary.map((c) => (
-            <HeroTile key={c.id} card={c} className="h-[150px]" />
+            <HeroTile key={c.id} card={c} onPick={go} className="h-[150px]" />
           ))}
         </div>
       </section>
 
-      {/* ═════ Specialty Stores (was "services") ═════ */}
-      <section className="animate-float-up" style={{ animationDelay: "180ms" }}>
-        <div className="mb-3 flex items-end justify-between px-1">
-          <div>
-            <h2 className="font-display text-[17px] font-extrabold leading-tight text-foreground">
-              متاجر متخصصة
-            </h2>
-            <p className="mt-0.5 text-[11.5px] font-medium text-muted-foreground">
-              أقسام كبرى لكل احتياج
-            </p>
-          </div>
+      {/* ═════ Specialty Stores ═════ */}
+      <section>
+        <div className="mb-3 px-1">
+          <h2 className="font-display text-[17px] font-extrabold leading-tight text-foreground">
+            متاجر متخصصة
+          </h2>
+          <p className="mt-0.5 text-[11.5px] font-medium text-muted-foreground">
+            أقسام كبرى لكل احتياج
+          </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {specialty.map((c) => (
-            <HeroTile key={c.id} card={c} className="h-[150px]" />
+            <HeroTile key={c.id} card={c} onPick={go} className="h-[150px]" />
           ))}
         </div>
       </section>
 
       {/* ═════ Personal Care rail ═════ */}
-      <section className="animate-float-up" style={{ animationDelay: "240ms" }}>
-        <div className="mb-2 flex items-end justify-between px-1">
+      <section>
+        <div className="mb-2 px-1">
           <h2 className="font-display text-[15px] font-extrabold leading-tight text-foreground">
             العناية الشخصية والمنزلية
           </h2>
@@ -427,27 +412,25 @@ const Sections = () => {
         <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex snap-x gap-2">
             {personalRail.map((c) => (
-              <RailChip key={c.id} c={c} />
+              <RailChip key={c.id} c={c} onPick={go} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═════ Smart Shopping (subscriptions + wholesale) ═════ */}
-      <section className="animate-float-up" style={{ animationDelay: "300ms" }}>
-        <div className="mb-3 flex items-end justify-between px-1">
-          <div>
-            <h2 className="font-display text-[17px] font-extrabold leading-tight text-foreground">
-              طرق تسوّق ذكية
-            </h2>
-            <p className="mt-0.5 text-[11.5px] font-medium text-muted-foreground">
-              توفير مستمر وراحة بال
-            </p>
-          </div>
+      {/* ═════ Smart Shopping ═════ */}
+      <section>
+        <div className="mb-3 px-1">
+          <h2 className="font-display text-[17px] font-extrabold leading-tight text-foreground">
+            طرق تسوّق ذكية
+          </h2>
+          <p className="mt-0.5 text-[11.5px] font-medium text-muted-foreground">
+            توفير مستمر وراحة بال
+          </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {smartShopping.map((s) => (
-            <SmartTile key={s.id} s={s} />
+            <SmartTile key={s.id} s={s} onPick={go} />
           ))}
         </div>
       </section>
@@ -460,3 +443,4 @@ const Sections = () => {
 };
 
 export default Sections;
+
