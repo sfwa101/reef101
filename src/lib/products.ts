@@ -61,7 +61,8 @@ export type Product = {
   subCategory?: string;
   source:
     | "supermarket" | "kitchen" | "dairy" | "produce" | "recipes"
-    | "pharmacy" | "library" | "wholesale" | "home";
+    | "pharmacy" | "library" | "wholesale" | "home"
+    | "village" | "baskets" | "restaurants" | "meat" | "sweets";
   badge?: "best" | "trending" | "premium" | "new";
   variants?: ProductVariant[];
   addons?: ProductAddon[];
