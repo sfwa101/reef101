@@ -36,16 +36,6 @@ const SmartBanners = ({ walletBalance, hasReferralCode }: Props) => {
         "linear-gradient(135deg, hsl(var(--primary-soft)) 0%, hsl(var(--accent) / 0.45) 100%)",
     },
     {
-      key: "zone",
-      show: zone.id === "A" || zone.id === "B",
-      to: "/account/addresses",
-      icon: Zap,
-      title: `أنت في نطاق ${zone.shortName} ⚡`,
-      sub: `طلبك يصلك ${zone.etaLabel}`,
-      tint:
-        "linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--primary-soft)) 100%)",
-    },
-    {
       key: "partner",
       show: hasReferralCode,
       to: "/wallet",
