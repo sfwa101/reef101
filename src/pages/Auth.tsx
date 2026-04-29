@@ -1,9 +1,10 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Phone, Lock, User, Sparkles, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import reefLogo from "@/assets/reef-logo.webp";
 import { useAuth } from "@/context/AuthContext";
+import { toLatin } from "@/lib/format";
 
 const Auth = () => {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -12,12 +13,16 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [busy, setBusy] = useState(false);
-  const { signInWithPhone, signUpWithPhone } = useAuth();
+  const { user, loading, signInWithPhone, signUpWithPhone } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && user) navigate({ to: "/", replace: true });
+  }, [loading, navigate, user]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (phone.replace(/\D/g, "").length < 10) { toast.error("أدخل رقم هاتف صحيح"); return; }
+    if (toLatin(phone).replace(/\D/g, "").length < 10) { toast.error("أدخل رقم هاتف صحيح"); return; }
     if (password.length < 6) { toast.error("كلمة السر يجب أن تكون 6 أحرف على الأقل"); return; }
     if (mode === "signup" && fullName.trim().length < 2) { toast.error("أدخل اسمك الكامل"); return; }
     setBusy(true);

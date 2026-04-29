@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -9,7 +9,7 @@ export type Profile = {
   avatar_url: string | null;
   birth_date: string | null;
   gender: string | null;
-  email: string | null;
+  email?: string | null;
   occupation?: string | null;
   household_size?: number | null;
   lifestyle_tags?: string[] | null;
@@ -31,8 +31,16 @@ type AuthCtx = {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
+const arabicIndicDigits: Record<string, string> = {
+  "٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
+  "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9",
+  "۰": "0", "۱": "1", "۲": "2", "۳": "3", "۴": "4",
+  "۵": "5", "۶": "6", "۷": "7", "۸": "8", "۹": "9",
+};
+
 const normalizePhone = (raw: string): string => {
-  const digits = raw.replace(/\D/g, "");
+  const latin = raw.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, (d) => arabicIndicDigits[d] ?? d);
+  const digits = latin.replace(/\D/g, "");
   if (digits.startsWith("20")) return digits;
   if (digits.startsWith("0")) return "20" + digits.slice(1);
   return "20" + digits;
@@ -45,8 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (uid: string) => {
-    // profiles table not yet created; gracefully no-op until DB schema is added
+  const fetchProfile = useCallback(async (uid: string) => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const client = supabase as any;
@@ -55,7 +62,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch {
       setProfile(null);
     }
-  };
+  }, []);
+
+  const ensureProfile = useCallback(async (currentUser: User, fullName?: string | null) => {
+    const metadata = currentUser.user_metadata as { phone?: string; full_name?: string };
+    const phone = metadata.phone ? normalizePhone(metadata.phone) : null;
+    const name = fullName?.trim() || metadata.full_name || null;
+    const payload: { id: string; phone?: string; full_name?: string } = { id: currentUser.id };
+    if (phone) payload.phone = phone;
+    if (name) payload.full_name = name;
+
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .upsert(payload, { onConflict: "id" })
+        .select("*")
+        .maybeSingle();
+      setProfile((data as Profile) ?? null);
+
+      await supabase
+        .from("wallet_balances")
+        .upsert({ user_id: currentUser.id }, { onConflict: "user_id" });
+    } catch {
+      await fetchProfile(currentUser.id);
+    }
+  }, [fetchProfile]);
 
   useEffect(() => {
     let active = true;
@@ -113,12 +144,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       window.clearTimeout(failSafe);
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
 
   const signUpWithPhone: AuthCtx["signUpWithPhone"] = async (phone, password, fullName) => {
     const email = phoneToEmail(phone);
     const normalized = normalizePhone(phone);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -127,13 +158,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       },
     });
     if (error) return { error: humanize(error.message) };
+    if (data.session?.user) await ensureProfile(data.session.user, fullName);
     return {};
   };
 
   const signInWithPhone: AuthCtx["signInWithPhone"] = async (phone, password) => {
     const email = phoneToEmail(phone);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: humanize(error.message) };
+    if (data.user) await ensureProfile(data.user);
     return {};
   };
 
