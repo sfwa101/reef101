@@ -330,7 +330,7 @@ const CartLineItem = ({
 };
 
 const Cart = () => {
-  const { lines, total, count, setQty, remove, add, clear } = useCart();
+  const { lines, total, count, setQty, remove, add, clear, updateMeta } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { zone, setFromAddress } = useLocation();
@@ -974,7 +974,7 @@ const Cart = () => {
                       exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
                       transition={{ type: "spring", damping: 26, stiffness: 280 }}
                     >
-                      <CartLineItem l={l} setQty={setQty} remove={remove} />
+                      <CartLineItem l={l} setQty={setQty} remove={remove} updateMeta={updateMeta} />
                     </motion.div>
                   ))}
                 </AnimatePresence>
