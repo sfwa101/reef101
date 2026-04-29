@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { fireConfetti, fireMiniConfetti } from "@/lib/confetti";
+import { tierProgress, type TierDef } from "@/lib/tiers";
 
 type WalletBalance = { balance: number; points: number; coupons: number; cashback: number };
 type Tx = { id: string; label: string; amount: number; kind: string; created_at: string; source?: string | null };
@@ -56,6 +57,7 @@ const Wallet = () => {
   const [jar, setJar] = useState<SavingsJar | null>(null);
   const [jarTxs, setJarTxs] = useState<SavingsTx[]>([]);
   const [showJar, setShowJar] = useState(false);
+  const [tier, setTier] = useState<TierDef | null>(null);
 
   useEffect(() => {
     let mounted = true;
