@@ -141,7 +141,7 @@ const groups: Group[] = [
       { id: "personal", title: "العناية الشخصية", desc: "إطلالة وراحة",        to: "/sub/personal", icon: Crown, accent: "plum" },
       { id: "baby",     title: "العناية بالطفل",  desc: "كل ما يحتاجه طفلك",  to: "/sub/baby",     icon: Baby,  accent: "ocean" },
       { id: "women",    title: "عالم المرأة",      desc: "إكسسوارات وأكثر",    to: "/sub/women",    icon: Sparkles, accent: "rose" },
-      { id: "paper",    title: "ورقيات ومنظفات",  desc: "نظافة ولمعان",        to: "/sub/paper",    icon: Soap,  accent: "mint" },
+      { id: "paper",    title: "ورقيات ومنظفات",  desc: "نظافة ولمعان",        to: "/sub/paper",    icon: SprayCan,  accent: "mint" },
     ],
   },
 ];
