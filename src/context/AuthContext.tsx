@@ -53,8 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (uid: string) => {
-    // profiles table not yet created; gracefully no-op until DB schema is added
+  const fetchProfile = useCallback(async (uid: string) => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const client = supabase as any;
@@ -63,7 +62,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch {
       setProfile(null);
     }
-  };
+  }, []);
+
+  const ensureProfile = useCallback(async (currentUser: User, fullName?: string | null) => {
+    const metadata = currentUser.user_metadata as { phone?: string; full_name?: string };
+    const phone = metadata.phone ? normalizePhone(metadata.phone) : null;
+    const name = fullName?.trim() || metadata.full_name || null;
+
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .upsert({ id: currentUser.id, phone, full_name: name }, { onConflict: "id" })
+        .select("*")
+        .maybeSingle();
+      setProfile((data as Profile) ?? null);
+
+      await supabase
+        .from("wallet_balances")
+        .upsert({ user_id: currentUser.id }, { onConflict: "user_id" });
+    } catch {
+      await fetchProfile(currentUser.id);
+    }
+  }, [fetchProfile]);
 
   useEffect(() => {
     let active = true;
@@ -121,7 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       window.clearTimeout(failSafe);
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
 
   const signUpWithPhone: AuthCtx["signUpWithPhone"] = async (phone, password, fullName) => {
     const email = phoneToEmail(phone);
