@@ -503,26 +503,88 @@ const Cart = () => {
                   {isWallet && user ? (
                     <p className="text-[10px] font-bold text-primary">
                       متاح: {toLatin(Math.round(walletBalance))} ج.م
-                      {walletInsufficient && active && <span className="ms-1 text-destructive"> · غير كافٍ</span>}
                     </p>
                   ) : (
                     <p className="text-[10px] text-muted-foreground">{m.sub}</p>
                   )}
                 </div>
-                {isWallet && walletInsufficient && active && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setShowRecharge(true); }}
-                    className="rounded-[10px] bg-accent px-2.5 py-1.5 text-[10px] font-extrabold text-accent-foreground shadow-pill"
-                  >
-                    شحن الآن
-                  </button>
-                )}
                 <div className={`h-4 w-4 rounded-full border-2 ${active ? "border-primary bg-primary" : "border-muted-foreground/40"}`} />
               </motion.button>
             );
           })}
         </div>
+
+        {/* Split-payment helper when wallet < grand */}
+        <AnimatePresence>
+          {isSplit && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mt-3 overflow-hidden rounded-2xl bg-gradient-to-br from-accent/10 to-primary/5 p-3 ring-1 ring-accent/20"
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-[11px] font-extrabold text-foreground">دفع الباقي عبر</p>
+                <span className="rounded-md bg-accent/20 px-2 py-0.5 text-[10px] font-extrabold text-accent-foreground">
+                  {toLatin(Math.round(walletShortfall))} ج.م متبقّية
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {paymentOptions.filter((p) => p.id !== "wallet").map((m) => {
+                  const Icon = m.icon;
+                  const a = secondaryPayment === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setSecondaryPayment(m.id)}
+                      className={`flex flex-col items-center gap-1 rounded-[12px] border-2 p-2 transition ${a ? "border-primary bg-primary-soft" : "border-border bg-background"}`}
+                    >
+                      <Icon className={`h-4 w-4 ${a ? "text-primary" : "text-muted-foreground"}`} strokeWidth={2.4} />
+                      <span className="text-[10px] font-bold leading-tight">{m.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-2 flex items-center justify-between text-[10px] font-bold text-muted-foreground">
+                <span>محفظة: <span className="text-primary">{fmtMoney(walletApplied)}</span></span>
+                <button
+                  type="button"
+                  onClick={() => setShowRecharge(true)}
+                  className="rounded-[8px] bg-accent/20 px-2 py-1 text-[10px] font-extrabold text-accent-foreground"
+                >
+                  شحن المحفظة
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Smart change-jar (round-up cash) */}
+        <AnimatePresence>
+          {showChangeJar && (
+            <motion.label
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mt-3 flex cursor-pointer items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 to-[hsl(45_70%_92%)] p-3 ring-1 ring-primary/20"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-primary to-[hsl(45_80%_55%)] text-white shadow-pill">
+                <PiggyBank className="h-5 w-5" strokeWidth={2.2} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[12px] font-extrabold">ادفع {toLatin(roundedCash)} ج.م رقم صحيح</p>
+                <p className="text-[10px] text-muted-foreground">الفكة <span className="font-extrabold text-primary">{toLatin(changeRemainder)} ج.م</span> تدخل حصّالتك تلقائياً</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={saveChange}
+                onChange={(e) => setSaveChange(e.target.checked)}
+                className="h-5 w-5 cursor-pointer accent-primary"
+              />
+            </motion.label>
+          )}
+        </AnimatePresence>
       </section>
 
       {/* ============ Promo code (premium inline) ============ */}
