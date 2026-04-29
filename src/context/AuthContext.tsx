@@ -68,11 +68,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const metadata = currentUser.user_metadata as { phone?: string; full_name?: string };
     const phone = metadata.phone ? normalizePhone(metadata.phone) : null;
     const name = fullName?.trim() || metadata.full_name || null;
+    const payload: { id: string; phone?: string; full_name?: string } = { id: currentUser.id };
+    if (phone) payload.phone = phone;
+    if (name) payload.full_name = name;
 
     try {
       const { data } = await supabase
         .from("profiles")
-        .upsert({ id: currentUser.id, phone, full_name: name }, { onConflict: "id" })
+        .upsert(payload, { onConflict: "id" })
         .select("*")
         .maybeSingle();
       setProfile((data as Profile) ?? null);
