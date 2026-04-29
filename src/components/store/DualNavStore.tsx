@@ -243,6 +243,7 @@ const DualNavStore = ({
           </div>
         </div>
       </div>
+    </div>
 
       {/* Spacer so first section isn't hidden under the dual rail */}
       <div style={{ height: MAIN_BAR + SUB_BAR + HEADER_GAP + 14 }} />
