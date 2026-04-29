@@ -179,5 +179,84 @@ export const smartOffers = (
   limit = 10,
 ): Product[] => {
   const discounted = products.filter((p) => p.oldPrice && p.oldPrice > p.price);
+  // If user has a "saver" / low-budget profile, sort by largest discount first
+  const budget = (profile as { budget_range?: string | null } | null | undefined)?.budget_range ?? "";
+  const saver = /اقتصادي|توفير|محدود|low|saver/i.test(budget);
+  if (saver) {
+    return discounted
+      .map((p) => ({ p, d: p.oldPrice ? (p.oldPrice - p.price) / p.oldPrice : 0 }))
+      .sort((a, b) => b.d - a.d)
+      .slice(0, limit)
+      .map((x) => x.p);
+  }
   return personalizedProducts(profile, { pool: discounted, limit });
 };
+
+/* ============================================================================
+ * Smart category ordering — based on occupation / lifestyle tags.
+ * Returns a comparator that sorts a list of category ids (matching the
+ * `id` field used in HomePage's allStores list) by personal relevance.
+ * ========================================================================== */
+
+type Occupation = string | null | undefined;
+
+const RANK_BY_PROFILE = (
+  occupation: Occupation,
+  tags: string[],
+): Record<string, number> => {
+  const occ = (occupation ?? "").toLowerCase();
+  const tagText = tags.join(" ").toLowerCase();
+  const rank: Record<string, number> = {};
+
+  const boost = (id: string, n: number) => {
+    rank[id] = (rank[id] ?? 0) + n;
+  };
+
+  // Default baseline: keep the editorial order roughly intact
+  ["supermarket", "produce", "dairy", "kitchen", "recipes", "subscription",
+   "wholesale", "pharmacy", "library", "home"].forEach((id, i) => {
+    rank[id] = -i; // first items already preferred
+  });
+
+  if (/منزل|ربة|أم|housewife|home/i.test(occ) || /عائل|منزل|طبخ/.test(tagText)) {
+    boost("home", 50); boost("supermarket", 40); boost("kitchen", 30);
+    boost("produce", 20); boost("dairy", 15);
+  }
+  if (/طالب|student|دراس/i.test(occ) || /سهر|سريع|اقتصادي/.test(tagText)) {
+    boost("subscription", 50); boost("kitchen", 40); boost("recipes", 25);
+    boost("library", 30);
+  }
+  if (/موظف|عمل|employee|engineer|doctor|طبيب|مهندس/i.test(occ)) {
+    boost("kitchen", 40); boost("recipes", 30); boost("subscription", 25);
+    boost("supermarket", 15);
+  }
+  if (/شيف|chef|طاه/i.test(occ) || /طبخ|طهي/.test(tagText)) {
+    boost("recipes", 50); boost("produce", 40); boost("dairy", 25);
+  }
+  if (/تاجر|محل|متجر|wholesale/i.test(occ) || /جملة/.test(tagText)) {
+    boost("wholesale", 80);
+  }
+  if (/أب|والد|أم|طفل|أطفال|family|parent/.test(tagText)) {
+    boost("library", 30); boost("pharmacy", 20);
+  }
+
+  return rank;
+};
+
+export const rankCategoriesForProfile = (
+  profile: { occupation?: string | null; lifestyle_tags?: string[] | null } | null | undefined,
+): Record<string, number> =>
+  RANK_BY_PROFILE(profile?.occupation, profile?.lifestyle_tags ?? []);
+
+/* ============================================================================
+ * Rotating search placeholders — used in HomePage hero search bar.
+ * ========================================================================== */
+export const SEARCH_PLACEHOLDERS: string[] = [
+  "ابحث عن خضار طازج…",
+  "ابحث عن وصفات الشيف…",
+  "ابحث عن منتجات الألبان…",
+  "ابحث عن سلال الأسبوع…",
+  "ابحث عن وجبات سريعة…",
+  "ابحث عن خصومات اليوم…",
+  "ابحث عن خيرات الريف…",
+];
