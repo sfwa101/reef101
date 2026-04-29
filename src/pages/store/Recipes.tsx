@@ -2,6 +2,7 @@ import BackHeader from "@/components/BackHeader";
 import BottomCTA from "@/components/BottomCTA";
 import { useCart } from "@/context/CartContext";
 import { useMemo, useState, useEffect } from "react";
+import { useSearch, useNavigate } from "@tanstack/react-router";
 import {
   Clock, Users, Flame, X, Minus, Plus, Check, Calendar, Sparkles,
   Sun, Sunset, Moon, Flame as FlameIcon, TrendingUp, Timer, Zap, BadgePercent, Truck,
@@ -369,6 +370,9 @@ function minutesUntilClose(s: Recipe["section"], d: Date) {
 
 const Recipes = () => {
   const { add } = useCart();
+  const search = useSearch({ from: "/_app/store/recipes" }) as { tag?: string };
+  const navigate = useNavigate({ from: "/_app/store/recipes" });
+  const tag = (search.tag ?? "").trim();
   const [filter, setFilter] = useState(filters[0]);
   const [open, setOpen] = useState<Recipe | null>(null);
 
@@ -394,9 +398,23 @@ const Recipes = () => {
   const [planServings, setPlanServings] = useState(2);
 
   const filtered = useMemo(() => {
-    if (filter === "كل الوصفات") return RECIPES;
-    return RECIPES.filter((r) => r.category.includes(filter.replace("ة", "").replace("ال", "")) || filter.includes(r.category));
-  }, [filter]);
+    let list = RECIPES;
+    if (tag) {
+      const t = tag;
+      list = list.filter(
+        (r) =>
+          r.name.includes(t) ||
+          r.ingredients.some((i) => i.name.includes(t)),
+      );
+      if (list.length === 0) list = RECIPES;
+    }
+    if (filter === "كل الوصفات") return list;
+    return list.filter(
+      (r) =>
+        r.category.includes(filter.replace("ة", "").replace("ال", "")) ||
+        filter.includes(r.category),
+    );
+  }, [filter, tag]);
 
   const planSet = (day: string, section: Recipe["section"], recipeId: string) =>
     setPlan((p) => ({ ...p, [day]: { ...p[day], [section]: p[day]?.[section] === recipeId ? undefined : recipeId } }));
