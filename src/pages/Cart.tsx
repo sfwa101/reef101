@@ -791,7 +791,7 @@ const Cart = () => {
         return;
       }
 
-      const orderNum = `RF-${order.id.slice(0, 8).toUpperCase()}`;
+      const orderNum = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
 
       // Auto-save change to savings jar (only if cash + user opted-in)
       if (showChangeJar && saveChange && changeRemainder > 0) {
@@ -850,66 +850,97 @@ const Cart = () => {
         }
       }
 
+      // ===== Build the structured WhatsApp message =====
+      // Split lines into instant items (arrive within ~1h) and bookings.
+      const isBookingLine = (lid: string, src: string, sub?: string) =>
+        isSweetsProduct(src) && fulfillmentTypeFor(lid, sub) === "C";
+      const instantItems = lines.filter(
+        (l) => !isBookingLine(l.product.id, l.product.source, l.product.subCategory),
+      );
+      const bookingItems = lines.filter((l) =>
+        isBookingLine(l.product.id, l.product.source, l.product.subCategory),
+      );
+      const fmtInstantLine = (l: typeof lines[number]) => {
+        const unit = l.meta?.unitPrice ?? l.product.price;
+        return `▪️ ${toLatin(l.qty)}x ${l.product.name} (${fmtMoney(unit * l.qty)})`;
+      };
+      const fmtBookingLine = (l: typeof lines[number]) => {
+        const unit = l.meta?.unitPrice ?? l.product.price;
+        const day = l.meta?.bookingDate
+          ? formatBookingShort(new Date(l.meta.bookingDate))
+          : "—";
+        return `▪️ ${toLatin(l.qty)}x ${l.product.name} — استلام ${day} (${fmtMoney(unit * l.qty)})`;
+      };
+      const addrLine = selectedAddr
+        ? `${[selectedAddr.label, selectedAddr.street, selectedAddr.building, selectedAddr.district, selectedAddr.city].filter(Boolean).join("، ")}`
+        : guestNotes || "—";
+      const etaLine = bookingItems.length > 0 && instantItems.length === 0
+        ? "مجدول"
+        : `خلال ${zone.etaLabel}`;
+      const customerLabel = customerName || (user.email ?? "عميل").split("@")[0];
+      // Map payment id → friendly Arabic label
+      const payShort =
+        payment === "wallet"
+          ? "محفظة"
+          : payment === "cash"
+            ? "كاش"
+            : payment === "instapay"
+              ? "انستاباي"
+              : payment === "vodafone-cash"
+                ? "فودافون كاش"
+                : paymentLabel;
+      // Legacy line list (still used by the per-vendor messages below)
       const lineItems = lines
         .map((l, i) => {
           const unit = l.meta?.unitPrice ?? l.product.price;
           return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(unit * l.qty)}`;
         })
         .join("\n");
-      const addrLine = selectedAddr
-        ? `${[selectedAddr.label, selectedAddr.street, selectedAddr.building, selectedAddr.district, selectedAddr.city].filter(Boolean).join("، ")}`
-        : guestNotes || "—";
 
       /* ============ Per-vendor WhatsApp routing ============
        * Open ONE main WhatsApp message to the platform (with the full bill),
        * then a separate message for each restaurant vendor with only their
        * items + the platform commission breakdown.
        */
+      // ===== Premium structured customer-facing message =====
       const mainMessage =
-        `🌿 *طلب جديد — ريف المدينة*\n` +
-        `━━━━━━━━━━━━━━\n` +
-        `🆔 *رقم الطلب:* ${orderNum}\n` +
-        `👤 *العميل:* ${user.email ?? "عميل"}\n\n` +
-        (isMultiVendor
-          ? `🧩 *موردون متعدّدون:* ${toLatin(vendorGroups.length)}\n` +
-            vendorGroups.map((g) => `• ${vendorLabel(g.vendor)} — ${fmtMoney(g.subtotal)}`).join("\n") +
-            `\n\n`
+        `مرحباً ريف المدينة 👋\n\n` +
+        `أنا ${customerLabel}، وأريد تأكيد طلبي الجديد.\n\n` +
+        `📝 *رقم الطلب:* #${orderNum}\n` +
+        `📍 *العنوان:* ${addrLine}\n` +
+        `🛵 *وقت التوصيل المتوقع:* ${etaLine}\n\n` +
+        (instantItems.length > 0
+          ? `🛒 *تفاصيل الطلب:*\n${instantItems.map(fmtInstantLine).join("\n")}\n\n`
           : "") +
-        `🛒 *المنتجات:*\n${lineItems}\n\n` +
-        (sweetsRules.hasBooking
-          ? `📅 *حجوزات الحلويات (${toLatin(sweetsBuckets.C.lines.length)}):*\n` +
-            sweetsBuckets.C.lines
-              .map((l) => {
-                const slot = bookingTimeSlots.find((s) => s.id === l.meta?.slot)?.label ?? "—";
-                const day = l.meta?.date ? formatBookingShort(new Date(l.meta.date)) : "—";
-                return `• ${l.product.name} × ${toLatin(l.qty)} → ${day} · ${slot}`;
-              })
-              .join("\n") +
-            `\n\n`
+        (bookingItems.length > 0
+          ? `📅 *حجوزات خاصة:*\n${bookingItems.map(fmtBookingLine).join("\n")}\n\n`
           : "") +
-        `━━━━━━━━━━━━━━\n` +
-        `💵 المجموع الفرعي: ${fmtMoney(subtotal)}\n` +
-        (discount > 0 ? `🏷️ خصم (${appliedPromo?.code}): -${fmtMoney(discount)}\n` : "") +
-        `🚚 التوصيل: ${delivery === 0 ? "مجاني" : fmtMoney(delivery)}\n` +
-        (tip > 0 ? `💚 إكرامية: ${fmtMoney(tip)}\n` : "") +
-        `\n*💰 الإجمالي:* *${fmtMoney(grand)}*\n\n` +
+        `💳 *طريقة الدفع:* ${
+          isSplit
+            ? `محفظة (${fmtMoney(walletApplied)}) + ${secondaryLabel} (${fmtMoney(walletShortfall)})`
+            : payShort
+        }\n\n` +
+        `📊 *ملخص الحساب:*\n` +
+        `الإجمالي الفرعي: ${toLatin(subtotal)} ج.م\n` +
+        `التوصيل: ${delivery === 0 ? "مجاني" : `${toLatin(delivery)} ج.م`}\n` +
+        (billSavings > 0 ? `وفرت معنا: 🟢 ${toLatin(billSavings)} ج.م\n` : "") +
+        (tip > 0 ? `إكرامية المندوب: ${toLatin(tip)} ج.م\n` : "") +
         (sweetsRules.hasBooking
-          ? `🔒 *يُدفع الآن من الحجوزات:* ${fmtMoney(aggregateDeposit)}\n` +
+          ? `\n🔒 يُدفع الآن من الحجوزات: ${toLatin(aggregateDeposit)} ج.م\n` +
             (payOnDelivery > 0
-              ? `📦 *يُحصّل عند التوصيل:* ${fmtMoney(payOnDelivery)}\n\n`
-              : "\n")
+              ? `📦 يُحصّل عند التوصيل: ${toLatin(payOnDelivery)} ج.م\n`
+              : "")
           : "") +
-        (isSplit
-          ? `💳 *طريقة الدفع:* مُجزّأ\n   • محفظة: ${fmtMoney(walletApplied)}\n   • ${secondaryLabel}: ${fmtMoney(walletShortfall)}\n`
-          : `💳 *طريقة الدفع:* ${paymentLabel}\n`) +
+        `\n------------------------\n\n` +
+        `💰 *الإجمالي النهائي المطلوب:* *${toLatin(grand)} ج.م*\n\n` +
         (payment === "wallet" && totalCashback > 0
-          ? `🎁 *كاش باك المحفظة:* +${fmtMoney(totalCashback)} (تمت إضافته لرصيدك)\n`
+          ? `🎁 كاش باك المحفظة: +${toLatin(totalCashback)} ج.م (سيُضاف لرصيدك)\n\n`
           : "") +
-        (showChangeJar && saveChange ? `🐷 *ادخار الفكة:* ${fmtMoney(changeRemainder)} للحصّالة\n` : "") +
-        `📍 *العنوان:* ${addrLine}\n\n` +
-        `✅ برجاء تأكيد الطلب`;
+        `في انتظار تأكيدكم، شكراً لكم! 🍃`;
 
       const mainUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(mainMessage)}`;
+      // Wait at least 1s so the loading state is felt as professional polish
+      await minLoading;
       window.open(mainUrl, "_blank");
 
       // Per-restaurant routing: each restaurant gets its own message with
