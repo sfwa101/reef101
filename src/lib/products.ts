@@ -260,3 +260,26 @@ export const bySource = (source: Product["source"]) =>
 
 export const bySourceAndCategory = (source: Product["source"], category: string) =>
   products.filter((p) => p.source === source && p.category === category);
+
+/* ============ Perishability ============
+ * Sources whose products require cold-chain or fresh delivery and therefore
+ * are NOT shipped to long-distance zones (Zone E — other governorates).
+ */
+const PERISHABLE_SOURCES: Product["source"][] = [
+  "produce", "dairy", "meat", "kitchen", "recipes", "restaurants", "baskets",
+];
+
+export const isPerishable = (p: Product): boolean => {
+  if (typeof p.perishable === "boolean") return p.perishable;
+  if (PERISHABLE_SOURCES.includes(p.source)) return true;
+  // Frozen / ice-cream / fresh sweets in the supermarket/sweets categories
+  if (p.category === "المجمدات") return true;
+  if (p.source === "sweets" && (p.subCategory === "تورتات" || p.subCategory === "مثلجات")) return true;
+  return false;
+};
+
+/** True when the given zone accepts the given product. */
+export const productAvailableInZone = (
+  p: Product,
+  zoneAcceptsPerishables: boolean,
+): boolean => zoneAcceptsPerishables || !isPerishable(p);
