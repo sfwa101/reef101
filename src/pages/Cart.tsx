@@ -800,6 +800,33 @@ const Cart = () => {
 
       const orderNum = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
 
+      /* ============ Wallet debit (when paying via wallet, including BNPL) ============ */
+      if (isWalletPay && walletApplied > 0) {
+        try {
+          const { data: bal } = await supabase
+            .from("wallet_balances")
+            .select("balance")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          const newBalance = Number(bal?.balance ?? 0) - walletApplied;
+          await supabase
+            .from("wallet_balances")
+            .update({ balance: newBalance })
+            .eq("user_id", user.id);
+          await supabase.from("wallet_transactions").insert({
+            user_id: user.id,
+            kind: "debit",
+            amount: walletApplied,
+            label: trustUsed > 0
+              ? `طلب ${orderNum} (شامل ${Math.round(trustUsed)} ج رصيد ثقة)`
+              : `طلب ${orderNum}`,
+            source: trustUsed > 0 ? "wallet_bnpl" : "wallet_pay",
+          });
+        } catch (e) {
+          console.warn("wallet debit skipped", e);
+        }
+      }
+
       // Auto-save change to savings jar (only if cash + user opted-in)
       if (showChangeJar && saveChange && changeRemainder > 0) {
         try {
