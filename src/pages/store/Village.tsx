@@ -255,56 +255,88 @@ const VillageCard = ({
   const qty = lines.find((l) => l.product.id === product.id)?.qty ?? 0;
   const { has, toggle } = useFavorites();
   const fav = has(product.id);
-  const [openNutrition, setOpenNutrition] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
 
   const isPreorder = !!meta?.batch;
   const remaining = meta?.batch?.remaining ?? 0;
+  const total = meta?.batch?.total ?? 0;
+  const reservedPct = total > 0 ? Math.min(100, Math.round(((total - remaining) / total) * 100)) : 0;
   const lowStock = isPreorder && remaining <= 5;
 
-  const handleAdd = () => add(product);
+  const handleAdd = () => {
+    add(product);
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1200);
+  };
 
   return (
     <article
-      className="overflow-hidden rounded-[1.5rem] shadow-tile"
-      style={{ background: "#FFFDF8", border: "1px solid #E8DFC9" }}
+      className="overflow-hidden rounded-[1.75rem] transition-shadow duration-300"
+      style={{
+        background: "#FFFDF8",
+        border: "1px solid #EFE6CE",
+        boxShadow: "0 1px 2px rgba(58,52,30,0.04), 0 8px 24px -12px rgba(58,52,30,0.10)",
+      }}
     >
       <div className="grid grid-cols-[140px_1fr]">
         {/* Image side */}
         <Link
           to="/product/$productId"
           params={{ productId: product.id }}
-          className="relative block overflow-hidden"
+          className="group relative block overflow-hidden"
           style={{ background: "#F5EFE0" }}
         >
-          <img src={product.image} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
-          {/* Trust badges */}
-          {meta?.trust && meta.trust.length > 0 && (
-            <div className="absolute right-1.5 top-1.5 flex flex-col gap-1">
-              {meta.trust.slice(0, 2).map((t) => (
-                <span
-                  key={t}
-                  className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8.5px] font-extrabold shadow-pill"
-                  style={{ background: "rgba(255,253,248,0.95)", color: "#3A341E" }}
-                  title={TRUST_BADGE_META[t].label}
-                >
-                  <span className="text-[10px] leading-none">{TRUST_BADGE_META[t].emoji}</span>
-                  {TRUST_BADGE_META[t].label}
-                </span>
-              ))}
-            </div>
+          <img
+            src={product.image}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            loading="lazy"
+          />
+          {/* Soft gradient bottom for legibility of scarcity bar */}
+          {total > 0 && (
+            <div
+              className="absolute inset-x-0 bottom-0 h-12"
+              style={{ background: "linear-gradient(180deg, transparent, rgba(40,35,18,0.55))" }}
+            />
           )}
-          {lowStock && (
+
+          {/* Trust badges — single, smaller, top-right */}
+          {meta?.trust && meta.trust.length > 0 && (
             <span
-              className="absolute bottom-1.5 left-1.5 rounded-full px-2 py-0.5 text-[9.5px] font-extrabold tabular-nums shadow-pill"
-              style={{ background: "#B8860B", color: "#FFFDF8" }}
+              className="absolute right-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8.5px] font-extrabold shadow-pill backdrop-blur-md"
+              style={{ background: "rgba(255,253,248,0.92)", color: "#3A341E" }}
+              title={TRUST_BADGE_META[meta.trust[0]].label}
             >
-              متبقي {toLatin(remaining)} فقط
+              <span className="text-[10px] leading-none">{TRUST_BADGE_META[meta.trust[0]].emoji}</span>
+              {TRUST_BADGE_META[meta.trust[0]].label}
             </span>
           )}
+
+          {/* Scarcity progress bar */}
+          {total > 0 && (
+            <div className="absolute inset-x-2 bottom-2">
+              <div className="mb-1 flex items-center justify-between text-[8.5px] font-extrabold text-white">
+                <span>تم حجز {toLatin(reservedPct)}٪</span>
+                {lowStock && <span style={{ color: "#FFD27A" }}>متبقي {toLatin(remaining)}</span>}
+              </div>
+              <div className="h-1 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.35)" }}>
+                <div
+                  className="h-full rounded-full transition-[width] duration-500"
+                  style={{
+                    width: `${reservedPct}%`,
+                    background: lowStock
+                      ? "linear-gradient(90deg, #E0A02A, #B8860B)"
+                      : "linear-gradient(90deg, #C8D58A, #5A6E3A)",
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           <button
             onClick={(e) => { e.preventDefault(); toggle(product.id); }}
             aria-label="مفضلة"
-            className="absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full"
+            className="absolute top-1.5 left-1.5 flex h-7 w-7 items-center justify-center rounded-full backdrop-blur-md transition active:scale-90"
             style={{ background: fav ? "#A04040" : "rgba(255,253,248,0.9)", color: fav ? "#fff" : "#3A341E" }}
           >
             <Heart className={`h-3.5 w-3.5 ${fav ? "fill-white" : ""}`} strokeWidth={2.4} />
@@ -326,46 +358,28 @@ const VillageCard = ({
             </p>
           )}
 
-          {/* Tags */}
+          {/* Tags — only 2, on hover/group reveal a third */}
           {meta?.tags && meta.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {meta.tags.slice(0, 3).map((id) => {
+              {meta.tags.slice(0, 2).map((id) => {
                 const h = HEALTH_TAGS.find((x) => x.id === id)!;
                 return (
                   <span
                     key={id}
                     className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold"
-                    style={{ background: "#F0E5C2", color: "#3A341E" }}
+                    style={{ background: "#F5EFE0", color: "#3A341E" }}
                   >
                     <span>{h.emoji}</span>{h.label}
                   </span>
                 );
               })}
-            </div>
-          )}
-
-          {/* Nutrition accordion */}
-          {meta?.nutrition && (
-            <div className="mt-1">
-              <button
-                onClick={() => setOpenNutrition((o) => !o)}
-                className="flex w-full items-center justify-between rounded-lg px-2 py-1 text-[10px] font-bold"
-                style={{ background: "#F5EFE0", color: "#3A341E" }}
-              >
-                <span>القيم الغذائية والمكونات</span>
-                <ChevronDown className={`h-3 w-3 transition ${openNutrition ? "rotate-180" : ""}`} />
-              </button>
-              {openNutrition && (
-                <div
-                  className="mt-1 space-y-0.5 rounded-lg p-2 text-[10px]"
-                  style={{ background: "#FBF7EE", color: "#3A341E", border: "1px solid #E8DFC9" }}
+              {meta.tags.length > 2 && (
+                <span
+                  className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold"
+                  style={{ background: "transparent", color: "#7B6A3F", border: "1px dashed #D9CDA4" }}
                 >
-                  {meta.nutrition.calories && <p>سعرات: <span className="font-bold tabular-nums">{meta.nutrition.calories}</span></p>}
-                  {meta.nutrition.protein && <p>بروتين: <span className="font-bold tabular-nums">{meta.nutrition.protein}</span></p>}
-                  {meta.nutrition.fat && <p>دهون: <span className="font-bold tabular-nums">{meta.nutrition.fat}</span></p>}
-                  {meta.nutrition.carbs && <p>كربوهيدرات: <span className="font-bold tabular-nums">{meta.nutrition.carbs}</span></p>}
-                  {meta.nutrition.notes && <p className="opacity-80">{meta.nutrition.notes}</p>}
-                </div>
+                  +{toLatin(meta.tags.length - 2)}
+                </span>
               )}
             </div>
           )}
@@ -392,16 +406,32 @@ const VillageCard = ({
             {qty === 0 ? (
               <button
                 onClick={handleAdd}
-                className="flex items-center gap-1 rounded-full px-3.5 py-2 text-[11px] font-extrabold shadow-pill transition active:scale-95"
+                className="relative flex items-center gap-1 rounded-full px-3.5 py-2 text-[11px] font-extrabold shadow-pill transition active:scale-95"
                 style={{
-                  background: isPreorder
+                  background: justAdded
+                    ? "linear-gradient(135deg, #3F5226, #2A3717)"
+                    : isPreorder
                     ? "linear-gradient(135deg, #B8860B, #8C6508)"
                     : "linear-gradient(135deg, #5A6E3A, #3F5226)",
                   color: "#FBF7EE",
                 }}
               >
-                {isPreorder ? <Sparkles className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" strokeWidth={3} />}
-                {isPreorder ? (meta!.batch!.ctaLabel ?? "احجز حصتك الآن") : "أضف للسلة"}
+                {justAdded ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 animate-scale-in" strokeWidth={3} />
+                    تمت الإضافة
+                  </>
+                ) : isPreorder ? (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {meta!.batch!.ctaLabel ?? "احجز حصتك الآن"}
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-3.5 w-3.5" strokeWidth={3} />
+                    أضف للسلة
+                  </>
+                )}
               </button>
             ) : (
               <div
@@ -433,7 +463,7 @@ const VillageCard = ({
               <Repeat className="h-3.5 w-3.5" />
               {routineActive
                 ? `روتين مُفعّل · خصم ${toLatin(meta.routine.discountPct)}٪`
-                : `اجعله روتيناً · وفّر ${toLatin(meta.routine.discountPct)}٪ أسبوعياً`}
+                : `اجعله روتيناً · وفّر ${toLatin(meta.routine.discountPct)}٪`}
             </button>
           )}
         </div>
