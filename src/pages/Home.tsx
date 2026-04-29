@@ -295,9 +295,9 @@ const HomePage = () => {
       </section>
 
       <section>
-        <h2 className="mb-3 px-1 font-display text-xl font-extrabold text-foreground">من جميع الأقسام</h2>
+        <h2 className="mb-3 px-1 font-display text-xl font-extrabold text-foreground">يناسبك الآن</h2>
         <div className="grid grid-cols-2 gap-3">
-          {products.slice(0, 6).map((p) => <ProductCard key={p.id} product={p} />)}
+          {recommended.slice(0, 6).map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       </section>
 
