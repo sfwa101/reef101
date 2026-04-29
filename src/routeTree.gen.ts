@@ -35,6 +35,7 @@ import { Route as AppStoreLibraryRouteImport } from './routes/_app/store.library
 import { Route as AppStoreKitchenRouteImport } from './routes/_app/store.kitchen'
 import { Route as AppStoreHomeRouteImport } from './routes/_app/store.home'
 import { Route as AppStoreDairyRouteImport } from './routes/_app/store.dairy'
+import { Route as AppStoreBasketsBuildRouteImport } from './routes/_app/store.baskets-build'
 import { Route as AppStoreBasketsRouteImport } from './routes/_app/store.baskets'
 import { Route as AppRestaurantIdRouteImport } from './routes/_app/restaurant.$id'
 import { Route as AppProductProductIdRouteImport } from './routes/_app/product.$productId'
@@ -176,6 +177,11 @@ const AppStoreDairyRoute = AppStoreDairyRouteImport.update({
   path: '/store/dairy',
   getParentRoute: () => AppRoute,
 } as any)
+const AppStoreBasketsBuildRoute = AppStoreBasketsBuildRouteImport.update({
+  id: '/store/baskets-build',
+  path: '/store/baskets-build',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppStoreBasketsRoute = AppStoreBasketsRouteImport.update({
   id: '/store/baskets',
   path: '/store/baskets',
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/product/$productId': typeof AppProductProductIdRoute
   '/restaurant/$id': typeof AppRestaurantIdRoute
   '/store/baskets': typeof AppStoreBasketsRoute
+  '/store/baskets-build': typeof AppStoreBasketsBuildRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
   '/store/kitchen': typeof AppStoreKitchenRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/product/$productId': typeof AppProductProductIdRoute
   '/restaurant/$id': typeof AppRestaurantIdRoute
   '/store/baskets': typeof AppStoreBasketsRoute
+  '/store/baskets-build': typeof AppStoreBasketsBuildRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
   '/store/kitchen': typeof AppStoreKitchenRoute
@@ -330,6 +338,7 @@ export interface FileRoutesById {
   '/_app/product/$productId': typeof AppProductProductIdRoute
   '/_app/restaurant/$id': typeof AppRestaurantIdRoute
   '/_app/store/baskets': typeof AppStoreBasketsRoute
+  '/_app/store/baskets-build': typeof AppStoreBasketsBuildRoute
   '/_app/store/dairy': typeof AppStoreDairyRoute
   '/_app/store/home': typeof AppStoreHomeRoute
   '/_app/store/kitchen': typeof AppStoreKitchenRoute
@@ -370,6 +379,7 @@ export interface FileRouteTypes {
     | '/product/$productId'
     | '/restaurant/$id'
     | '/store/baskets'
+    | '/store/baskets-build'
     | '/store/dairy'
     | '/store/home'
     | '/store/kitchen'
@@ -407,6 +417,7 @@ export interface FileRouteTypes {
     | '/product/$productId'
     | '/restaurant/$id'
     | '/store/baskets'
+    | '/store/baskets-build'
     | '/store/dairy'
     | '/store/home'
     | '/store/kitchen'
@@ -446,6 +457,7 @@ export interface FileRouteTypes {
     | '/_app/product/$productId'
     | '/_app/restaurant/$id'
     | '/_app/store/baskets'
+    | '/_app/store/baskets-build'
     | '/_app/store/dairy'
     | '/_app/store/home'
     | '/_app/store/kitchen'
@@ -653,6 +665,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStoreDairyRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/store/baskets-build': {
+      id: '/_app/store/baskets-build'
+      path: '/store/baskets-build'
+      fullPath: '/store/baskets-build'
+      preLoaderRoute: typeof AppStoreBasketsBuildRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/store/baskets': {
       id: '/_app/store/baskets'
       path: '/store/baskets'
@@ -773,6 +792,7 @@ interface AppRouteChildren {
   AppProductProductIdRoute: typeof AppProductProductIdRoute
   AppRestaurantIdRoute: typeof AppRestaurantIdRoute
   AppStoreBasketsRoute: typeof AppStoreBasketsRoute
+  AppStoreBasketsBuildRoute: typeof AppStoreBasketsBuildRoute
   AppStoreDairyRoute: typeof AppStoreDairyRoute
   AppStoreHomeRoute: typeof AppStoreHomeRoute
   AppStoreKitchenRoute: typeof AppStoreKitchenRoute
@@ -802,6 +822,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppProductProductIdRoute: AppProductProductIdRoute,
   AppRestaurantIdRoute: AppRestaurantIdRoute,
   AppStoreBasketsRoute: AppStoreBasketsRoute,
+  AppStoreBasketsBuildRoute: AppStoreBasketsBuildRoute,
   AppStoreDairyRoute: AppStoreDairyRoute,
   AppStoreHomeRoute: AppStoreHomeRoute,
   AppStoreKitchenRoute: AppStoreKitchenRoute,
