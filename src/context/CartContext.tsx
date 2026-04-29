@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Product } from "@/lib/products";
+import { trackBuyAgain } from "@/lib/buyAgain";
 
 /**
  * Optional per-line meta. Used by the sweets section to attach a chosen
@@ -71,6 +72,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [lines]);
 
   const add = useCallback((p: Product, qty = 1, meta?: CartLineMeta) => {
+    trackBuyAgain(p.id);
     setLines((prev) => {
       const i = prev.findIndex((l) => l.product.id === p.id);
       if (i >= 0) {

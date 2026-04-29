@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Wallet as WalletIcon, Zap, Share2, ChevronLeft } from "lucide-react";
+import { Wallet as WalletIcon, Share2, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "@/context/LocationContext";
 import { toLatin } from "@/lib/format";
 
 type Props = {
@@ -14,8 +13,6 @@ type Props = {
  * reason to show them. Designed to sit just above the main promo hero.
  */
 const SmartBanners = ({ walletBalance, hasReferralCode }: Props) => {
-  const { zone } = useLocation();
-
   const banners: {
     key: string;
     show: boolean;
@@ -34,16 +31,6 @@ const SmartBanners = ({ walletBalance, hasReferralCode }: Props) => {
       sub: "استخدمه الآن لتسوق أسرع",
       tint:
         "linear-gradient(135deg, hsl(var(--primary-soft)) 0%, hsl(var(--accent) / 0.45) 100%)",
-    },
-    {
-      key: "zone",
-      show: zone.id === "A" || zone.id === "B",
-      to: "/account/addresses",
-      icon: Zap,
-      title: `أنت في نطاق ${zone.shortName} ⚡`,
-      sub: `طلبك يصلك ${zone.etaLabel}`,
-      tint:
-        "linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--primary-soft)) 100%)",
     },
     {
       key: "partner",

@@ -134,6 +134,14 @@ const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
             خصم {toLatin(Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100))}٪
           </span>
         )}
+        {product.oldPrice && product.oldPrice - product.price >= 5 && (
+          <span
+            className="absolute left-2 top-9 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-extrabold text-accent-foreground shadow-pill tabular-nums"
+            style={{ background: "linear-gradient(135deg, hsl(var(--accent)), hsl(36 95% 55%))" }}
+          >
+            وفّر {toLatin(Math.round(product.oldPrice - product.price))} ج.م
+          </span>
+        )}
         <span
           onClick={handleFav}
           role="button"
@@ -175,6 +183,14 @@ const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
               خصم {toLatin(Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100))}٪
             </span>
           )}
+        {product.oldPrice && product.oldPrice - product.price >= 5 && (
+          <span
+            className="absolute left-2 top-9 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-extrabold text-accent-foreground shadow-pill tabular-nums"
+            style={{ background: "linear-gradient(135deg, hsl(var(--accent)), hsl(36 95% 55%))" }}
+          >
+            وفّر {toLatin(Math.round(product.oldPrice - product.price))} ج.م
+          </span>
+        )}
           <button
             onClick={handleFav}
             aria-label="مفضلة"

@@ -1,8 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Wallet as WalletIcon } from "lucide-react";
 import reefLogo from "@/assets/reef-logo.png";
 import { useCart } from "@/context/CartContext";
 import { fmtMoney } from "@/lib/format";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toLatin } from "@/lib/format";
 
 interface TopBarProps {
   title?: string;
@@ -11,6 +15,22 @@ interface TopBarProps {
 
 const TopBar = ({ title = "ريف المدينة", subtitle = "عبق الريف" }: TopBarProps) => {
   const { count, total } = useCart();
+  const { user } = useAuth();
+  const [balance, setBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) { setBalance(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("wallet_balances")
+        .select("balance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!cancelled) setBalance(Number(data?.balance ?? 0));
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
 
   return (
     <header
@@ -32,7 +52,19 @@ const TopBar = ({ title = "ريف المدينة", subtitle = "عبق الريف
           </p>
         </Link>
 
-        <Link
+        <div className="flex items-center gap-2">
+          {balance !== null && balance > 0 && (
+            <Link
+              to="/wallet"
+              aria-label="المحفظة"
+              className="flex items-center gap-1.5 rounded-[10px] bg-accent/15 px-2 py-1.5 text-[11px] font-extrabold text-foreground ring-1 ring-accent/25 shadow-soft transition hover:bg-accent/25 lg:hidden"
+            >
+              <WalletIcon className="h-3.5 w-3.5 text-accent" strokeWidth={2.6} />
+              <span className="tabular-nums">{toLatin(Math.round(balance))}</span>
+              <span className="text-[9.5px] text-muted-foreground">ج.م</span>
+            </Link>
+          )}
+          <Link
           to="/cart"
           aria-label="السلة"
           dir="rtl"
@@ -52,7 +84,8 @@ const TopBar = ({ title = "ريف المدينة", subtitle = "عبق الريف
               </span>
             </div>
           )}
-        </Link>
+          </Link>
+        </div>
       </div>
     </header>
   );

@@ -23,7 +23,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import SmartBanners from "@/components/SmartBanners";
-import RotatingPlaceholder from "@/components/RotatingPlaceholder";
+import TypewriterPlaceholder from "@/components/TypewriterPlaceholder";
+import ReefStories from "@/components/ReefStories";
+import PromoCarousel from "@/components/PromoCarousel";
+import PremiumZoneBadge from "@/components/PremiumZoneBadge";
+import MiniStoreGrid from "@/components/MiniStoreGrid";
+import { buyAgainProducts } from "@/lib/buyAgain";
 import { useLocation } from "@/context/LocationContext";
 
 import tileSupermarket from "@/assets/tile-supermarket.jpg";
@@ -45,16 +50,16 @@ const quickShortcuts = [
 ];
 
 const allStores = [
-  { id: "supermarket", title: "السوبرماركت", img: tileSupermarket, to: "/store/supermarket" },
-  { id: "produce", title: "خضار وفاكهة", img: tileProduce, to: "/store/produce" },
-  { id: "dairy", title: "الألبان", img: tileDairy, to: "/store/dairy" },
-  { id: "kitchen", title: "مطبخ ريف", img: tileKitchen, to: "/store/kitchen" },
-  { id: "recipes", title: "وصفات الشيف", img: tileRecipes, to: "/store/recipes" },
-  { id: "subscription", title: "الاشتراكات", img: tileSubscription, to: "/store/subscription" },
-  { id: "wholesale", title: "ريف الجملة", img: tileWholesale, to: "/store/wholesale" },
-  { id: "pharmacy", title: "الصيدلية", img: tilePharmacy, to: "/store/pharmacy" },
-  { id: "library", title: "مكتبة الطلبة", img: tileLibrary, to: "/store/library" },
-  { id: "home", title: "الأدوات المنزلية", img: tileHome, to: "/store/home" },
+  { id: "supermarket", title: "السوبرماركت", img: tileSupermarket, to: "/store/supermarket", emoji: "🛒", tint: "142 50% 92%" },
+  { id: "produce",     title: "خضار وفاكهة",   img: tileProduce,     to: "/store/produce",     emoji: "🥬", tint: "100 55% 90%" },
+  { id: "dairy",       title: "الألبان",       img: tileDairy,       to: "/store/dairy",       emoji: "🥛", tint: "210 70% 94%" },
+  { id: "kitchen",     title: "مطبخ ريف",      img: tileKitchen,     to: "/store/kitchen",     emoji: "🍳", tint: "30 85% 92%" },
+  { id: "recipes",     title: "وصفات الشيف",   img: tileRecipes,     to: "/store/recipes",     emoji: "👨‍🍳", tint: "265 70% 94%" },
+  { id: "subscription",title: "الاشتراكات",    img: tileSubscription,to: "/store/subscription",emoji: "📦", tint: "175 55% 90%" },
+  { id: "wholesale",   title: "ريف الجملة",    img: tileWholesale,   to: "/store/wholesale",   emoji: "🏷️", tint: "36 80% 90%" },
+  { id: "pharmacy",    title: "الصيدلية",      img: tilePharmacy,    to: "/store/pharmacy",    emoji: "💊", tint: "200 70% 94%" },
+  { id: "library",     title: "مكتبة الطلبة",  img: tileLibrary,     to: "/store/library",     emoji: "📚", tint: "50 80% 90%" },
+  { id: "home",        title: "الأدوات المنزلية", img: tileHome,    to: "/store/home",        emoji: "🏠", tint: "330 70% 94%" },
 ];
 
 type Addr = {
@@ -162,6 +167,20 @@ const HomePage = () => {
     [profile, zoneSafePool],
   );
 
+  // Buy-it-again — pulled from local interaction history
+  const buyAgain = useMemo(
+    () => buyAgainProducts(zoneSafePool, 12),
+    [zoneSafePool, mounted],
+  );
+
+  // Trending in your zone — bias top-rated/best products available locally
+  const trendingInZone = useMemo(() => {
+    return [...zoneSafePool]
+      .filter((p) => (p.rating ?? 0) >= 4.6)
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+      .slice(0, 10);
+  }, [zoneSafePool]);
+
   // Smart category ordering (and zone-aware availability)
   const categoryRanks = useMemo(() => rankCategoriesForProfile(profile), [profile]);
   const PERISHABLE_STORE_IDS = new Set(["produce", "dairy", "kitchen", "recipes"]);
@@ -185,7 +204,7 @@ const HomePage = () => {
   }, [categoryRanks]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <section className="animate-float-up">
         <Popover>
           <PopoverTrigger asChild>
@@ -247,47 +266,44 @@ const HomePage = () => {
         </h1>
       </section>
 
+      {/* Floating premium search */}
       <Link
         to="/search"
         search={{ q: "" }}
-        className="glass flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-right shadow-soft animate-float-up"
-        style={{ animationDelay: "80ms" }}
+        className="glass-strong flex w-full items-center gap-3 rounded-3xl px-5 py-4 text-right shadow-float ring-1 ring-border/60 animate-float-up transition active:scale-[0.99]"
+        style={{ animationDelay: "60ms" }}
       >
-        <Search className="h-4 w-4 text-muted-foreground" strokeWidth={2.4} />
-        <RotatingPlaceholder
+        <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <Search className="h-4 w-4" strokeWidth={2.6} />
+        </span>
+        <TypewriterPlaceholder
           options={SEARCH_PLACEHOLDERS}
-          className="text-sm text-muted-foreground"
+          className="text-[13.5px] font-medium text-muted-foreground"
         />
       </Link>
+
+      {/* Reef Stories — Instagram-style discovery rail */}
+      <ReefStories />
+
+      {/* Premium glass zone badge (shown only in fast zones) */}
+      <PremiumZoneBadge />
 
       {/* Smart contextual banners (wallet / zone / partner) */}
       <SmartBanners walletBalance={walletBalance} hasReferralCode={hasReferralCode} />
 
-      <section
-        className="relative overflow-hidden rounded-[1.5rem] p-4 shadow-tile animate-float-up"
-        style={{
-          animationDelay: "120ms",
-          background:
-            "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)) 70%, hsl(var(--accent)))",
-        }}
-      >
-        <div className="absolute -left-8 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
-        <div className="absolute -bottom-12 -right-10 h-36 w-36 rounded-full bg-white/20 blur-3xl" />
-        <div className="relative flex items-center justify-between gap-3">
-          <div className="flex-1">
-            <span className="inline-block rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
-              عرض اليوم
-            </span>
-            <h3 className="mt-2 font-display text-lg font-extrabold leading-tight text-white text-balance tabular-nums">
-              وفّر 25٪ على وصفات الشيف
-            </h3>
-            <p className="mt-0.5 text-[10px] text-white/85">عند اشتراكك في باقة الأسبوع الأول</p>
-          </div>
-          <Link to="/store/recipes" search={{ tag: "" }} className="shrink-0 rounded-full bg-white px-3.5 py-2 text-[11px] font-bold text-primary shadow-pill">
-            اطلب
-          </Link>
-        </div>
-      </section>
+      {/* Auto-rotating premium offers carousel */}
+      <PromoCarousel />
+
+      {/* BUY IT AGAIN — only when we have history */}
+      {buyAgain.length > 0 && (
+        <ProductCarousel
+          title="اشترِ مجدداً"
+          subtitle="منتجات اعتدت طلبها — أعدها بضغطة"
+          accent="🛍️ سهل وسريع"
+          products={buyAgain}
+          seeAllTo="/account/orders"
+        />
+      )}
 
       <section className="animate-float-up" style={{ animationDelay: "160ms" }}>
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar snap-x snap-mandatory scroll-smooth">
@@ -336,6 +352,13 @@ const HomePage = () => {
 
       <ProductCarousel title="مختارات لك" subtitle="بناءً على تفضيلاتك ووقتك" accent="✨ مخصص" products={recommended} seeAllTo="/sections" />
       <ProductCarousel title="عروض ذكية" subtitle="خصومات تناسب ذوقك" accent="🔥 وفّر أكثر" products={personalizedOffers} seeAllTo="/offers" />
+      <ProductCarousel
+        title={`رائج في ${zone.shortName}`}
+        subtitle="الأكثر طلباً في منطقتك الآن"
+        accent="📍 قريب منك"
+        products={trendingInZone}
+        seeAllTo="/sections"
+      />
       <ProductCarousel title="رائج لك" accent="📈 الأعلى تفاعلًا" products={trending} seeAllTo="/sections" />
       <ProductCarousel title="جديد ومميز لك" accent="⭐ مختار" products={newForYou} seeAllTo="/sections" />
 
@@ -366,7 +389,7 @@ const HomePage = () => {
 
       <section>
         <h2 className="mb-3 px-1 font-display text-xl font-extrabold text-foreground">يناسبك الآن</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3.5">
           {recommended.slice(0, 6).map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       </section>
@@ -378,40 +401,16 @@ const HomePage = () => {
             الكل <ChevronLeft className="h-3 w-3" />
           </Link>
         </div>
-        <div className="grid grid-cols-3 gap-2.5">
-          {sortedStores.map((s) => {
-            if (s.unavailable) {
-              return (
-                <div
-                  key={s.id}
-                  aria-disabled="true"
-                  title="قريبًا في منطقتك"
-                  className="relative flex aspect-square flex-col justify-end overflow-hidden rounded-2xl shadow-soft tile-overlay opacity-60 grayscale"
-                >
-                  <img src={s.img} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-                  <span className="relative z-10 p-2 font-display text-[11px] font-bold leading-tight text-white drop-shadow">
-                    {s.title}
-                  </span>
-                  <span className="absolute inset-x-1.5 top-1.5 z-20 rounded-full bg-background/85 px-1.5 py-0.5 text-center text-[9px] font-bold text-foreground backdrop-blur">
-                    قريبًا في منطقتك
-                  </span>
-                </div>
-              );
-            }
-            return (
-              <Link
-                key={s.id}
-                to={s.to}
-                className="group relative flex aspect-square flex-col justify-end overflow-hidden rounded-2xl shadow-soft tile-overlay transition active:scale-[0.97]"
-              >
-                <img src={s.img} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-apple group-hover:scale-110" />
-                <span className="relative z-10 p-2 font-display text-[11px] font-bold leading-tight text-white drop-shadow">
-                  {s.title}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+        <MiniStoreGrid
+          items={sortedStores.map((s) => ({
+            id: s.id,
+            title: s.title,
+            emoji: s.emoji,
+            to: s.to,
+            tint: s.tint,
+            unavailable: s.unavailable,
+          }))}
+        />
       </section>
 
       <p className="pt-4 text-center text-[11px] font-medium text-muted-foreground">
