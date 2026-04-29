@@ -327,6 +327,12 @@ const RECIPES: Recipe[] = [
 ];
 
 const sections: Recipe["section"][] = ["إفطار", "غداء", "عشاء"];
+
+// Apply essential flags to ingredients based on ESSENTIAL_INGREDIENT_IDS.
+RECIPES.forEach((r) => {
+  const ess = ESSENTIAL_INGREDIENT_IDS[r.id] ?? [];
+  r.ingredients = r.ingredients.map((i) => ({ ...i, essential: ess.includes(i.id) }));
+});
 const filters = ["كل الوصفات", "سريعة", "عائلية", "للأطفال", "صحية", "نباتية"];
 const days = ["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
 
