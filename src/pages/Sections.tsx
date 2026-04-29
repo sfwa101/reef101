@@ -255,7 +255,7 @@ const cv = {
   containIntrinsicSize: "1px 360px",
 };
 
-const RailChip = ({
+const RailChip = memo(({
   c,
   onPick,
 }: {
@@ -275,7 +275,38 @@ const RailChip = ({
       </span>
     </button>
   );
-};
+});
+RailChip.displayName = "RailChip";
+
+/* ------------------------------------------------------------------ */
+/* Skeleton — mirrors the bento layout exactly so first paint is stable */
+/* ------------------------------------------------------------------ */
+
+const Sk = ({ className = "" }: { className?: string }) => (
+  <div
+    className={`animate-pulse rounded-[24px] bg-foreground/[0.06] ring-1 ring-black/5 ${className}`}
+  />
+);
+
+const SectionsSkeleton = () => (
+  <div className="space-y-7 pb-6" aria-hidden>
+    <header className="px-1 pt-1">
+      <div className="h-7 w-24 animate-pulse rounded-md bg-foreground/[0.08]" />
+      <div className="mt-2 h-3.5 w-56 animate-pulse rounded-md bg-foreground/[0.06]" />
+    </header>
+    <div className="grid grid-cols-2 gap-3">
+      <Sk className="col-span-2 h-[210px]" />
+      <Sk className="row-span-2 h-[232px]" />
+      <Sk className="h-[110px]" />
+      <Sk className="h-[110px]" />
+    </div>
+    <div className="grid grid-cols-2 gap-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Sk key={i} className="h-[150px]" />
+      ))}
+    </div>
+  </div>
+);
 
 /* ------------------------------------------------------------------ */
 
