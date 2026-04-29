@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { Link } from "@tanstack/react-router";
 import BackHeader from "@/components/BackHeader";
@@ -148,7 +148,7 @@ const Profile = () => {
       .split(" ")
       .filter(Boolean)
       .slice(0, 2)
-      .map((part) => part[0])
+      .map((part: string) => part[0])
       .join("");
   }, [form.fullName, user?.user_metadata?.full_name]);
 
