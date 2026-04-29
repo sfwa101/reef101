@@ -147,12 +147,6 @@ const Account = () => {
         {/* Gradient header band */}
         <div className={`relative h-28 bg-gradient-to-tr ${tier.gradient}`}>
           <div className="absolute inset-0 opacity-30 mix-blend-overlay [background-image:radial-gradient(circle_at_20%_30%,white,transparent_45%),radial-gradient(circle_at_80%_70%,white,transparent_40%)]" />
-          <div className="absolute top-3 left-3">
-            <span className={`inline-flex items-center gap-1.5 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-extrabold ring-1 backdrop-blur ${tier.chip}`}>
-              <TierIcon className="h-3.5 w-3.5" />
-              {tier.label}
-            </span>
-          </div>
           <ChevronLeft className="absolute top-4 right-4 h-5 w-5 text-white/90" />
         </div>
 
@@ -165,7 +159,13 @@ const Account = () => {
           </div>
 
           <div className="mt-3">
-            <h2 className="font-display text-2xl font-extrabold leading-tight">{displayName}</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-display text-2xl font-extrabold leading-tight">{displayName}</h2>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold ring-1 ${tier.chip}`}>
+                <TierIcon className="h-3.5 w-3.5" />
+                {tier.label}
+              </span>
+            </div>
             {displayPhone ? (
               <p dir="ltr" className="mt-1 inline-flex items-center gap-1.5 text-sm text-muted-foreground tabular-nums">
                 <Phone className="h-3.5 w-3.5" />
