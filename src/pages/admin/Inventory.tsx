@@ -56,7 +56,7 @@ export default function Inventory() {
     setSaving(true);
     try {
       const tasks = Object.entries(edits).map(([id, patch]) => {
-        const upd: Record<string, number> = {};
+        const upd: { price?: number; stock?: number } = {};
         if (patch.price !== undefined && patch.price !== "") upd.price = Number(patch.price);
         if (patch.stock !== undefined && patch.stock !== "") upd.stock = Number(patch.stock);
         if (Object.keys(upd).length === 0) return Promise.resolve({ error: null });

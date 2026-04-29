@@ -29,6 +29,7 @@ import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
 import { Route as AdminFinanceRouteImport } from './routes/admin.finance'
 import { Route as AdminDeliveryRouteImport } from './routes/admin.delivery'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AppWalletRouteImport } from './routes/_app/wallet'
@@ -175,6 +176,11 @@ const AdminDeliveryRoute = AdminDeliveryRouteImport.update({
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminAuditLogRoute = AdminAuditLogRouteImport.update({
@@ -433,6 +439,7 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof AppWalletRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
   '/admin/delivery': typeof AdminDeliveryRouteWithChildren
   '/admin/finance': typeof AdminFinanceRoute
@@ -499,6 +506,7 @@ export interface FileRoutesByTo {
   '/wallet': typeof AppWalletRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
   '/admin/delivery': typeof AdminDeliveryRouteWithChildren
   '/admin/finance': typeof AdminFinanceRoute
@@ -570,6 +578,7 @@ export interface FileRoutesById {
   '/_app/wallet': typeof AppWalletRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
   '/admin/delivery': typeof AdminDeliveryRouteWithChildren
   '/admin/finance': typeof AdminFinanceRoute
@@ -642,6 +651,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/admin/analytics'
     | '/admin/audit-log'
+    | '/admin/categories'
     | '/admin/customers'
     | '/admin/delivery'
     | '/admin/finance'
@@ -708,6 +718,7 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/admin/analytics'
     | '/admin/audit-log'
+    | '/admin/categories'
     | '/admin/customers'
     | '/admin/delivery'
     | '/admin/finance'
@@ -778,6 +789,7 @@ export interface FileRouteTypes {
     | '/_app/wallet'
     | '/admin/analytics'
     | '/admin/audit-log'
+    | '/admin/categories'
     | '/admin/customers'
     | '/admin/delivery'
     | '/admin/finance'
@@ -982,6 +994,13 @@ declare module '@tanstack/react-router' {
       path: '/customers'
       fullPath: '/admin/customers'
       preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/categories': {
+      id: '/admin/categories'
+      path: '/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/audit-log': {
@@ -1446,6 +1465,7 @@ const AdminDeliveryRouteWithChildren = AdminDeliveryRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditLogRoute: typeof AdminAuditLogRoute
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCustomersRoute: typeof AdminCustomersRouteWithChildren
   AdminDeliveryRoute: typeof AdminDeliveryRouteWithChildren
   AdminFinanceRoute: typeof AdminFinanceRoute
@@ -1473,6 +1493,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditLogRoute: AdminAuditLogRoute,
+  AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCustomersRoute: AdminCustomersRouteWithChildren,
   AdminDeliveryRoute: AdminDeliveryRouteWithChildren,
   AdminFinanceRoute: AdminFinanceRoute,
