@@ -607,3 +607,6 @@
   .animate-float-up { animation: float-up 0.7s var(--ease-apple) both; }
   .animate-capsule { animation: capsule-pop 0.45s var(--ease-apple) both; }
 }
+/* Hide scrollbar utility (used by wheel pickers) */
+.hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
