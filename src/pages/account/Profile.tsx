@@ -97,6 +97,17 @@ const Profile = () => {
   const [pageState, setPageState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [forceReady, setForceReady] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setForceReady(true);
+      return;
+    }
+
+    const timer = window.setTimeout(() => setForceReady(true), 1800);
+    return () => window.clearTimeout(timer);
+  }, [loading]);
 
   const syncProfile = async (silent = false) => {
     if (!user) return null;
@@ -174,7 +185,7 @@ const Profile = () => {
   const isDirty = JSON.stringify(form) !== JSON.stringify(initialForm);
 
   const save = async () => {
-    if (loading) {
+    if (loading && !forceReady) {
       toast.error("انتظر قليلاً حتى يكتمل تجهيز الحساب.");
       return;
     }
@@ -223,7 +234,7 @@ const Profile = () => {
     setErrorMessage("");
   };
 
-  if (loading) {
+  if (loading && !forceReady) {
     return (
       <div className="space-y-4">
         <BackHeader title="البيانات الشخصية" subtitle="جاري تجهيز ملفك الشخصي" accent="حسابي" />
