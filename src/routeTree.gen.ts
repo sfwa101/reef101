@@ -21,15 +21,20 @@ import { Route as AppCartRouteImport } from './routes/_app/cart'
 import { Route as AppAccountRouteImport } from './routes/_app/account'
 import { Route as AppAccountIndexRouteImport } from './routes/_app/account.index'
 import { Route as AppStoreWholesaleRouteImport } from './routes/_app/store.wholesale'
+import { Route as AppStoreVillageRouteImport } from './routes/_app/store.village'
+import { Route as AppStoreSweetsRouteImport } from './routes/_app/store.sweets'
 import { Route as AppStoreSupermarketRouteImport } from './routes/_app/store.supermarket'
 import { Route as AppStoreSubscriptionRouteImport } from './routes/_app/store.subscription'
+import { Route as AppStoreRestaurantsRouteImport } from './routes/_app/store.restaurants'
 import { Route as AppStoreRecipesRouteImport } from './routes/_app/store.recipes'
 import { Route as AppStoreProduceRouteImport } from './routes/_app/store.produce'
 import { Route as AppStorePharmacyRouteImport } from './routes/_app/store.pharmacy'
+import { Route as AppStoreMeatRouteImport } from './routes/_app/store.meat'
 import { Route as AppStoreLibraryRouteImport } from './routes/_app/store.library'
 import { Route as AppStoreKitchenRouteImport } from './routes/_app/store.kitchen'
 import { Route as AppStoreHomeRouteImport } from './routes/_app/store.home'
 import { Route as AppStoreDairyRouteImport } from './routes/_app/store.dairy'
+import { Route as AppStoreBasketsRouteImport } from './routes/_app/store.baskets'
 import { Route as AppProductProductIdRouteImport } from './routes/_app/product.$productId'
 import { Route as AppAccountSettingsRouteImport } from './routes/_app/account.settings'
 import { Route as AppAccountProfileRouteImport } from './routes/_app/account.profile'
@@ -99,6 +104,16 @@ const AppStoreWholesaleRoute = AppStoreWholesaleRouteImport.update({
   path: '/store/wholesale',
   getParentRoute: () => AppRoute,
 } as any)
+const AppStoreVillageRoute = AppStoreVillageRouteImport.update({
+  id: '/store/village',
+  path: '/store/village',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStoreSweetsRoute = AppStoreSweetsRouteImport.update({
+  id: '/store/sweets',
+  path: '/store/sweets',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppStoreSupermarketRoute = AppStoreSupermarketRouteImport.update({
   id: '/store/supermarket',
   path: '/store/supermarket',
@@ -107,6 +122,11 @@ const AppStoreSupermarketRoute = AppStoreSupermarketRouteImport.update({
 const AppStoreSubscriptionRoute = AppStoreSubscriptionRouteImport.update({
   id: '/store/subscription',
   path: '/store/subscription',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStoreRestaurantsRoute = AppStoreRestaurantsRouteImport.update({
+  id: '/store/restaurants',
+  path: '/store/restaurants',
   getParentRoute: () => AppRoute,
 } as any)
 const AppStoreRecipesRoute = AppStoreRecipesRouteImport.update({
@@ -122,6 +142,11 @@ const AppStoreProduceRoute = AppStoreProduceRouteImport.update({
 const AppStorePharmacyRoute = AppStorePharmacyRouteImport.update({
   id: '/store/pharmacy',
   path: '/store/pharmacy',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStoreMeatRoute = AppStoreMeatRouteImport.update({
+  id: '/store/meat',
+  path: '/store/meat',
   getParentRoute: () => AppRoute,
 } as any)
 const AppStoreLibraryRoute = AppStoreLibraryRouteImport.update({
@@ -142,6 +167,11 @@ const AppStoreHomeRoute = AppStoreHomeRouteImport.update({
 const AppStoreDairyRoute = AppStoreDairyRouteImport.update({
   id: '/store/dairy',
   path: '/store/dairy',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStoreBasketsRoute = AppStoreBasketsRouteImport.update({
+  id: '/store/baskets',
+  path: '/store/baskets',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProductProductIdRoute = AppProductProductIdRouteImport.update({
@@ -209,15 +239,20 @@ export interface FileRoutesByFullPath {
   '/account/profile': typeof AppAccountProfileRoute
   '/account/settings': typeof AppAccountSettingsRoute
   '/product/$productId': typeof AppProductProductIdRoute
+  '/store/baskets': typeof AppStoreBasketsRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
   '/store/kitchen': typeof AppStoreKitchenRoute
   '/store/library': typeof AppStoreLibraryRoute
+  '/store/meat': typeof AppStoreMeatRoute
   '/store/pharmacy': typeof AppStorePharmacyRoute
   '/store/produce': typeof AppStoreProduceRoute
   '/store/recipes': typeof AppStoreRecipesRoute
+  '/store/restaurants': typeof AppStoreRestaurantsRoute
   '/store/subscription': typeof AppStoreSubscriptionRoute
   '/store/supermarket': typeof AppStoreSupermarketRoute
+  '/store/sweets': typeof AppStoreSweetsRoute
+  '/store/village': typeof AppStoreVillageRoute
   '/store/wholesale': typeof AppStoreWholesaleRoute
   '/account/': typeof AppAccountIndexRoute
 }
@@ -239,15 +274,20 @@ export interface FileRoutesByTo {
   '/account/profile': typeof AppAccountProfileRoute
   '/account/settings': typeof AppAccountSettingsRoute
   '/product/$productId': typeof AppProductProductIdRoute
+  '/store/baskets': typeof AppStoreBasketsRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
   '/store/kitchen': typeof AppStoreKitchenRoute
   '/store/library': typeof AppStoreLibraryRoute
+  '/store/meat': typeof AppStoreMeatRoute
   '/store/pharmacy': typeof AppStorePharmacyRoute
   '/store/produce': typeof AppStoreProduceRoute
   '/store/recipes': typeof AppStoreRecipesRoute
+  '/store/restaurants': typeof AppStoreRestaurantsRoute
   '/store/subscription': typeof AppStoreSubscriptionRoute
   '/store/supermarket': typeof AppStoreSupermarketRoute
+  '/store/sweets': typeof AppStoreSweetsRoute
+  '/store/village': typeof AppStoreVillageRoute
   '/store/wholesale': typeof AppStoreWholesaleRoute
   '/account': typeof AppAccountIndexRoute
 }
@@ -272,15 +312,20 @@ export interface FileRoutesById {
   '/_app/account/profile': typeof AppAccountProfileRoute
   '/_app/account/settings': typeof AppAccountSettingsRoute
   '/_app/product/$productId': typeof AppProductProductIdRoute
+  '/_app/store/baskets': typeof AppStoreBasketsRoute
   '/_app/store/dairy': typeof AppStoreDairyRoute
   '/_app/store/home': typeof AppStoreHomeRoute
   '/_app/store/kitchen': typeof AppStoreKitchenRoute
   '/_app/store/library': typeof AppStoreLibraryRoute
+  '/_app/store/meat': typeof AppStoreMeatRoute
   '/_app/store/pharmacy': typeof AppStorePharmacyRoute
   '/_app/store/produce': typeof AppStoreProduceRoute
   '/_app/store/recipes': typeof AppStoreRecipesRoute
+  '/_app/store/restaurants': typeof AppStoreRestaurantsRoute
   '/_app/store/subscription': typeof AppStoreSubscriptionRoute
   '/_app/store/supermarket': typeof AppStoreSupermarketRoute
+  '/_app/store/sweets': typeof AppStoreSweetsRoute
+  '/_app/store/village': typeof AppStoreVillageRoute
   '/_app/store/wholesale': typeof AppStoreWholesaleRoute
   '/_app/account/': typeof AppAccountIndexRoute
 }
@@ -305,15 +350,20 @@ export interface FileRouteTypes {
     | '/account/profile'
     | '/account/settings'
     | '/product/$productId'
+    | '/store/baskets'
     | '/store/dairy'
     | '/store/home'
     | '/store/kitchen'
     | '/store/library'
+    | '/store/meat'
     | '/store/pharmacy'
     | '/store/produce'
     | '/store/recipes'
+    | '/store/restaurants'
     | '/store/subscription'
     | '/store/supermarket'
+    | '/store/sweets'
+    | '/store/village'
     | '/store/wholesale'
     | '/account/'
   fileRoutesByTo: FileRoutesByTo
@@ -335,15 +385,20 @@ export interface FileRouteTypes {
     | '/account/profile'
     | '/account/settings'
     | '/product/$productId'
+    | '/store/baskets'
     | '/store/dairy'
     | '/store/home'
     | '/store/kitchen'
     | '/store/library'
+    | '/store/meat'
     | '/store/pharmacy'
     | '/store/produce'
     | '/store/recipes'
+    | '/store/restaurants'
     | '/store/subscription'
     | '/store/supermarket'
+    | '/store/sweets'
+    | '/store/village'
     | '/store/wholesale'
     | '/account'
   id:
@@ -367,15 +422,20 @@ export interface FileRouteTypes {
     | '/_app/account/profile'
     | '/_app/account/settings'
     | '/_app/product/$productId'
+    | '/_app/store/baskets'
     | '/_app/store/dairy'
     | '/_app/store/home'
     | '/_app/store/kitchen'
     | '/_app/store/library'
+    | '/_app/store/meat'
     | '/_app/store/pharmacy'
     | '/_app/store/produce'
     | '/_app/store/recipes'
+    | '/_app/store/restaurants'
     | '/_app/store/subscription'
     | '/_app/store/supermarket'
+    | '/_app/store/sweets'
+    | '/_app/store/village'
     | '/_app/store/wholesale'
     | '/_app/account/'
   fileRoutesById: FileRoutesById
@@ -471,6 +531,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStoreWholesaleRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/store/village': {
+      id: '/_app/store/village'
+      path: '/store/village'
+      fullPath: '/store/village'
+      preLoaderRoute: typeof AppStoreVillageRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/store/sweets': {
+      id: '/_app/store/sweets'
+      path: '/store/sweets'
+      fullPath: '/store/sweets'
+      preLoaderRoute: typeof AppStoreSweetsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/store/supermarket': {
       id: '/_app/store/supermarket'
       path: '/store/supermarket'
@@ -483,6 +557,13 @@ declare module '@tanstack/react-router' {
       path: '/store/subscription'
       fullPath: '/store/subscription'
       preLoaderRoute: typeof AppStoreSubscriptionRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/store/restaurants': {
+      id: '/_app/store/restaurants'
+      path: '/store/restaurants'
+      fullPath: '/store/restaurants'
+      preLoaderRoute: typeof AppStoreRestaurantsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/store/recipes': {
@@ -504,6 +585,13 @@ declare module '@tanstack/react-router' {
       path: '/store/pharmacy'
       fullPath: '/store/pharmacy'
       preLoaderRoute: typeof AppStorePharmacyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/store/meat': {
+      id: '/_app/store/meat'
+      path: '/store/meat'
+      fullPath: '/store/meat'
+      preLoaderRoute: typeof AppStoreMeatRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/store/library': {
@@ -532,6 +620,13 @@ declare module '@tanstack/react-router' {
       path: '/store/dairy'
       fullPath: '/store/dairy'
       preLoaderRoute: typeof AppStoreDairyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/store/baskets': {
+      id: '/_app/store/baskets'
+      path: '/store/baskets'
+      fullPath: '/store/baskets'
+      preLoaderRoute: typeof AppStoreBasketsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/product/$productId': {
@@ -638,15 +733,20 @@ interface AppRouteChildren {
   AppWalletRoute: typeof AppWalletRoute
   AppIndexRoute: typeof AppIndexRoute
   AppProductProductIdRoute: typeof AppProductProductIdRoute
+  AppStoreBasketsRoute: typeof AppStoreBasketsRoute
   AppStoreDairyRoute: typeof AppStoreDairyRoute
   AppStoreHomeRoute: typeof AppStoreHomeRoute
   AppStoreKitchenRoute: typeof AppStoreKitchenRoute
   AppStoreLibraryRoute: typeof AppStoreLibraryRoute
+  AppStoreMeatRoute: typeof AppStoreMeatRoute
   AppStorePharmacyRoute: typeof AppStorePharmacyRoute
   AppStoreProduceRoute: typeof AppStoreProduceRoute
   AppStoreRecipesRoute: typeof AppStoreRecipesRoute
+  AppStoreRestaurantsRoute: typeof AppStoreRestaurantsRoute
   AppStoreSubscriptionRoute: typeof AppStoreSubscriptionRoute
   AppStoreSupermarketRoute: typeof AppStoreSupermarketRoute
+  AppStoreSweetsRoute: typeof AppStoreSweetsRoute
+  AppStoreVillageRoute: typeof AppStoreVillageRoute
   AppStoreWholesaleRoute: typeof AppStoreWholesaleRoute
 }
 
@@ -660,15 +760,20 @@ const AppRouteChildren: AppRouteChildren = {
   AppWalletRoute: AppWalletRoute,
   AppIndexRoute: AppIndexRoute,
   AppProductProductIdRoute: AppProductProductIdRoute,
+  AppStoreBasketsRoute: AppStoreBasketsRoute,
   AppStoreDairyRoute: AppStoreDairyRoute,
   AppStoreHomeRoute: AppStoreHomeRoute,
   AppStoreKitchenRoute: AppStoreKitchenRoute,
   AppStoreLibraryRoute: AppStoreLibraryRoute,
+  AppStoreMeatRoute: AppStoreMeatRoute,
   AppStorePharmacyRoute: AppStorePharmacyRoute,
   AppStoreProduceRoute: AppStoreProduceRoute,
   AppStoreRecipesRoute: AppStoreRecipesRoute,
+  AppStoreRestaurantsRoute: AppStoreRestaurantsRoute,
   AppStoreSubscriptionRoute: AppStoreSubscriptionRoute,
   AppStoreSupermarketRoute: AppStoreSupermarketRoute,
+  AppStoreSweetsRoute: AppStoreSweetsRoute,
+  AppStoreVillageRoute: AppStoreVillageRoute,
   AppStoreWholesaleRoute: AppStoreWholesaleRoute,
 }
 
