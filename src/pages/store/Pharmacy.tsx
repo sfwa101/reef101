@@ -514,7 +514,7 @@ const CategoryRail = ({
   active: CatId;
   onChange: (c: CatId) => void;
 }) => (
-  <section className="sticky top-0 z-30 -mx-4 mt-3 border-b border-border/40 bg-background/95 px-4 py-2 shadow-[0_4px_12px_-8px_hsl(var(--foreground)/0.15)]">
+  <section className="sticky top-[64px] lg:top-[80px] z-30 -mx-4 mt-3 border-b border-border/40 bg-background/95 px-4 py-2 shadow-[0_4px_12px_-8px_hsl(var(--foreground)/0.15)]">
     <div
       className="-mx-4 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
