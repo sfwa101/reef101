@@ -154,7 +154,7 @@ const RestaurantDetail = () => {
           <section
             key={s.id}
             data-cat={s.id}
-            ref={(el) => {
+            ref={(el: HTMLDivElement | null) => {
               sectionRefs.current[s.id] = el;
             }}
           >
