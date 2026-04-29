@@ -40,6 +40,10 @@ export type Restaurant = {
   whatsapp: string;
   /** Best-seller product ids (resolve from `products.ts`) */
   productIds: string[];
+  /** Catchy tagline shown on the brand banner CTA area */
+  hook?: string;
+  /** Categorised full menu used by the restaurant detail page */
+  menu?: { id: string; label: string; productIds: string[] }[];
 };
 
 /**
