@@ -411,10 +411,12 @@ export type Database = {
           description: string | null
           id: string
           image: string | null
+          image_path: string | null
           image_url: string | null
           is_active: boolean
           name: string
           old_price: number | null
+          perishable: boolean | null
           price: number
           rating: number | null
           sort_order: number
@@ -437,10 +439,12 @@ export type Database = {
           description?: string | null
           id: string
           image?: string | null
+          image_path?: string | null
           image_url?: string | null
           is_active?: boolean
           name: string
           old_price?: number | null
+          perishable?: boolean | null
           price?: number
           rating?: number | null
           sort_order?: number
@@ -463,10 +467,12 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          image_path?: string | null
           image_url?: string | null
           is_active?: boolean
           name?: string
           old_price?: number | null
+          perishable?: boolean | null
           price?: number
           rating?: number | null
           sort_order?: number
