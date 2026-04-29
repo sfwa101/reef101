@@ -503,7 +503,7 @@ const ProductCard = ({
       unit: p.unit,
       category: "أدوات منزلية",
       source: "home",
-    } as never);
+    } as unknown as import("@/lib/products").Product);
     toast.success("أُضيف إلى السلة", { description: p.name });
   };
 
@@ -656,7 +656,7 @@ const BundleCard = ({
         unit: p.unit,
         category: "أدوات منزلية",
         source: "home",
-      } as never),
+      } as unknown as import("@/lib/products").Product),
     );
     toast.success("أُضيفت الحزمة إلى السلة", { description: bundle.title });
   };
@@ -752,7 +752,7 @@ const DetailSheet = ({
       unit: isPre ? `دفعة مقدمة — ${product.unit}` : product.unit,
       category: "أدوات منزلية",
       source: "home",
-    } as never);
+    } as unknown as import("@/lib/products").Product);
     toast.success(isPre ? "تم تأكيد الحجز" : "أُضيف إلى السلة", {
       description: product.name,
     });
