@@ -477,6 +477,69 @@ export type Database = {
         }
         Relationships: []
       }
+      savings_jar: {
+        Row: {
+          auto_save_enabled: boolean
+          balance: number
+          created_at: string
+          goal: number | null
+          goal_label: string | null
+          id: string
+          round_to: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_save_enabled?: boolean
+          balance?: number
+          created_at?: string
+          goal?: number | null
+          goal_label?: string | null
+          id?: string
+          round_to?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_save_enabled?: boolean
+          balance?: number
+          created_at?: string
+          goal?: number | null
+          goal_label?: string | null
+          id?: string
+          round_to?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      savings_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          kind: string
+          label: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          kind?: string
+          label: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       store_settlements: {
         Row: {
           commission_amount: number
