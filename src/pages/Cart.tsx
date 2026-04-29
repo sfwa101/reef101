@@ -10,10 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import { products as allProducts, type Product } from "@/lib/products";
 import { fireConfetti, fireMiniConfetti } from "@/lib/confetti";
+import { useLocation } from "@/context/LocationContext";
+import { detectZoneFromAddress } from "@/lib/geoZones";
 
 const WA_NUMBER = "201080068689";
-const FREE_DELIVERY_THRESHOLD = 300;
-const GIFT_THRESHOLD = 500;
+const GIFT_BONUS = 200; // gift threshold = free-delivery + this
 
 type Addr = {
   id: string; label: string; city: string; district: string | null;
@@ -119,6 +120,7 @@ const Cart = () => {
   const { lines, total, count, setQty, remove, add, clear } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { zone, setFromAddress } = useLocation();
   const [promo, setPromo] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<{ code: string; pct: number } | null>(null);
   const [tip, setTip] = useState(0);
@@ -147,13 +149,25 @@ const Cart = () => {
     })();
   }, [user]);
 
+  // When the active address changes, sync the global zone
+  useEffect(() => {
+    const a = addresses.find((x) => x.id === addrId);
+    if (a) setFromAddress(a.city, a.district);
+  }, [addrId, addresses, setFromAddress]);
+
   const subtotal = total;
   const discount = appliedPromo ? Math.round(subtotal * appliedPromo.pct) : 0;
-  const delivery = subtotal === 0 ? 0 : subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : 25;
+  const FREE_DELIVERY_THRESHOLD = zone.freeDeliveryThreshold ?? Infinity;
+  const GIFT_THRESHOLD = isFinite(FREE_DELIVERY_THRESHOLD) ? FREE_DELIVERY_THRESHOLD + GIFT_BONUS : Infinity;
+  const delivery = subtotal === 0
+    ? 0
+    : subtotal >= FREE_DELIVERY_THRESHOLD
+      ? 0
+      : zone.deliveryFee;
   const grand = Math.max(0, subtotal - discount + delivery + tip);
 
   /* Savings on this bill: discount + (free delivery saved) */
-  const billSavings = discount + (subtotal >= FREE_DELIVERY_THRESHOLD && subtotal > 0 ? 25 : 0);
+  const billSavings = discount + (subtotal >= FREE_DELIVERY_THRESHOLD && subtotal > 0 ? zone.deliveryFee : 0);
 
   /* Split payment: wallet pays partial, remainder in secondary method */
   const isWalletPay = payment === "wallet";
@@ -169,6 +183,9 @@ const Cart = () => {
 
   /* Smart progress bar */
   const progress = useMemo(() => {
+    if (!isFinite(FREE_DELIVERY_THRESHOLD)) {
+      return { pct: 0, label: `🚚 رسوم التوصيل ${toLatin(zone.deliveryFee)} ج.م لمنطقتك`, done: false };
+    }
     if (subtotal >= GIFT_THRESHOLD) {
       return { pct: 100, label: "🎁 طلبك مؤهل لهدية مفاجئة + توصيل مجاني!", done: true };
     }
@@ -186,7 +203,7 @@ const Cart = () => {
       label: `أضف ${toLatin(remain)} ج.م لتحصل على توصيل مجاني 🚚`,
       done: false,
     };
-  }, [subtotal]);
+  }, [subtotal, FREE_DELIVERY_THRESHOLD, GIFT_THRESHOLD, zone.deliveryFee]);
 
   /* Cross-sell: suggest complementary products */
   const crossSell = useMemo<Product[]>(() => {
