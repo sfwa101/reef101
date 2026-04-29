@@ -24,7 +24,7 @@ import {
   Baby,
   PartyPopper,
   Wrench,
-  Soap,
+  SprayCan,
   Crown,
   type LucideIcon,
 } from "lucide-react";
