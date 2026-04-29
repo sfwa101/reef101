@@ -1,11 +1,25 @@
-import { Search, MapPin, Sparkles, Clock, Flame, Award, ChevronLeft } from "lucide-react";
+import { Search, MapPin, Sparkles, Clock, Flame, Award, ChevronLeft, ChevronDown, Plus, Check } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCarousel from "@/components/ProductCarousel";
 import ProductCard from "@/components/ProductCard";
-import { byBadge, products } from "@/lib/products";
+import { products } from "@/lib/products";
+import {
+  getSmartGreeting,
+  getTimeSlot,
+  getWelcomeLine,
+  personalizedProducts,
+  productsForSlot,
+  slotMeta,
+  smartOffers,
+} from "@/lib/personalize";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 import tileSupermarket from "@/assets/tile-supermarket.jpg";
 import tileKitchen from "@/assets/tile-kitchen.jpg";
@@ -38,43 +52,134 @@ const allStores = [
   { id: "home", title: "الأدوات المنزلية", img: tileHome, to: "/store/home" },
 ];
 
+type Addr = {
+  id: string;
+  label: string;
+  city: string;
+  district: string | null;
+  is_default: boolean;
+};
+
 const HomePage = () => {
   const { user, profile } = useAuth();
-  const [defaultAddr, setDefaultAddr] = useState<string | null>(null);
+  const [addresses, setAddresses] = useState<Addr[]>([]);
+  const [activeAddrId, setActiveAddrId] = useState<string | null>(null);
+  const [, force] = useState(0);
+
+  // Re-evaluate time-based content every 5 min
+  useEffect(() => {
+    const t = setInterval(() => force((x) => x + 1), 5 * 60 * 1000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
-    if (!user) { setDefaultAddr(null); return; }
+    if (!user) { setAddresses([]); setActiveAddrId(null); return; }
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("addresses")
-        .select("city,district")
+        .select("id,label,city,district,is_default")
         .eq("user_id", user.id)
-        .eq("is_default", true)
-        .maybeSingle();
-      if (cancelled) return;
-      if (data) {
-        setDefaultAddr([data.district, data.city].filter(Boolean).join("، "));
-      }
+        .order("is_default", { ascending: false });
+      if (cancelled || !data) return;
+      setAddresses(data as Addr[]);
+      const def = (data as Addr[]).find((a) => a.is_default) ?? data[0];
+      setActiveAddrId(def?.id ?? null);
     })();
     return () => { cancelled = true; };
   }, [user]);
 
+  const setDefault = async (id: string) => {
+    if (!user) return;
+    setActiveAddrId(id);
+    await supabase.from("addresses").update({ is_default: false }).eq("user_id", user.id);
+    await supabase.from("addresses").update({ is_default: true }).eq("id", id);
+    setAddresses((prev) => prev.map((a) => ({ ...a, is_default: a.id === id })));
+  };
+
+  const activeAddr = addresses.find((a) => a.id === activeAddrId);
+  const locationLabel = activeAddr
+    ? [activeAddr.district, activeAddr.city].filter(Boolean).join("، ")
+    : "حدد عنوان التوصيل";
+
   const greetingName = profile?.full_name?.split(" ")[0];
-  const locationLabel = defaultAddr || "المعادي، القاهرة";
+  const greeting = getSmartGreeting();
+  const welcome = getWelcomeLine();
+  const slot = getTimeSlot();
+  const meta = slotMeta[slot];
+
+  const recommended = useMemo(() => personalizedProducts(profile, { limit: 10 }), [profile]);
+  const slotPicks = useMemo(() => productsForSlot(slot, 10), [slot]);
+  const personalizedOffers = useMemo(() => smartOffers(profile, 10), [profile]);
+  const trending = useMemo(
+    () => personalizedProducts(profile, { limit: 10, pool: products.filter((p) => p.badge === "trending" || p.badge === "best") }),
+    [profile],
+  );
+  const newForYou = useMemo(
+    () => personalizedProducts(profile, { limit: 10, pool: products.filter((p) => p.badge === "new" || p.badge === "premium") }),
+    [profile],
+  );
 
   return (
     <div className="space-y-6">
       <section className="animate-float-up">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <MapPin className="h-3.5 w-3.5 text-primary" strokeWidth={2.4} />
-          <span>التوصيل إلى</span>
-          <span className="font-bold text-foreground">{locationLabel}</span>
-        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="group flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground">
+              <MapPin className="h-3.5 w-3.5 text-primary" strokeWidth={2.4} />
+              <span>التوصيل إلى</span>
+              <span className="font-bold text-foreground">{locationLabel}</span>
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition group-hover:text-primary" strokeWidth={2.4} />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-72 rounded-2xl p-2" dir="rtl">
+            {addresses.length === 0 ? (
+              <div className="p-3 text-center text-xs text-muted-foreground">
+                لا توجد عناوين محفوظة بعد
+              </div>
+            ) : (
+              <ul className="max-h-64 space-y-1 overflow-auto">
+                {addresses.map((a) => {
+                  const active = a.id === activeAddrId;
+                  return (
+                    <li key={a.id}>
+                      <button
+                        onClick={() => setDefault(a.id)}
+                        className={`flex w-full items-start gap-2 rounded-xl px-3 py-2 text-right transition ${
+                          active ? "bg-primary/10" : "hover:bg-muted"
+                        }`}
+                      >
+                        <MapPin className={`mt-0.5 h-4 w-4 ${active ? "text-primary" : "text-muted-foreground"}`} strokeWidth={2.2} />
+                        <span className="flex-1">
+                          <span className="block text-sm font-bold text-foreground">{a.label}</span>
+                          <span className="block text-[11px] text-muted-foreground">
+                            {[a.district, a.city].filter(Boolean).join("، ")}
+                          </span>
+                        </span>
+                        {active && <Check className="h-4 w-4 text-primary" strokeWidth={2.4} />}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <div className="mt-1 border-t border-border pt-1">
+              <Link
+                to="/account/addresses"
+                className="flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold text-primary transition hover:bg-primary/10"
+              >
+                <Plus className="h-4 w-4" strokeWidth={2.4} />
+                إضافة عنوان جديد
+              </Link>
+            </div>
+          </PopoverContent>
+        </Popover>
+
         <h1 className="mt-2 font-display text-3xl font-extrabold leading-tight tracking-tight text-balance">
-          {greetingName ? `أهلًا ${greetingName}،` : "صباح الخير،"}
+          {greeting}
+          {greetingName ? <span className="text-primary"> {greetingName}</span> : null}،
           <br />
-          <span className="text-primary">ماذا نُحضّر اليوم؟</span>
+          <span className="text-muted-foreground text-2xl font-bold">{welcome}</span>
         </h1>
       </section>
 
@@ -92,11 +197,12 @@ const HomePage = () => {
         className="relative overflow-hidden rounded-[1.5rem] p-4 shadow-tile animate-float-up"
         style={{
           animationDelay: "120ms",
-          background: "linear-gradient(135deg, hsl(142 45% 30%), hsl(142 35% 42%) 60%, hsl(45 70% 60%))",
+          background:
+            "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)) 70%, hsl(var(--accent)))",
         }}
       >
         <div className="absolute -left-8 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
-        <div className="absolute -bottom-12 -right-10 h-36 w-36 rounded-full bg-accent/30 blur-3xl" />
+        <div className="absolute -bottom-12 -right-10 h-36 w-36 rounded-full bg-white/20 blur-3xl" />
         <div className="relative flex items-center justify-between gap-3">
           <div className="flex-1">
             <span className="inline-block rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
@@ -130,10 +236,38 @@ const HomePage = () => {
         </div>
       </section>
 
-      <ProductCarousel title="الأكثر مبيعًا" subtitle="اختيارات يثق بها آلاف العملاء" accent="🔥 رائج" products={byBadge("best")} seeAllTo="/sections" />
-      <ProductCarousel title="رائج هذا الأسبوع" accent="📈 الأعلى تفاعلًا" products={byBadge("trending")} seeAllTo="/sections" />
-      <ProductCarousel title="اختيارات الشيف" subtitle="منتجات مختارة بعناية" accent="⭐ مميّز" products={byBadge("premium")} seeAllTo="/store/recipes" />
-      <ProductCarousel title="وصل حديثًا" accent="✨ جديد" products={byBadge("new")} seeAllTo="/sections" />
+      {/* Time-of-day smart section */}
+      <section className="animate-float-up">
+        <div
+          className="relative overflow-hidden rounded-[1.5rem] p-4 shadow-soft"
+          style={{
+            background:
+              "linear-gradient(135deg, hsl(var(--primary-soft)), hsl(var(--secondary)))",
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-bold text-primary">{meta.emoji} {meta.subtitle}</p>
+              <h2 className="mt-0.5 font-display text-xl font-extrabold text-foreground">{meta.title}</h2>
+            </div>
+            <Link to="/sections" className="rounded-full bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground shadow-pill">
+              {meta.cta}
+            </Link>
+          </div>
+        </div>
+        <div className="mt-3 -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar">
+          {slotPicks.slice(0, 8).map((p) => (
+            <div key={p.id} className="w-40 shrink-0">
+              <ProductCard product={p} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <ProductCarousel title="مختارات لك" subtitle="بناءً على تفضيلاتك ووقتك" accent="✨ مخصص" products={recommended} seeAllTo="/sections" />
+      <ProductCarousel title="عروض ذكية" subtitle="خصومات تناسب ذوقك" accent="🔥 وفّر أكثر" products={personalizedOffers} seeAllTo="/offers" />
+      <ProductCarousel title="رائج لك" accent="📈 الأعلى تفاعلًا" products={trending} seeAllTo="/sections" />
+      <ProductCarousel title="جديد ومميز لك" accent="⭐ مختار" products={newForYou} seeAllTo="/sections" />
 
       <section className="animate-float-up">
         <h2 className="mb-3 px-1 font-display text-xl font-extrabold text-foreground">استكشف بطريقتك</h2>
