@@ -25,7 +25,9 @@ import {
   bookingTimeSlots,
   formatBookingShort,
   DEPOSIT_THRESHOLD,
+  buildBookingDays,
 } from "@/lib/sweetsFulfillment";
+import type { CartLineMeta } from "@/context/CartContext";
 
 const WA_NUMBER = "201080068689";
 const GIFT_BONUS = 200; // gift threshold = free-delivery + this
@@ -57,14 +59,30 @@ const NumberFlow = ({ value, className = "" }: { value: number; className?: stri
 
 /* -------- Swipeable cart line -------- */
 const CartLineItem = ({
-  l, setQty, remove,
+  l, setQty, remove, updateMeta,
 }: {
-  l: { product: Product; qty: number };
+  l: { product: Product; qty: number; meta?: CartLineMeta };
   setQty: (id: string, q: number) => void;
   remove: (id: string) => void;
+  updateMeta: (id: string, meta: CartLineMeta) => void;
 }) => {
   const x = useMotionValue(0);
   const bgOpacity = useTransform(x, [-120, -60, 0], [1, 0.6, 0]);
+  const unitPrice = l.meta?.unitPrice ?? l.product.price;
+
+  // Booking edit panel state — only relevant for Type C lines
+  const isBooking = isSweetsProduct(l.product.source) &&
+    fulfillmentTypeFor(l.product.id, l.product.subCategory) === "C";
+  const [editOpen, setEditOpen] = useState(false);
+  const days = useMemo(() => buildBookingDays(7), []);
+  const currentDateIdx = Math.max(
+    0,
+    days.findIndex((d) => d.toISOString().slice(0, 10) === l.meta?.bookingDate),
+  );
+  const lineSubtotal = unitPrice * l.qty;
+  const depositRequired = isBooking && lineSubtotal >= DEPOSIT_THRESHOLD;
+  const payDeposit = isBooking && (depositRequired || (l.meta?.payDeposit ?? true));
+  const shipMode = (l.meta?.shipMode ?? "split") as "split" | "wait";
 
   return (
     <div className="relative overflow-hidden rounded-2xl">
@@ -89,8 +107,9 @@ const CartLineItem = ({
             animate(x, 0, { type: "spring", damping: 28, stiffness: 320 });
           }
         }}
-        className="relative flex gap-3 rounded-2xl bg-card p-3 shadow-[0_4px_18px_-8px_rgba(0,0,0,0.12)] ring-1 ring-border/30"
+        className="relative flex flex-col gap-3 rounded-2xl bg-card p-3 shadow-[0_4px_18px_-8px_rgba(0,0,0,0.12)] ring-1 ring-border/30"
       >
+       <div className="flex gap-3">
         <img src={l.product.image} alt="" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
         <div className="flex flex-1 flex-col">
           <div className="flex items-start justify-between gap-2">
@@ -104,9 +123,30 @@ const CartLineItem = ({
             </button>
           </div>
           <p className="text-[10px] text-muted-foreground">{l.product.unit}</p>
+          {/* Selected variant + addons */}
+          {(l.meta?.variantId || l.meta?.addonIds?.length) && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {l.meta?.variantId && (() => {
+                const v = l.product.variants?.find((x) => x.id === l.meta?.variantId);
+                return v ? (
+                  <span className="rounded-md bg-violet-500/10 px-1.5 py-0.5 text-[9px] font-extrabold text-violet-700 dark:text-violet-300">
+                    {v.label}
+                  </span>
+                ) : null;
+              })()}
+              {l.meta?.addonIds?.map((id) => {
+                const a = l.product.addons?.find((x) => x.id === id);
+                return a ? (
+                  <span key={id} className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[9px] font-extrabold text-foreground/80">
+                    + {a.label}
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
           <div className="mt-auto flex items-center justify-between pt-2">
             <span className="font-display text-base font-extrabold text-primary">
-              <NumberFlow value={l.product.price * l.qty} /> <span className="text-[10px] font-bold text-muted-foreground">ج.م</span>
+              <NumberFlow value={unitPrice * l.qty} /> <span className="text-[10px] font-bold text-muted-foreground">ج.م</span>
             </span>
             <div className="flex items-center gap-1 rounded-[12px] bg-foreground/5 p-0.5">
               <button
@@ -127,13 +167,170 @@ const CartLineItem = ({
             </div>
           </div>
         </div>
+       </div>
+
+       {/* Type C booking summary + edit panel */}
+       {isBooking && (
+         <div className="rounded-[14px] bg-violet-500/8 ring-1 ring-violet-500/20">
+           <button
+             type="button"
+             onClick={() => setEditOpen((v) => !v)}
+             className="flex w-full items-center justify-between gap-2 px-3 py-2 text-right"
+           >
+             <div className="flex min-w-0 items-center gap-2">
+               <CalendarDays className="h-3.5 w-3.5 shrink-0 text-violet-600" />
+               <div className="min-w-0">
+                 <p className="truncate text-[11px] font-extrabold text-violet-700 dark:text-violet-300">
+                   {l.meta?.bookingDate
+                     ? formatBookingShort(new Date(l.meta.bookingDate))
+                     : "اختر موعد الاستلام"}
+                   {" · "}
+                   {bookingTimeSlots.find((s) => s.id === l.meta?.bookingSlot)?.label ?? "—"}
+                 </p>
+                 <p className="text-[9.5px] font-bold text-foreground/70">
+                   {payDeposit
+                     ? `عربون ${fmtMoney(Math.round(lineSubtotal * 0.5))} الآن · ${shipMode === "wait" ? "استلام كامل" : "استلام مُجزّأ"}`
+                     : `دفع كامل مقدماً · ${shipMode === "wait" ? "استلام كامل" : "استلام مُجزّأ"}`}
+                 </p>
+               </div>
+             </div>
+             <span className="rounded-md bg-violet-600 px-2 py-1 text-[9.5px] font-extrabold text-white">
+               {editOpen ? "إغلاق" : "تعديل"}
+             </span>
+           </button>
+
+           <AnimatePresence initial={false}>
+             {editOpen && (
+               <motion.div
+                 initial={{ height: 0, opacity: 0 }}
+                 animate={{ height: "auto", opacity: 1 }}
+                 exit={{ height: 0, opacity: 0 }}
+                 className="overflow-hidden border-t border-violet-500/15 px-3 py-3"
+               >
+                 {/* Date row */}
+                 <p className="mb-1.5 text-[10px] font-extrabold text-foreground/80">تاريخ الاستلام</p>
+                 <div className="-mx-3 mb-3 overflow-x-auto px-3">
+                   <div className="flex gap-1.5 pb-1">
+                     {days.map((d, i) => {
+                       const active = i === currentDateIdx;
+                       return (
+                         <button
+                           key={i}
+                           type="button"
+                           onClick={() =>
+                             updateMeta(l.product.id, {
+                               bookingDate: d.toISOString().slice(0, 10),
+                             })
+                           }
+                           className={`flex w-[58px] shrink-0 flex-col items-center rounded-[10px] border px-1 py-1.5 text-[9.5px] font-extrabold transition ${
+                             active
+                               ? "border-violet-500 bg-violet-500 text-white"
+                               : "border-border bg-background"
+                           }`}
+                         >
+                           <span className="opacity-80">
+                             {d.toLocaleDateString("ar-EG", { weekday: "short" })}
+                           </span>
+                           <span className="font-display text-[13px] tabular-nums">
+                             {toLatin(d.getDate())}
+                           </span>
+                         </button>
+                       );
+                     })}
+                   </div>
+                 </div>
+                 {/* Slot row */}
+                 <p className="mb-1.5 text-[10px] font-extrabold text-foreground/80">وقت الاستلام</p>
+                 <div className="mb-3 grid grid-cols-2 gap-1.5">
+                   {bookingTimeSlots.map((s) => {
+                     const active = s.id === l.meta?.bookingSlot;
+                     return (
+                       <button
+                         key={s.id}
+                         type="button"
+                         onClick={() => updateMeta(l.product.id, { bookingSlot: s.id })}
+                         className={`rounded-[10px] border px-2 py-1.5 text-[10px] font-extrabold transition ${
+                           active
+                             ? "border-violet-500 bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"
+                             : "border-border bg-background text-foreground"
+                         }`}
+                       >
+                         {s.label}
+                       </button>
+                     );
+                   })}
+                 </div>
+                 {/* Ship mode */}
+                 <p className="mb-1.5 text-[10px] font-extrabold text-foreground/80">طريقة الوصول</p>
+                 <div className="mb-3 grid grid-cols-2 gap-1.5">
+                   {([
+                     { id: "split", label: "على دفعتين" },
+                     { id: "wait", label: "كل الطلب معاً" },
+                   ] as const).map((m) => {
+                     const active = shipMode === m.id;
+                     return (
+                       <button
+                         key={m.id}
+                         type="button"
+                         onClick={() => updateMeta(l.product.id, { shipMode: m.id })}
+                         className={`rounded-[10px] border px-2 py-1.5 text-[10px] font-extrabold transition ${
+                           active
+                             ? "border-violet-500 bg-violet-500 text-white"
+                             : "border-border bg-background text-foreground"
+                         }`}
+                       >
+                         {m.label}
+                       </button>
+                     );
+                   })}
+                 </div>
+                 {/* Payment plan */}
+                 <p className="mb-1.5 text-[10px] font-extrabold text-foreground/80">
+                   خطة الدفع
+                   {depositRequired && (
+                     <span className="ms-1 rounded-md bg-amber-500/20 px-1 py-0.5 text-[8.5px] text-amber-800 dark:text-amber-300">
+                       عربون إجباري
+                     </span>
+                   )}
+                 </p>
+                 <div className="grid grid-cols-2 gap-1.5">
+                   {([
+                     { id: true, label: `عربون 50٪ · ${toLatin(Math.round(lineSubtotal * 0.5))} ج` },
+                     { id: false, label: `كامل المبلغ · ${toLatin(lineSubtotal)} ج` },
+                   ] as const).map((opt) => {
+                     const active = payDeposit === opt.id;
+                     const disabled = depositRequired && opt.id === false;
+                     return (
+                       <button
+                         key={String(opt.id)}
+                         type="button"
+                         disabled={disabled}
+                         onClick={() =>
+                           !disabled && updateMeta(l.product.id, { payDeposit: opt.id })
+                         }
+                         className={`rounded-[10px] border px-2 py-1.5 text-[10px] font-extrabold tabular-nums transition ${
+                           active
+                             ? "border-violet-500 bg-violet-500 text-white"
+                             : "border-border bg-background text-foreground"
+                         } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+                       >
+                         {opt.label}
+                       </button>
+                     );
+                   })}
+                 </div>
+               </motion.div>
+             )}
+           </AnimatePresence>
+         </div>
+       )}
       </motion.div>
     </div>
   );
 };
 
 const Cart = () => {
-  const { lines, total, count, setQty, remove, add, clear } = useCart();
+  const { lines, total, count, setQty, remove, add, clear, updateMeta } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { zone, setFromAddress } = useLocation();
@@ -231,26 +428,55 @@ const Cart = () => {
     () => computeSweetsRules(sweetsBuckets.C.subtotal, grand),
     [sweetsBuckets.C.subtotal, grand],
   );
+
+  /* Per-line booking choices roll up into cart-level totals */
+  const bookingLinesMeta = useMemo(() => {
+    return lines
+      .filter(
+        (l) =>
+          isSweetsProduct(l.product.source) &&
+          fulfillmentTypeFor(l.product.id, l.product.subCategory) === "C",
+      )
+      .map((l) => {
+        const unit = l.meta?.unitPrice ?? l.product.price;
+        const sub = unit * l.qty;
+        const lineRequired = sub >= DEPOSIT_THRESHOLD;
+        const wantsDeposit = lineRequired || (l.meta?.payDeposit ?? true);
+        return {
+          id: l.product.id,
+          subtotal: sub,
+          payDeposit: wantsDeposit,
+          shipMode: (l.meta?.shipMode ?? "split") as "split" | "wait",
+        };
+      });
+  }, [lines]);
+
+  /* Aggregated deposit charged now across ALL Type C lines */
+  const aggregateDeposit = useMemo(
+    () =>
+      bookingLinesMeta.reduce(
+        (s, b) => s + (b.payDeposit ? Math.round(b.subtotal * 0.5) : b.subtotal),
+        0,
+      ),
+    [bookingLinesMeta],
+  );
+  const anyWaitForAll = bookingLinesMeta.some((b) => b.shipMode === "wait");
   const hasInstantSweets = sweetsBuckets.A.lines.length > 0;
   const hasFreshSweets = sweetsBuckets.B.lines.length > 0;
   const hasBooking = sweetsBuckets.C.lines.length > 0;
-  const isSplitShipment =
-    hasBooking && (hasInstantSweets || hasFreshSweets || lines.some(
-      (l) => !isSweetsProduct(l.product.source),
-    ));
+  const hasNonBookingItems =
+    hasInstantSweets ||
+    hasFreshSweets ||
+    lines.some((l) => !isSweetsProduct(l.product.source));
 
-  /* Deposit toggle (when not mandatory the user can opt in). */
-  const [payDeposit, setPayDeposit] = useState<boolean>(false);
-  // Force-on when threshold hit
-  useEffect(() => {
-    if (sweetsRules.depositRequired) setPayDeposit(true);
-  }, [sweetsRules.depositRequired]);
+  /* Whether ANY booking line opted into deposit (drives copy in summary) */
+  const payDeposit = bookingLinesMeta.some((b) => b.payDeposit);
 
-  /* Final amount the customer pays NOW (deposit) vs. on delivery */
-  const payNowAmount = payDeposit && sweetsRules.hasBooking
-    ? sweetsRules.depositAmount + Math.max(0, grand - sweetsRules.bookingSubtotal)
+  /* Final amount the customer pays NOW vs. on delivery (line-level aware) */
+  const payNowAmount = sweetsRules.hasBooking
+    ? aggregateDeposit + Math.max(0, grand - sweetsRules.bookingSubtotal)
     : grand;
-  const payOnDelivery = grand - payNowAmount;
+  const payOnDelivery = Math.max(0, grand - payNowAmount);
 
   /* Auto-disable COD when any Type C booking exists */
   useEffect(() => {
@@ -402,7 +628,7 @@ const Cart = () => {
         isSplit ? `دفع مُجزّأ: محفظة ${Math.round(walletApplied)} + ${secondaryLabel} ${Math.round(walletShortfall)}` : null,
         showChangeJar && saveChange ? `ادخار الفكة: ${changeRemainder} ج.م للحصّالة` : null,
         sweetsRules.hasBooking ? `حجوزات: ${fmtMoney(sweetsRules.bookingSubtotal)}` : null,
-        payDeposit && sweetsRules.hasBooking ? `عربون مُسدّد: ${fmtMoney(sweetsRules.depositAmount)}` : null,
+        sweetsRules.hasBooking ? `يُدفع الآن من الحجوزات: ${fmtMoney(aggregateDeposit)}` : null,
       ].filter(Boolean);
 
       const { data: order, error } = await supabase
@@ -502,7 +728,10 @@ const Cart = () => {
       }
 
       const lineItems = lines
-        .map((l, i) => `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(l.product.price * l.qty)}`)
+        .map((l, i) => {
+          const unit = l.meta?.unitPrice ?? l.product.price;
+          return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(unit * l.qty)}`;
+        })
         .join("\n");
       const addrLine = selectedAddr
         ? `${[selectedAddr.label, selectedAddr.street, selectedAddr.building, selectedAddr.district, selectedAddr.city].filter(Boolean).join("، ")}`
@@ -541,9 +770,11 @@ const Cart = () => {
         `🚚 التوصيل: ${delivery === 0 ? "مجاني" : fmtMoney(delivery)}\n` +
         (tip > 0 ? `💚 إكرامية: ${fmtMoney(tip)}\n` : "") +
         `\n*💰 الإجمالي:* *${fmtMoney(grand)}*\n\n` +
-        (payDeposit && sweetsRules.hasBooking
-          ? `🔒 *عربون مسدّد الآن:* ${fmtMoney(sweetsRules.depositAmount)}\n` +
-            `📦 *يُحصّل عند التوصيل:* ${fmtMoney(payOnDelivery)}\n\n`
+        (sweetsRules.hasBooking
+          ? `🔒 *يُدفع الآن من الحجوزات:* ${fmtMoney(aggregateDeposit)}\n` +
+            (payOnDelivery > 0
+              ? `📦 *يُحصّل عند التوصيل:* ${fmtMoney(payOnDelivery)}\n\n`
+              : "\n")
           : "") +
         (isSplit
           ? `💳 *طريقة الدفع:* مُجزّأ\n   • محفظة: ${fmtMoney(walletApplied)}\n   • ${secondaryLabel}: ${fmtMoney(walletShortfall)}\n`
@@ -570,12 +801,10 @@ const Cart = () => {
         const commission = Math.round((g.subtotal * r.commissionPct) / 100);
         const netToVendor = g.subtotal - commission;
         const vendorLines = g.lines
-          .map(
-            (l, i) =>
-              `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(
-                l.product.price * l.qty,
-              )}`,
-          )
+          .map((l, i) => {
+            const unit = lines.find((x) => x.product.id === l.product.id)?.meta?.unitPrice ?? l.product.price;
+            return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(unit * l.qty)}`;
+          })
           .join("\n");
         const vendorMsg =
           `🍽️ *طلب جديد عبر ريف المدينة*\n` +
@@ -601,7 +830,8 @@ const Cart = () => {
             const slot = bookingTimeSlots.find((s) => s.id === l.meta?.slot)?.label ?? "—";
             const day = l.meta?.date ? formatBookingShort(new Date(l.meta.date)) : "—";
             const note = l.meta?.note ? `\n   📝 ملاحظة: ${l.meta.note}` : "";
-            return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(l.product.price * l.qty)}\n   📅 ${day} · ${slot}${note}`;
+            const lineUnit = lines.find((x) => x.product.id === l.product.id)?.meta?.unitPrice ?? l.product.price;
+            return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(lineUnit * l.qty)}\n   📅 ${day} · ${slot}${note}`;
           })
           .join("\n\n");
         const producerMsg =
@@ -611,9 +841,7 @@ const Cart = () => {
           `🛒 *الحجوزات:*\n${producerLines}\n\n` +
           `━━━━━━━━━━━━━━\n` +
           `💵 إجمالي الحجز: ${fmtMoney(sweetsBuckets.C.subtotal)}\n` +
-          (payDeposit
-            ? `🔒 عربون مُسدّد: ${fmtMoney(sweetsRules.depositAmount)}\n`
-            : `⚠️ لم يُدفع عربون — تأكّد قبل البدء\n`) +
+          `🔒 يُدفع الآن: ${fmtMoney(aggregateDeposit)}\n` +
           `\n📍 *عنوان التوصيل:*\n${addrLine}\n\n` +
           `✅ برجاء البدء بالتجهيز`;
         const pUrl = `https://wa.me/${HOME_PRODUCERS_WA}?text=${encodeURIComponent(producerMsg)}`;
@@ -688,7 +916,7 @@ const Cart = () => {
         )}
 
         {/* Split-shipment notice for sweets bookings */}
-        {isSplitShipment && (
+        {hasBooking && hasNonBookingItems && !anyWaitForAll && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -777,7 +1005,7 @@ const Cart = () => {
                       exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
                       transition={{ type: "spring", damping: 26, stiffness: 280 }}
                     >
-                      <CartLineItem l={l} setQty={setQty} remove={remove} />
+                      <CartLineItem l={l} setQty={setQty} remove={remove} updateMeta={updateMeta} />
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -917,72 +1145,50 @@ const Cart = () => {
           })}
         </div>
 
-        {/* Deposit toggle — appears only for Type C bookings */}
+        {/* Booking deposit summary — derived from per-line choices.
+            Each booking line lets the user pick deposit vs full payment
+            (and split-vs-wait shipping) directly inside its cart card. */}
         {sweetsRules.hasBooking && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-3 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500/8 to-fuchsia-500/8 p-3 ring-1 ring-violet-500/25"
           >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-[12px] font-extrabold">دفع عربون 50٪</p>
-                  {sweetsRules.depositRequired && (
-                    <span className="rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-800 dark:text-amber-300">
-                      إجباري
-                    </span>
-                  )}
-                </div>
-                <p className="mt-0.5 text-[10px] text-muted-foreground">
-                  {sweetsRules.depositRequired
-                    ? `الحجز يتجاوز ${toLatin(DEPOSIT_THRESHOLD)} ج.م — يجب تأكيده بعربون.`
-                    : "ادفع نصف قيمة الحجز الآن، والباقي عند التوصيل."}
-                </p>
-              </div>
-              <button
-                role="switch"
-                aria-checked={payDeposit}
-                onClick={() =>
-                  !sweetsRules.depositRequired && setPayDeposit((v) => !v)
-                }
-                disabled={sweetsRules.depositRequired}
-                className={`relative h-7 w-12 shrink-0 rounded-full transition ${
-                  payDeposit ? "bg-violet-600" : "bg-foreground/15"
-                } ${sweetsRules.depositRequired ? "opacity-90" : ""}`}
-              >
-                <span
-                  className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-pill transition-all ${
-                    payDeposit ? "right-0.5" : "right-[1.625rem]"
-                  }`}
-                />
-              </button>
+            <div className="mb-2 flex items-center gap-2">
+              <Cake className="h-4 w-4 text-violet-600" />
+              <p className="text-[12px] font-extrabold">ملخّص حجوزات الحلويات</p>
             </div>
-            <AnimatePresence>
-              {payDeposit && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="mt-2 overflow-hidden rounded-[12px] bg-card/70 p-2.5 ring-1 ring-violet-500/20"
-                >
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-bold text-foreground/80">العربون الآن</span>
-                    <span className="font-display font-extrabold text-violet-700 tabular-nums dark:text-violet-300">
-                      {fmtMoney(sweetsRules.depositAmount)}
-                    </span>
-                  </div>
-                  {payOnDelivery > 0 && (
-                    <div className="mt-1 flex items-center justify-between text-[11px]">
-                      <span className="font-bold text-foreground/80">يُحصّل عند التوصيل</span>
-                      <span className="font-display font-extrabold tabular-nums">
-                        {fmtMoney(payOnDelivery)}
-                      </span>
-                    </div>
-                  )}
-                </motion.div>
+            <div className="space-y-1 rounded-[12px] bg-card/70 p-2.5 ring-1 ring-violet-500/20">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="font-bold text-foreground/80">إجمالي الحجوزات</span>
+                <span className="font-display font-extrabold tabular-nums">
+                  {fmtMoney(sweetsRules.bookingSubtotal)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="font-bold text-foreground/80">يُدفع الآن (عربون/كامل)</span>
+                <span className="font-display font-extrabold text-violet-700 tabular-nums dark:text-violet-300">
+                  {fmtMoney(aggregateDeposit)}
+                </span>
+              </div>
+              {payOnDelivery > 0 && (
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-foreground/80">يُحصّل عند التوصيل</span>
+                  <span className="font-display font-extrabold tabular-nums">
+                    {fmtMoney(payOnDelivery)}
+                  </span>
+                </div>
               )}
-            </AnimatePresence>
+              <div className="flex items-center justify-between text-[10px] pt-1">
+                <span className="text-muted-foreground">طريقة التوصيل</span>
+                <span className="font-extrabold text-foreground/85">
+                  {anyWaitForAll ? "كل الطلب يصل معاً 📦" : "طلبك يصل على دفعتين 🚚 + 🎂"}
+                </span>
+              </div>
+            </div>
+            <p className="mt-2 text-[10px] text-muted-foreground">
+              💡 يمكنك تعديل موعد كل حجز وخطة دفعه من زر «تعديل» على بطاقة المنتج بالأعلى.
+            </p>
           </motion.div>
         )}
 

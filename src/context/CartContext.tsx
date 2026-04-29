@@ -13,6 +13,20 @@ export type CartLineMeta = {
   bookingSlot?: string;
   /** Free-form note kept on the line (e.g. "اكتب اسم العميل على التورتة") */
   bookingNote?: string;
+  /** Selected variant id (e.g. small/medium/large) */
+  variantId?: string;
+  /** Selected add-on ids */
+  addonIds?: string[];
+  /** Final unit price after variant + addons (overrides product.price for totals if set) */
+  unitPrice?: number;
+  /** Pay 50% deposit now for this booking line (Type C only) */
+  payDeposit?: boolean;
+  /**
+   * Shipment preference for booking lines:
+   *  - "split" → instant items now, booking later (default)
+   *  - "wait"  → hold all items and deliver together on booking date
+   */
+  shipMode?: "split" | "wait";
 };
 
 type CartLine = { product: Product; qty: number; meta?: CartLineMeta };
@@ -97,7 +111,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo<CartCtx>(() => {
     const count = lines.reduce((s, l) => s + l.qty, 0);
-    const total = lines.reduce((s, l) => s + l.qty * l.product.price, 0);
+    const total = lines.reduce(
+      (s, l) => s + l.qty * (l.meta?.unitPrice ?? l.product.price),
+      0,
+    );
     return { lines, count, total, add, remove, setQty, updateMeta, clear };
   }, [lines, add, remove, setQty, updateMeta, clear]);
 
