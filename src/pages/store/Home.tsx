@@ -776,6 +776,21 @@ const ProductCard = ({
             Premium
           </span>
         )}
+
+        {/* Compare toggle */}
+        <button
+          onClick={handleCompare}
+          aria-label={inCompare ? "إزالة من المقارنة" : "أضف للمقارنة"}
+          className={`absolute bottom-2 left-2 flex h-7 w-7 items-center justify-center rounded-full shadow-soft backdrop-blur transition active:scale-90 ${
+            inCompare
+              ? "bg-foreground text-background"
+              : compareFull
+                ? "bg-background/70 text-muted-foreground"
+                : "bg-background/90 text-foreground"
+          }`}
+        >
+          <Scale className="h-3.5 w-3.5" />
+        </button>
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-3">
