@@ -67,7 +67,7 @@ const Wallet = () => {
       if (!mounted) return;
       setUserId(user.id);
 
-      const [{ data: bal }, { data: tx }, { data: items }, { data: refRows }, { data: jarRow }, { data: jarTx }] = await Promise.all([
+      const [{ data: bal }, { data: tx }, { data: items }, { data: refRows }, { data: jarRow }, { data: jarTx }, { data: spent }] = await Promise.all([
         supabase.from("wallet_balances").select("balance,points,coupons,cashback").eq("user_id", user.id).maybeSingle(),
         supabase.from("wallet_transactions").select("id,label,amount,kind,created_at,source").eq("user_id", user.id).order("created_at", { ascending: false }).limit(30),
         supabase.from("order_items").select("price,quantity,product_id, products(category, old_price, price)").in("order_id",
@@ -76,6 +76,7 @@ const Wallet = () => {
         supabase.from("referrals").select("id,status,commission,first_order_at,created_at").eq("referrer_id", user.id).order("created_at", { ascending: false }),
         supabase.from("savings_jar").select("balance,auto_save_enabled,round_to,goal,goal_label").eq("user_id", user.id).maybeSingle(),
         supabase.from("savings_transactions").select("id,amount,kind,label,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
+        supabase.rpc("user_total_spent", { _user_id: user.id }),
       ]);
 
       if (!mounted) return;
@@ -84,6 +85,7 @@ const Wallet = () => {
       setReferrals((refRows ?? []) as ReferralRow[]);
       setJar((jarRow ?? { balance: 0, auto_save_enabled: false, round_to: 5, goal: null, goal_label: null }) as SavingsJar);
       setJarTxs((jarTx ?? []) as SavingsTx[]);
+      setTier(tierProgress(Number(spent ?? 0)).tier);
 
       // detect previous successful commission to celebrate on entry
       const lastReward = (tx ?? []).find((t: any) => t.kind === "reward" && t.source === "referral");
