@@ -1,181 +1,242 @@
 import { useNavigate } from "@tanstack/react-router";
 import {
+  ShoppingBasket,
+  ChefHat,
   Sprout,
+  Apple,
+  Milk,
+  Beef,
+  Snowflake,
+  Sparkles,
+  UtensilsCrossed,
+  Cake,
+  Package,
+  ShoppingBag,
+  Ticket,
+  GraduationCap,
+  Pill,
+  Gift,
   Wheat,
   Boxes,
   Cookie,
   Nut,
   CupSoda,
   Baby,
-  Sparkles,
   PartyPopper,
+  Wrench,
+  SprayCan,
+  Crown,
   type LucideIcon,
 } from "lucide-react";
 
-type LargeSection = {
-  id: string;
-  title: string;
-  subtitle: string;
-  to: string;
-  emoji: string;
-  bg: string; // flat solid color
-  ink?: string; // text color override
-  span: "full" | "two" | "one"; // 3=full row, 2=two-thirds, 1=one-third
+/* ------------------------------------------------------------------ */
+/* Premium adaptive palette — soft pastel tints in light, neon-muted   */
+/* in dark. Each entry exposes (tint, ink) pairs read by the cards.    */
+/* ------------------------------------------------------------------ */
+
+type Accent = {
+  /** soft circular halo behind icon (light mode) */
+  tint: string;
+  /** icon + accent stroke color */
+  ink: string;
+  /** subtle colored shadow tint for the card on hover */
+  shadow: string;
 };
 
-// Bento grid (3 columns). Rows MUST sum to 3 to avoid gaps.
-// Palette: vibrant yet refined — jewel tones with depth and life.
-const largeSections: LargeSection[] = [
-  // Row 1 — full width hero
-  { id: "supermarket",   title: "السوبر ماركت",         subtitle: "كل مقاضي البيت في مكان واحد", to: "/store/supermarket",   emoji: "🏪", bg: "#1F7A4D", span: "full" },
-  // Row 2 — 2/3 + 1/3
-  { id: "kitchen",       title: "مطبخ ريف المدينة",     subtitle: "مشويات وساندوتشات",          to: "/store/kitchen",       emoji: "🍱", bg: "#D85A3C", span: "two" },
-  { id: "subscriptions", title: "اشتراكات الطعام",      subtitle: "وفّر شهرياً",                  to: "/store/subscription",  emoji: "🎟️", bg: "#6B4FB8", span: "one" },
-  // Row 2.5 — full width chef recipes bar
-  { id: "recipes",       title: "وصفات الشيف",          subtitle: "أطباق مختارة بخطوات سهلة",     to: "/store/recipes",       emoji: "👨‍🍳", bg: "#B8341F", span: "full" },
-  // Row 3 — 1/3 + 2/3
-  { id: "restaurants",   title: "مطاعم",                 subtitle: "مختارة",                     to: "/store/restaurants",   emoji: "🍽️", bg: "#0F4C5C", span: "one" },
-  { id: "produce",       title: "الخضراوات والفواكه",  subtitle: "حصاد اليوم من المزرعة",       to: "/store/produce",       emoji: "🥗", bg: "#4E9F3D", span: "two" },
-  // Row 4 — 2/3 + 1/3
-  { id: "dairy",         title: "منتجات الألبان",       subtitle: "من المزرعة",                  to: "/store/dairy",         emoji: "🥛", bg: "#F2A93B", span: "two" },
-  { id: "meat",          title: "اللحوم والمجمدات",    subtitle: "طازجة بأعلى جودة",           to: "/store/meat",          emoji: "🥩", bg: "#A82A2A", span: "one" },
-  // Row 5 — 1/3 + 2/3
-  { id: "wholesale",     title: "قسم الجملة",           subtitle: "وفّر بالكمية",                 to: "/store/wholesale",     emoji: "📦", bg: "#1E3A8A", span: "one" },
-  { id: "baskets",       title: "سلال الريف",           subtitle: "وفّر أسبوعياً",                 to: "/store/baskets",       emoji: "🧺", bg: "#C8862A", span: "two" },
-  // Row 6 — 2/3 + 1/3
-  { id: "village",       title: "منتجات القرية",        subtitle: "خيرات الريف",                 to: "/store/village",       emoji: "🍯", bg: "#8B6F3E", span: "two" },
-  { id: "sweets",        title: "الحلويات والتورتة",   subtitle: "لمسة حلوة لكل مناسبة",         to: "/store/sweets",        emoji: "🎂", bg: "#D14B7E", span: "one" },
-  // Row 7 — full width pharmacy bar
-  { id: "pharmacy",      title: "الصيدلية",              subtitle: "صحتك أولاً · توصيل سريع",      to: "/store/pharmacy",      emoji: "💊", bg: "#0E8A8C", span: "full" },
-  // Row 8 — three equal
-  { id: "personal",      title: "العناية الشخصية",      subtitle: "إطلالة وراحة",                 to: "/sub/personal",        emoji: "🧴", bg: "#9B3A6E", span: "one" },
-  { id: "kitchenTools",  title: "أدوات المطبخ",         subtitle: "كل ما تحتاجه",                 to: "/sub/kitchen-tools",   emoji: "🍳", bg: "#3D6B7A", span: "one" },
-  { id: "paper",         title: "ورقيات ومنظفات",       subtitle: "نظافة ولمعان",                 to: "/sub/paper",           emoji: "🧼", bg: "#2E7DAF", span: "one" },
-  // Row 9 — 1/3 + 2/3
-  { id: "gifts",         title: "الهدايا والتغليف",     subtitle: "لكل مناسبة هدية مميزة",        to: "/sub/gifts",           emoji: "🎁", bg: "#6E3FA3", span: "one" },
-  { id: "library",       title: "مكتبة الطلبة",         subtitle: "قرطاسية · كتب · تصوير",         to: "/store/library",       emoji: "📚", bg: "#1B5E8C", span: "two" },
-];
+const accents: Record<string, Accent> = {
+  sage:    { tint: "140 40% 92%", ink: "150 45% 32%", shadow: "150 40% 30%" },
+  olive:   { tint: "75 35% 88%",  ink: "85 35% 30%",  shadow: "85 35% 28%" },
+  amber:   { tint: "38 70% 90%",  ink: "30 60% 38%",  shadow: "30 55% 38%" },
+  terra:   { tint: "18 60% 90%",  ink: "14 55% 38%",  shadow: "14 50% 38%" },
+  rose:    { tint: "350 55% 92%", ink: "345 45% 42%", shadow: "345 45% 42%" },
+  plum:    { tint: "295 35% 92%", ink: "290 35% 38%", shadow: "290 35% 38%" },
+  ocean:   { tint: "200 45% 90%", ink: "205 50% 32%", shadow: "205 45% 32%" },
+  mint:    { tint: "165 40% 90%", ink: "170 40% 30%", shadow: "170 40% 30%" },
+  sand:    { tint: "40 45% 90%",  ink: "32 35% 32%",  shadow: "32 35% 32%" },
+  steel:   { tint: "215 25% 90%", ink: "215 25% 30%", shadow: "215 25% 30%" },
+  brick:   { tint: "8 50% 90%",   ink: "5 50% 38%",   shadow: "5 50% 38%" },
+  honey:   { tint: "45 70% 88%",  ink: "35 65% 38%",  shadow: "35 60% 38%" },
+};
 
-type SmallSection = {
+type Item = {
   id: string;
   title: string;
+  desc: string;
   to: string;
   icon: LucideIcon;
-  tint: string; // soft background
-  ink: string; // icon color
+  accent: keyof typeof accents;
 };
 
-// Vibrant pastel tints with rich icon colors — lively and refined.
-const smallSections: SmallSection[] = [
-  { id: "village", title: "منتجات القرية",            to: "/store/village", icon: Sprout,      tint: "95 55% 88%",  ink: "120 55% 28%" },
-  { id: "rice",    title: "أرز وبقالة",                to: "/sub/rice",      icon: Wheat,       tint: "38 80% 88%",  ink: "28 75% 38%" },
-  { id: "canned",  title: "معلبات",                    to: "/sub/canned",    icon: Boxes,       tint: "200 70% 88%", ink: "210 70% 38%" },
-  { id: "bakery",  title: "مخبوزات",                   to: "/sub/bakery",    icon: Cookie,      tint: "22 80% 88%",  ink: "18 75% 40%" },
-  { id: "treats",  title: "مفرحات",                    to: "/sub/treats",    icon: PartyPopper, tint: "340 80% 90%", ink: "335 70% 50%" },
-  { id: "snacks",  title: "تسالي ومكسرات",            to: "/sub/snacks",    icon: Nut,         tint: "32 75% 87%",  ink: "25 70% 38%" },
-  { id: "drinks",  title: "مشروبات",                   to: "/sub/drinks",    icon: CupSoda,     tint: "188 75% 88%", ink: "192 75% 36%" },
-  { id: "baby",    title: "العناية بالطفل",            to: "/sub/baby",      icon: Baby,        tint: "205 80% 90%", ink: "210 75% 44%" },
-  { id: "women",   title: "عالم المرأة والإكسسوارات", to: "/sub/women",     icon: Sparkles,    tint: "315 70% 90%", ink: "315 60% 48%" },
+type Group = {
+  id: string;
+  title: string;
+  caption: string;
+  items: Item[];
+};
+
+const groups: Group[] = [
+  {
+    id: "essentials",
+    title: "الأساسيات",
+    caption: "كل ما تحتاجه يومياً",
+    items: [
+      { id: "supermarket", title: "السوبر ماركت", desc: "كل المقاضي في مكان واحد", to: "/store/supermarket", icon: ShoppingBasket, accent: "sage" },
+      { id: "kitchen",     title: "مطبخ ريف",     desc: "وجبات جاهزة طازجة",        to: "/store/kitchen",     icon: ChefHat,        accent: "terra" },
+      { id: "village",     title: "منتجات القرية", desc: "150+ منتج طبيعي",         to: "/store/village",     icon: Sprout,         accent: "olive" },
+      { id: "produce",     title: "الخضار والفواكه", desc: "حصاد اليوم",            to: "/store/produce",     icon: Apple,          accent: "mint" },
+      { id: "dairy",       title: "الألبان",       desc: "من المزرعة مباشرة",       to: "/store/dairy",       icon: Milk,           accent: "sand" },
+      { id: "meat",        title: "اللحوم",        desc: "طازجة وموثوقة",           to: "/store/meat",        icon: Beef,           accent: "brick" },
+    ],
+  },
+  {
+    id: "experiences",
+    title: "تجارب الطعام",
+    caption: "نكهات مختارة بعناية",
+    items: [
+      { id: "recipes",     title: "وصفات الشيف",   desc: "أطباق بخطوات سهلة",      to: "/store/recipes",     icon: Sparkles,       accent: "honey" },
+      { id: "restaurants", title: "مطاعم مختارة",  desc: "أفضل المطاعم",            to: "/store/restaurants", icon: UtensilsCrossed, accent: "ocean" },
+      { id: "sweets",      title: "حلويات وتورتة", desc: "لمسة حلوة لكل مناسبة",    to: "/store/sweets",      icon: Cake,           accent: "rose" },
+      { id: "frozen",      title: "المجمدات",      desc: "وجبات سريعة جاهزة",       to: "/sub/canned",        icon: Snowflake,      accent: "steel" },
+    ],
+  },
+  {
+    id: "value",
+    title: "وفّر أكثر",
+    caption: "اشتراكات وعروض الجملة",
+    items: [
+      { id: "subscriptions", title: "الاشتراكات", desc: "وفّر شهرياً",               to: "/store/subscription", icon: Ticket,        accent: "plum" },
+      { id: "baskets",       title: "سلال الريف", desc: "سلال أسبوعية موفرة",       to: "/store/baskets",      icon: ShoppingBag,   accent: "amber" },
+      { id: "wholesale",     title: "ريف الجملة", desc: "وفّر بالكمية",              to: "/store/wholesale",    icon: Package,       accent: "steel" },
+    ],
+  },
+  {
+    id: "services",
+    title: "الخدمات",
+    caption: "حلول لحياتك اليومية",
+    items: [
+      { id: "library",  title: "مكتبة الطلبة", desc: "قرطاسية · كتب · طباعة",     to: "/store/library",   icon: GraduationCap, accent: "ocean" },
+      { id: "pharmacy", title: "الصيدلية",     desc: "صحتك أولاً",                 to: "/store/pharmacy",  icon: Pill,          accent: "mint" },
+      { id: "gifts",    title: "الهدايا",       desc: "تغليف لكل مناسبة",           to: "/sub/gifts",       icon: Gift,          accent: "rose" },
+      { id: "home",     title: "أدوات المنزل", desc: "كل ما يحتاجه البيت",        to: "/store/home",      icon: Wrench,        accent: "steel" },
+    ],
+  },
+  {
+    id: "pantry",
+    title: "البقالة والمؤن",
+    caption: "أساسيات المطبخ",
+    items: [
+      { id: "rice",   title: "أرز وبقالة",     desc: "حبوب ومؤن",         to: "/sub/rice",   icon: Wheat,       accent: "sand" },
+      { id: "canned", title: "معلبات",         desc: "جاهزة دائماً",       to: "/sub/canned", icon: Boxes,       accent: "steel" },
+      { id: "bakery", title: "مخبوزات",        desc: "طازجة يومياً",       to: "/sub/bakery", icon: Cookie,      accent: "honey" },
+      { id: "snacks", title: "تسالي ومكسرات", desc: "خفيفة وممتعة",       to: "/sub/snacks", icon: Nut,         accent: "amber" },
+      { id: "drinks", title: "مشروبات",        desc: "بارد ومنعش",         to: "/sub/drinks", icon: CupSoda,     accent: "ocean" },
+      { id: "treats", title: "مفرحات",         desc: "هدايا وحلويات",      to: "/sub/treats", icon: PartyPopper, accent: "rose" },
+    ],
+  },
+  {
+    id: "personal",
+    title: "العناية الشخصية",
+    caption: "لك ولعائلتك",
+    items: [
+      { id: "personal", title: "العناية الشخصية", desc: "إطلالة وراحة",        to: "/sub/personal", icon: Crown, accent: "plum" },
+      { id: "baby",     title: "العناية بالطفل",  desc: "كل ما يحتاجه طفلك",  to: "/sub/baby",     icon: Baby,  accent: "ocean" },
+      { id: "women",    title: "عالم المرأة",      desc: "إكسسوارات وأكثر",    to: "/sub/women",    icon: Sparkles, accent: "rose" },
+      { id: "paper",    title: "ورقيات ومنظفات",  desc: "نظافة ولمعان",        to: "/sub/paper",    icon: SprayCan,  accent: "mint" },
+    ],
+  },
 ];
 
 const Sections = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="space-y-6">
-      {/* Large sections — bento grid (no top banner) */}
-      <section className="animate-float-up">
-        <div className="mb-3 flex items-baseline justify-between px-1">
-          <h2 className="font-display text-xl font-extrabold text-foreground">الأقسام الرئيسية</h2>
-          <span className="text-[11px] font-medium text-muted-foreground">{largeSections.length} قسم</span>
-        </div>
+    <div className="space-y-8 pb-6">
+      {/* Page header */}
+      <header className="px-1 pt-1">
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-foreground">
+          الأقسام
+        </h1>
+        <p className="mt-1 text-[12.5px] font-medium text-muted-foreground">
+          استكشف كل ما يقدمه ريف المدينة بأناقة
+        </p>
+      </header>
 
-        <div className="grid grid-cols-3 auto-rows-[118px] gap-2.5">
-          {largeSections.map((s, idx) => {
-            const colSpan =
-              s.span === "full" ? "col-span-3" : s.span === "two" ? "col-span-2" : "col-span-1";
-            const isLight = ["#FFFFFF", "#F4F1EA", "#EFE7DA"].includes(s.bg.toUpperCase());
-            const ink = s.ink ?? (isLight ? "#1F2937" : "#FFFFFF");
-            const subInk = isLight ? "rgba(59,42,26,0.65)" : "rgba(255,255,255,0.85)";
-            return (
-              <button
-                key={s.id}
-                onClick={() => navigate({ to: s.to as never })}
-                className={`group relative overflow-hidden rounded-[20px] text-right shadow-tile ring-1 ring-black/5 transition-transform duration-500 ease-apple hover:-translate-y-1 active:scale-[0.97] animate-float-up ${colSpan}`}
-                style={{ animationDelay: `${idx * 45}ms`, background: s.bg }}
-                aria-label={s.title}
-              >
-                {/* soft glossy highlight */}
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-70"
+      {groups.map((group, gIdx) => (
+        <section
+          key={group.id}
+          className="animate-float-up"
+          style={{ animationDelay: `${gIdx * 70}ms` }}
+        >
+          {/* Group header — refined typographic hierarchy */}
+          <div className="mb-3 flex items-end justify-between px-1">
+            <div>
+              <h2 className="font-display text-[17px] font-extrabold leading-tight text-foreground">
+                {group.title}
+              </h2>
+              <p className="mt-0.5 text-[11.5px] font-medium text-muted-foreground">
+                {group.caption}
+              </p>
+            </div>
+            <span className="rounded-full bg-foreground/[0.04] px-2.5 py-1 text-[10.5px] font-bold text-muted-foreground ring-1 ring-border/40">
+              {group.items.length}
+            </span>
+          </div>
+
+          {/* Premium cards grid — glass surface, colored only on the icon halo */}
+          <div className="grid grid-cols-2 gap-3">
+            {group.items.map((item, idx) => {
+              const Icon = item.icon;
+              const a = accents[item.accent];
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => navigate({ to: item.to as never })}
+                  className="group relative flex items-center gap-3 overflow-hidden rounded-[20px] bg-card/80 p-3.5 text-right ring-1 ring-border/50 backdrop-blur-xl transition-all duration-200 ease-apple hover:-translate-y-0.5 active:scale-[0.97] dark:bg-card/40"
                   style={{
-                    backgroundImage: isLight
-                      ? "radial-gradient(circle at 85% 10%, rgba(0,0,0,0.05), transparent 60%)"
-                      : "radial-gradient(circle at 88% 10%, rgba(255,255,255,0.20), transparent 55%), radial-gradient(circle at 5% 100%, rgba(0,0,0,0.22), transparent 65%)",
+                    animationDelay: `${idx * 35}ms`,
+                    boxShadow: `0 1px 2px hsl(${a.shadow} / 0.05), 0 10px 24px -14px hsl(${a.shadow} / 0.18)`,
                   }}
-                />
-
-                {s.span !== "one" ? (
-                  <div className="relative z-10 flex h-full items-center justify-between gap-3 p-4">
-                    <div
-                      className="flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-2xl text-[34px]"
-                      style={{ background: isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.15)" }}
-                    >
-                      <span className="drop-shadow-sm">{s.emoji}</span>
-                    </div>
-                    <div className="flex-1 text-right">
-                      <h3 className="font-display text-[16px] font-extrabold leading-tight" style={{ color: ink }}>
-                        {s.title}
-                      </h3>
-                      <p className="mt-1 text-[11px] font-semibold leading-tight" style={{ color: subInk }}>
-                        {s.subtitle}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative z-10 flex h-full flex-col items-center justify-center gap-1.5 p-2 text-center">
-                    <span className="text-[36px] drop-shadow-sm">{s.emoji}</span>
-                    <h3 className="font-display text-[12.5px] font-extrabold leading-tight" style={{ color: ink }}>
-                      {s.title}
-                    </h3>
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Small sections — 3-per-row chip grid */}
-      <section className="animate-float-up" style={{ animationDelay: "160ms" }}>
-        <div className="mb-3 flex items-baseline justify-between px-1">
-          <h2 className="font-display text-xl font-extrabold text-foreground">تسوق بالقسم</h2>
-          <span className="text-[11px] font-medium text-muted-foreground">{smallSections.length} قسم</span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          {smallSections.map((s, idx) => {
-            const Icon = s.icon;
-            return (
-              <button
-                key={s.id}
-                onClick={() => navigate({ to: s.to as never })}
-                className="group relative flex aspect-[1/1.05] flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl bg-card p-3 shadow-soft ring-1 ring-border/50 transition ease-apple hover:-translate-y-0.5 active:scale-[0.97] animate-float-up"
-                style={{ animationDelay: `${idx * 35}ms` }}
-                aria-label={s.title}
-              >
-                <div
-                  className="flex h-12 w-12 items-center justify-center rounded-2xl transition group-hover:scale-110"
-                  style={{ background: `hsl(${s.tint})` }}
+                  aria-label={item.title}
                 >
-                  <Icon className="h-6 w-6" strokeWidth={2.2} style={{ color: `hsl(${s.ink})` }} />
-                </div>
-                <span className="text-center text-[11px] font-bold leading-tight text-foreground">{s.title}</span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+                  {/* faint colored aura that intensifies on hover */}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute -left-6 -top-6 h-20 w-20 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-60"
+                    style={{ background: `hsl(${a.tint})` }}
+                  />
+
+                  {/* Icon halo — the only colored block */}
+                  <div
+                    className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 ring-inset transition-transform duration-300 group-hover:scale-110"
+                    style={{
+                      background: `hsl(${a.tint})`,
+                      // @ts-expect-error CSS var
+                      "--ring": `hsl(${a.ink} / 0.12)`,
+                      boxShadow: `inset 0 0 0 1px hsl(${a.ink} / 0.08)`,
+                    }}
+                  >
+                    <Icon
+                      className="h-5 w-5"
+                      strokeWidth={2.1}
+                      style={{ color: `hsl(${a.ink})` }}
+                    />
+                  </div>
+
+                  {/* Text block */}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate font-display text-[13.5px] font-extrabold leading-tight text-foreground">
+                      {item.title}
+                    </h3>
+                    <p className="mt-0.5 truncate text-[11px] font-medium leading-tight text-muted-foreground">
+                      {item.desc}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ))}
 
       <p className="pt-2 text-center text-[11px] font-medium text-muted-foreground">
         ريف المدينة · عبق الريف داخل المدينة
