@@ -465,6 +465,13 @@ const Wallet = () => {
             onUpdate={(j, t) => { setJar(j); setJarTxs(t); }}
           />
         )}
+        {showTransfer && (
+          <TransferDialog
+            onClose={() => setShowTransfer(false)}
+            balance={Number(balance?.balance ?? 0)}
+            onDone={(newBal) => setBalance((b) => b ? { ...b, balance: newBal } : b)}
+          />
+        )}
       </AnimatePresence>
     </div>
   );
