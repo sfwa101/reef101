@@ -33,6 +33,7 @@ import { Route as AppStorePharmacyRouteImport } from './routes/_app/store.pharma
 import { Route as AppStoreMeatRouteImport } from './routes/_app/store.meat'
 import { Route as AppStoreLibraryRouteImport } from './routes/_app/store.library'
 import { Route as AppStoreKitchenRouteImport } from './routes/_app/store.kitchen'
+import { Route as AppStoreHomeCompareRouteImport } from './routes/_app/store.home-compare'
 import { Route as AppStoreHomeRouteImport } from './routes/_app/store.home'
 import { Route as AppStoreDairyRouteImport } from './routes/_app/store.dairy'
 import { Route as AppStoreBasketsSubsRouteImport } from './routes/_app/store.baskets-subs'
@@ -169,6 +170,11 @@ const AppStoreKitchenRoute = AppStoreKitchenRouteImport.update({
   path: '/store/kitchen',
   getParentRoute: () => AppRoute,
 } as any)
+const AppStoreHomeCompareRoute = AppStoreHomeCompareRouteImport.update({
+  id: '/store/home-compare',
+  path: '/store/home-compare',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppStoreHomeRoute = AppStoreHomeRouteImport.update({
   id: '/store/home',
   path: '/store/home',
@@ -276,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/store/baskets-subs': typeof AppStoreBasketsSubsRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
+  '/store/home-compare': typeof AppStoreHomeCompareRoute
   '/store/kitchen': typeof AppStoreKitchenRoute
   '/store/library': typeof AppStoreLibraryRoute
   '/store/meat': typeof AppStoreMeatRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/store/baskets-subs': typeof AppStoreBasketsSubsRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
+  '/store/home-compare': typeof AppStoreHomeCompareRoute
   '/store/kitchen': typeof AppStoreKitchenRoute
   '/store/library': typeof AppStoreLibraryRoute
   '/store/meat': typeof AppStoreMeatRoute
@@ -359,6 +367,7 @@ export interface FileRoutesById {
   '/_app/store/baskets-subs': typeof AppStoreBasketsSubsRoute
   '/_app/store/dairy': typeof AppStoreDairyRoute
   '/_app/store/home': typeof AppStoreHomeRoute
+  '/_app/store/home-compare': typeof AppStoreHomeCompareRoute
   '/_app/store/kitchen': typeof AppStoreKitchenRoute
   '/_app/store/library': typeof AppStoreLibraryRoute
   '/_app/store/meat': typeof AppStoreMeatRoute
@@ -402,6 +411,7 @@ export interface FileRouteTypes {
     | '/store/baskets-subs'
     | '/store/dairy'
     | '/store/home'
+    | '/store/home-compare'
     | '/store/kitchen'
     | '/store/library'
     | '/store/meat'
@@ -442,6 +452,7 @@ export interface FileRouteTypes {
     | '/store/baskets-subs'
     | '/store/dairy'
     | '/store/home'
+    | '/store/home-compare'
     | '/store/kitchen'
     | '/store/library'
     | '/store/meat'
@@ -484,6 +495,7 @@ export interface FileRouteTypes {
     | '/_app/store/baskets-subs'
     | '/_app/store/dairy'
     | '/_app/store/home'
+    | '/_app/store/home-compare'
     | '/_app/store/kitchen'
     | '/_app/store/library'
     | '/_app/store/meat'
@@ -675,6 +687,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStoreKitchenRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/store/home-compare': {
+      id: '/_app/store/home-compare'
+      path: '/store/home-compare'
+      fullPath: '/store/home-compare'
+      preLoaderRoute: typeof AppStoreHomeCompareRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/store/home': {
       id: '/_app/store/home'
       path: '/store/home'
@@ -836,6 +855,7 @@ interface AppRouteChildren {
   AppStoreBasketsSubsRoute: typeof AppStoreBasketsSubsRoute
   AppStoreDairyRoute: typeof AppStoreDairyRoute
   AppStoreHomeRoute: typeof AppStoreHomeRoute
+  AppStoreHomeCompareRoute: typeof AppStoreHomeCompareRoute
   AppStoreKitchenRoute: typeof AppStoreKitchenRoute
   AppStoreLibraryRoute: typeof AppStoreLibraryRoute
   AppStoreMeatRoute: typeof AppStoreMeatRoute
@@ -867,6 +887,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppStoreBasketsSubsRoute: AppStoreBasketsSubsRoute,
   AppStoreDairyRoute: AppStoreDairyRoute,
   AppStoreHomeRoute: AppStoreHomeRoute,
+  AppStoreHomeCompareRoute: AppStoreHomeCompareRoute,
   AppStoreKitchenRoute: AppStoreKitchenRoute,
   AppStoreLibraryRoute: AppStoreLibraryRoute,
   AppStoreMeatRoute: AppStoreMeatRoute,

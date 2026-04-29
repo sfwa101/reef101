@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import { useCartActions, useCartLineQty } from "@/context/CartContext";
+import { useCompare, type CompareItem } from "@/context/CompareContext";
 import type { Product } from "@/lib/products";
 import BackHeader from "@/components/BackHeader";
 import { storeThemes } from "@/lib/storeThemes";
@@ -27,6 +29,9 @@ import {
   Crown,
   CheckCircle2,
   ChevronLeft,
+  Scale,
+  SlidersHorizontal,
+  ArrowUpDown,
   type LucideIcon,
 } from "lucide-react";
 
@@ -255,16 +260,37 @@ const fmt = (n: number) => `${toLatin(n.toLocaleString("en-US"))} ج.م`;
 
 /* ───────────── Page ───────────── */
 
+type SortId = "relevance" | "price-asc" | "price-desc" | "rating" | "discount";
+type FulfillmentFilter = "all" | "instant" | "preorder";
+
+const SORTS: { id: SortId; label: string }[] = [
+  { id: "relevance", label: "الأنسب" },
+  { id: "price-asc", label: "السعر: الأقل أولًا" },
+  { id: "price-desc", label: "السعر: الأعلى أولًا" },
+  { id: "rating", label: "الأعلى تقييمًا" },
+  { id: "discount", label: "الأكثر خصمًا" },
+];
+
 const HomeStore = () => {
   const theme = storeThemes.homeTools;
   const [cat, setCat] = useState<CatId>("all");
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [sort, setSort] = useState<SortId>("relevance");
+  const [fulFilter, setFulFilter] = useState<FulfillmentFilter>("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const priceMaxAvail = useMemo(
+    () => Math.max(...CATALOG.map((p) => p.price)),
+    [],
+  );
+  const [priceMax, setPriceMax] = useState(priceMaxAvail);
 
   const filtered = useMemo(() => {
     const term = q.trim();
-    return CATALOG.filter((p) => {
+    let list = CATALOG.filter((p) => {
       if (cat !== "all" && p.category !== cat) return false;
+      if (fulFilter !== "all" && p.fulfillment !== fulFilter) return false;
+      if (p.price > priceMax) return false;
       if (!term) return true;
       return (
         p.name.includes(term) ||
@@ -272,7 +298,28 @@ const HomeStore = () => {
         p.tagline.includes(term)
       );
     });
-  }, [cat, q]);
+    switch (sort) {
+      case "price-asc":
+        list = [...list].sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        list = [...list].sort((a, b) => b.price - a.price);
+        break;
+      case "rating":
+        list = [...list].sort((a, b) => b.rating - a.rating);
+        break;
+      case "discount":
+        list = [...list].sort((a, b) => {
+          const da = a.oldPrice ? (a.oldPrice - a.price) / a.oldPrice : 0;
+          const db = b.oldPrice ? (b.oldPrice - b.price) / b.oldPrice : 0;
+          return db - da;
+        });
+        break;
+      default:
+        break;
+    }
+    return list;
+  }, [cat, q, sort, fulFilter, priceMax]);
 
   const bestSellers = useMemo(
     () => CATALOG.filter((p) => BESTSELLER_IDS.includes(p.id)),
@@ -280,6 +327,8 @@ const HomeStore = () => {
   );
 
   const opened = openId ? CATALOG.find((p) => p.id === openId) ?? null : null;
+  const filtersActive =
+    fulFilter !== "all" || priceMax < priceMaxAvail || sort !== "relevance";
 
   return (
     <div
@@ -333,17 +382,92 @@ const HomeStore = () => {
         </div>
       </section>
 
-      {/* Search */}
+      {/* Search + Filters trigger */}
       <section className="px-4 pt-3">
-        <div className="relative">
-          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="ابحث عن جهاز، أداة، علامة تجارية…"
-            className="h-11 w-full rounded-2xl bg-card pe-10 ps-4 text-[13px] font-medium shadow-soft ring-1 ring-border/60 placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2"
-            style={{ ['--tw-ring-color' as string]: `hsl(${theme.hue} / 0.4)` }}
-          />
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="ابحث عن جهاز، أداة، علامة تجارية…"
+              className="h-11 w-full rounded-2xl bg-card pe-10 ps-4 text-[13px] font-medium shadow-soft ring-1 ring-border/60 placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2"
+              style={{ ['--tw-ring-color' as string]: `hsl(${theme.hue} / 0.4)` }}
+            />
+            {q && (
+              <button
+                onClick={() => setQ("")}
+                aria-label="مسح"
+                className="absolute left-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-foreground/5"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => setFiltersOpen(true)}
+            className={`relative flex h-11 shrink-0 items-center gap-1 rounded-2xl px-3.5 text-[12px] font-extrabold shadow-soft ring-1 transition active:scale-95 ${
+              filtersActive
+                ? "text-white ring-transparent"
+                : "bg-card text-foreground ring-border/60"
+            }`}
+            style={
+              filtersActive
+                ? { background: `hsl(${theme.hue})` }
+                : undefined
+            }
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            تصفية
+            {filtersActive && (
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[9px] font-extrabold text-amber-950">
+                ●
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Quick fulfillment chips */}
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {[
+            { id: "all" as const, label: "الكل" },
+            { id: "instant" as const, label: "تسليم فوري" },
+            { id: "preorder" as const, label: "حجز مسبق" },
+          ].map((opt) => {
+            const active = fulFilter === opt.id;
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setFulFilter(opt.id)}
+                className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10.5px] font-extrabold transition active:scale-95 ${
+                  active
+                    ? opt.id === "instant"
+                      ? "bg-emerald-600 text-white"
+                      : opt.id === "preorder"
+                        ? "bg-gradient-to-l from-amber-500 to-amber-600 text-white"
+                        : "bg-foreground text-background"
+                    : "bg-card text-foreground ring-1 ring-border/60"
+                }`}
+              >
+                {opt.id === "instant" && <Truck className="h-3 w-3" />}
+                {opt.id === "preorder" && <CalendarClock className="h-3 w-3" />}
+                {opt.label}
+              </button>
+            );
+          })}
+          {sort !== "relevance" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-foreground/10 px-3 py-1 text-[10.5px] font-extrabold text-foreground">
+              <ArrowUpDown className="h-3 w-3" />
+              {SORTS.find((s) => s.id === sort)?.label}
+              <button
+                onClick={() => setSort("relevance")}
+                aria-label="إلغاء الفرز"
+                className="ml-1"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
         </div>
       </section>
 
@@ -434,11 +558,48 @@ const HomeStore = () => {
           ))}
         </div>
         {filtered.length === 0 && (
-          <p className="mt-10 text-center text-sm text-muted-foreground">
-            لا توجد نتائج — جرّب كلمة أخرى.
-          </p>
+          <div className="mt-10 flex flex-col items-center gap-2 text-center">
+            <p className="text-sm font-bold text-muted-foreground">
+              لا توجد نتائج تطابق بحثك
+            </p>
+            <button
+              onClick={() => {
+                setQ("");
+                setFulFilter("all");
+                setPriceMax(priceMaxAvail);
+                setSort("relevance");
+                setCat("all");
+              }}
+              className="rounded-full bg-primary px-4 py-2 text-[11px] font-extrabold text-primary-foreground shadow-pill"
+            >
+              إعادة ضبط الفلاتر
+            </button>
+          </div>
         )}
       </section>
+
+      {/* Compare floating bar */}
+      <CompareBar />
+
+      {/* Filters sheet */}
+      {filtersOpen && (
+        <FiltersSheet
+          sort={sort}
+          setSort={setSort}
+          priceMax={priceMax}
+          setPriceMax={setPriceMax}
+          priceMaxAvail={priceMaxAvail}
+          fulFilter={fulFilter}
+          setFulFilter={setFulFilter}
+          onClose={() => setFiltersOpen(false)}
+          onReset={() => {
+            setFulFilter("all");
+            setPriceMax(priceMaxAvail);
+            setSort("relevance");
+          }}
+          hue={theme.hue}
+        />
+      )}
 
       {/* Detail overlay */}
       {opened && <DetailSheet product={opened} onClose={() => setOpenId(null)} />}
@@ -477,6 +638,24 @@ const RailHeader = ({
   </div>
 );
 
+const toCompareItem = (p: HGProduct): CompareItem => ({
+  id: p.id,
+  name: p.name,
+  brand: p.brand,
+  image: p.image,
+  price: p.price,
+  oldPrice: p.oldPrice,
+  unit: p.unit,
+  rating: p.rating,
+  reviews: p.reviews,
+  category: p.category,
+  fulfillment: p.fulfillment,
+  etaDays: p.etaDays,
+  warranty: p.warranty,
+  badges: p.badges,
+  tagline: p.tagline,
+});
+
 const ProductCard = ({
   p,
   onOpen,
@@ -486,14 +665,36 @@ const ProductCard = ({
 }) => {
   const { add } = useCartActions();
   const qty = useCartLineQty(p.id);
+  const compare = useCompare();
   const isPre = p.fulfillment === "preorder";
   const deposit = isPre ? Math.round((p.price * (p.depositPct ?? 25)) / 100) : 0;
+  const inCompare = compare.has(p.id);
+  const compareFull = !inCompare && compare.items.length >= compare.max;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isPre) {
-      // Open detail to confirm preorder terms
-      onOpen();
+      // Add booking line directly (deposit meta) — keep detail accessible
+      add(
+        {
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          image: p.image,
+          unit: p.unit,
+          category: "أدوات منزلية",
+          source: "home",
+        } as unknown as import("@/lib/products").Product,
+        1,
+        {
+          payDeposit: true,
+          unitPrice: p.price,
+          bookingNote: `حجز مسبق · دفعة مقدمة ${toLatin(deposit.toLocaleString("en-US"))} ج.م`,
+        },
+      );
+      toast.success("تم تأكيد الحجز", {
+        description: `دفعة مقدمة ${toLatin(deposit.toLocaleString("en-US"))} ج.م`,
+      });
       return;
     }
     add({
@@ -506,6 +707,16 @@ const ProductCard = ({
       source: "home",
     } as unknown as import("@/lib/products").Product);
     toast.success("أُضيف إلى السلة", { description: p.name });
+  };
+
+  const handleCompare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (compareFull) {
+      toast.error("الحد الأقصى ٤ منتجات للمقارنة");
+      return;
+    }
+    compare.toggle(toCompareItem(p));
+    toast.success(inCompare ? "أُزيل من المقارنة" : "أُضيف للمقارنة");
   };
 
   return (
@@ -565,6 +776,21 @@ const ProductCard = ({
             Premium
           </span>
         )}
+
+        {/* Compare toggle */}
+        <button
+          onClick={handleCompare}
+          aria-label={inCompare ? "إزالة من المقارنة" : "أضف للمقارنة"}
+          className={`absolute bottom-2 left-2 flex h-7 w-7 items-center justify-center rounded-full shadow-soft backdrop-blur transition active:scale-90 ${
+            inCompare
+              ? "bg-foreground text-background"
+              : compareFull
+                ? "bg-background/70 text-muted-foreground"
+                : "bg-background/90 text-foreground"
+          }`}
+        >
+          <Scale className="h-3.5 w-3.5" />
+        </button>
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-3">
@@ -745,17 +971,29 @@ const DetailSheet = ({
   }, []);
 
   const handleConfirm = () => {
-    add({
-      id: product.id,
-      name: product.name,
-      price: isPre ? deposit : product.price,
-      image: product.image,
-      unit: isPre ? `دفعة مقدمة — ${product.unit}` : product.unit,
-      category: "أدوات منزلية",
-      source: "home",
-    } as unknown as import("@/lib/products").Product);
+    add(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        unit: product.unit,
+        category: "أدوات منزلية",
+        source: "home",
+      } as unknown as import("@/lib/products").Product,
+      1,
+      isPre
+        ? {
+            payDeposit: true,
+            unitPrice: product.price,
+            bookingNote: `حجز مسبق · دفعة مقدمة ${toLatin(deposit.toLocaleString("en-US"))} ج.م — المتبقي ${toLatin(remaining.toLocaleString("en-US"))} ج.م عند الاستلام`,
+          }
+        : undefined,
+    );
     toast.success(isPre ? "تم تأكيد الحجز" : "أُضيف إلى السلة", {
-      description: product.name,
+      description: isPre
+        ? `دفعة مقدمة ${toLatin(deposit.toLocaleString("en-US"))} ج.م`
+        : product.name,
     });
     onClose();
   };
@@ -973,5 +1211,187 @@ const Row = ({
     </span>
   </div>
 );
+
+/* ───────────── Compare floating bar ───────────── */
+
+const CompareBar = () => {
+  const compare = useCompare();
+  if (compare.items.length === 0) return null;
+  return (
+    <div className="fixed bottom-[88px] left-4 right-4 z-40 mx-auto flex max-w-md items-center justify-between gap-2 rounded-2xl bg-foreground/95 px-3 py-2.5 shadow-2xl ring-1 ring-foreground/30 backdrop-blur">
+      <div className="flex items-center gap-2">
+        <div className="flex -space-x-2 rtl:space-x-reverse">
+          {compare.items.slice(0, 3).map((it) => (
+            <img
+              key={it.id}
+              src={it.image}
+              alt=""
+              className="h-8 w-8 rounded-full object-cover ring-2 ring-foreground"
+            />
+          ))}
+        </div>
+        <div className="leading-tight">
+          <p className="text-[11px] font-extrabold text-background">
+            مقارنة {toLatin(compare.items.length)} منتجات
+          </p>
+          <p className="text-[9.5px] text-background/70">
+            حتى {toLatin(compare.max)} منتجات
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={compare.clear}
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-background/15 text-background"
+          aria-label="مسح المقارنة"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+        <Link
+          to="/store/home-compare"
+          className="inline-flex items-center gap-1 rounded-full bg-primary px-3.5 py-1.5 text-[11px] font-extrabold text-primary-foreground shadow-pill"
+        >
+          <Scale className="h-3.5 w-3.5" />
+          قارن الآن
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+/* ───────────── Filters bottom sheet ───────────── */
+
+const FiltersSheet = ({
+  sort,
+  setSort,
+  priceMax,
+  setPriceMax,
+  priceMaxAvail,
+  fulFilter,
+  setFulFilter,
+  onClose,
+  onReset,
+  hue,
+}: {
+  sort: SortId;
+  setSort: (s: SortId) => void;
+  priceMax: number;
+  setPriceMax: (n: number) => void;
+  priceMaxAvail: number;
+  fulFilter: FulfillmentFilter;
+  setFulFilter: (f: FulfillmentFilter) => void;
+  onClose: () => void;
+  onReset: () => void;
+  hue: string;
+}) => {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/55 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md overflow-hidden rounded-t-[28px] bg-background p-4 shadow-2xl ring-1 ring-border/60 animate-in slide-in-from-bottom-8"
+      >
+        <div className="mb-3 flex items-center justify-between">
+          <button
+            onClick={onClose}
+            aria-label="إغلاق"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <h2 className="font-display text-lg font-extrabold">تصفية وفرز</h2>
+          <button
+            onClick={onReset}
+            className="text-[11px] font-extrabold text-primary"
+          >
+            مسح
+          </button>
+        </div>
+
+        <p className="text-[11px] font-extrabold text-foreground/70">طريقة التسليم</p>
+        <div className="mt-2 grid grid-cols-3 gap-2">
+          {[
+            { id: "all" as const, label: "الكل" },
+            { id: "instant" as const, label: "تسليم فوري" },
+            { id: "preorder" as const, label: "حجز مسبق" },
+          ].map((opt) => {
+            const active = fulFilter === opt.id;
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setFulFilter(opt.id)}
+                className={`rounded-2xl py-2.5 text-[11px] font-extrabold transition active:scale-95 ${
+                  active
+                    ? "text-white shadow-pill"
+                    : "bg-card text-foreground ring-1 ring-border/60"
+                }`}
+                style={active ? { background: `hsl(${hue})` } : undefined}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="mt-4 text-[11px] font-extrabold text-foreground/70">
+          الحد الأقصى للسعر: {toLatin(priceMax.toLocaleString("en-US"))} ج.م
+        </p>
+        <input
+          type="range"
+          min={500}
+          max={priceMaxAvail}
+          step={500}
+          value={priceMax}
+          onChange={(e) => setPriceMax(Number(e.target.value))}
+          className="mt-2 w-full accent-primary"
+        />
+        <div className="flex justify-between text-[10px] text-muted-foreground">
+          <span>{toLatin("500")} ج.م</span>
+          <span>{toLatin(priceMaxAvail.toLocaleString("en-US"))} ج.م</span>
+        </div>
+
+        <p className="mt-4 text-[11px] font-extrabold text-foreground/70">الفرز</p>
+        <div className="mt-2 flex flex-col gap-1.5">
+          {SORTS.map((s) => {
+            const active = sort === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setSort(s.id)}
+                className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-[12px] font-extrabold transition active:scale-[0.99] ${
+                  active
+                    ? "bg-primary text-primary-foreground shadow-pill"
+                    : "bg-card text-foreground ring-1 ring-border/60"
+                }`}
+              >
+                <span>{s.label}</span>
+                {active && <CheckCircle2 className="h-4 w-4" />}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={onClose}
+          className="mt-5 h-12 w-full rounded-2xl bg-foreground text-[13px] font-extrabold text-background shadow-pill"
+        >
+          عرض النتائج
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default HomeStore;
