@@ -286,24 +286,23 @@ const HomePage = () => {
       {/* Reef Stories — Instagram-style discovery rail */}
       <ReefStories />
 
-      {/* Premium glass zone badge (shown only in fast zones) */}
-      <PremiumZoneBadge />
-
-      {/* Smart contextual banners (wallet / zone / partner) */}
+      {/* Smart contextual banners (wallet / referral) */}
       <SmartBanners walletBalance={walletBalance} hasReferralCode={hasReferralCode} />
 
-      {/* Auto-rotating premium offers carousel */}
+      {/* Hero Slider — pure CSS mesh gradients, zero images */}
       <PromoCarousel />
 
       {/* BUY IT AGAIN — only when we have history */}
       {mounted && buyAgain.length > 0 && (
-        <ProductCarousel
-          title="اشترِ مجدداً"
-          subtitle="منتجات اعتدت طلبها — أعدها بضغطة"
-          accent="🛍️ سهل وسريع"
-          products={buyAgain}
-          seeAllTo="/account/orders"
-        />
+        <section style={{ contentVisibility: "auto", containIntrinsicSize: "1px 320px" }}>
+          <ProductCarousel
+            title="اشترِ مجدداً"
+            subtitle="منتجات اعتدت طلبها — أعدها بضغطة"
+            accent="🛍️ سهل وسريع"
+            products={buyAgain}
+            seeAllTo="/account/orders"
+          />
+        </section>
       )}
 
       <section className="animate-float-up" style={{ animationDelay: "160ms" }}>
