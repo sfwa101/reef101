@@ -52,18 +52,19 @@ const ButcherSheet = ({ product, open, onClose }: Props) => {
     setCrossIds([]);
   }, [open, product.id, rules]);
 
+  // Disabled addons removed from selection automatically when prep changes
+  useEffect(() => {
+    const p = rules?.preps.find((x) => x.id === prepId);
+    if (!p?.disables?.length) return;
+    setAddonIds((prev) => prev.filter((id) => !p.disables!.includes(id)));
+  }, [prepId, rules]);
+
   if (!rules) return null;
 
   const weight = rules.weights.find((w) => w.id === weightId) ?? rules.weights[0];
   const prep = rules.preps.find((p) => p.id === prepId) ?? rules.preps[0];
   const sla = slaForPrep(prep);
   const slaInfo = slaMeta[sla];
-
-  // Disabled addons removed from selection automatically when prep changes
-  useEffect(() => {
-    if (!prep?.disables?.length) return;
-    setAddonIds((prev) => prev.filter((id) => !prep.disables!.includes(id)));
-  }, [prepId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const visibleAddons = rules.addons.filter((a) => {
     if (prep.disables?.includes(a.id)) return false;
