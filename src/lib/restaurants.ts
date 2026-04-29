@@ -40,6 +40,10 @@ export type Restaurant = {
   whatsapp: string;
   /** Best-seller product ids (resolve from `products.ts`) */
   productIds: string[];
+  /** Catchy tagline shown on the brand banner CTA area */
+  hook?: string;
+  /** Categorised full menu used by the restaurant detail page */
+  menu?: { id: string; label: string; productIds: string[] }[];
 };
 
 /**
@@ -65,6 +69,13 @@ export const restaurants: Restaurant[] = [
     servesZones: ["A", "B", "M"],
     whatsapp: "201080068681",
     productIds: ["rest-koshary", "rest-grill", "rest-burger"],
+    hook: "اطلب أصلي بلدي وسخن من الفرن",
+    menu: [
+      { id: "popular", label: "الأكثر طلباً", productIds: ["rest-koshary", "rest-grill", "rest-burger"] },
+      { id: "main", label: "الأطباق الرئيسية", productIds: ["rest-koshary", "rest-grill", "rest-shawarma"] },
+      { id: "sandwiches", label: "ساندويتشات", productIds: ["rest-shawarma", "rest-burger"] },
+      { id: "drinks", label: "مشروبات", productIds: ["juice", "water", "coffee"] },
+    ],
   },
   {
     id: "rest-sham",
@@ -82,6 +93,13 @@ export const restaurants: Restaurant[] = [
     servesZones: ["A", "B", "C", "M"],
     whatsapp: "201080068682",
     productIds: ["rest-shawarma", "rest-grill", "rest-koshary"],
+    hook: "شاورما شامية أصلية على الفحم",
+    menu: [
+      { id: "popular", label: "الأكثر طلباً", productIds: ["rest-shawarma", "rest-grill", "rest-koshary"] },
+      { id: "shawarma", label: "شاورما", productIds: ["rest-shawarma", "rest-burger"] },
+      { id: "grill", label: "مشاوي", productIds: ["rest-grill", "rest-burger"] },
+      { id: "drinks", label: "مشروبات", productIds: ["juice", "water"] },
+    ],
   },
   {
     id: "rest-toscana",
@@ -99,6 +117,13 @@ export const restaurants: Restaurant[] = [
     servesZones: ["A", "B", "C", "M"],
     whatsapp: "201080068683",
     productIds: ["rest-pizza", "rest-burger", "rest-koshary"],
+    hook: "بيتزا حطب إيطالية بعجينة 24 ساعة",
+    menu: [
+      { id: "popular", label: "الأكثر طلباً", productIds: ["rest-pizza", "rest-burger", "rest-koshary"] },
+      { id: "pizza", label: "بيتزا", productIds: ["rest-pizza"] },
+      { id: "pasta", label: "باستا", productIds: ["pasta", "rest-koshary"] },
+      { id: "drinks", label: "مشروبات", productIds: ["juice", "water", "coffee"] },
+    ],
   },
   {
     id: "rest-burger-house",
@@ -116,6 +141,13 @@ export const restaurants: Restaurant[] = [
     servesZones: ["A", "B", "M"],
     whatsapp: "201080068684",
     productIds: ["rest-burger", "rest-pizza", "rest-shawarma"],
+    hook: "برجر واجيو طازج كل ساعة",
+    menu: [
+      { id: "popular", label: "الأكثر طلباً", productIds: ["rest-burger", "rest-pizza", "rest-shawarma"] },
+      { id: "burgers", label: "برجر", productIds: ["rest-burger"] },
+      { id: "sides", label: "مقبلات", productIds: ["rest-shawarma", "rest-koshary"] },
+      { id: "drinks", label: "مشروبات", productIds: ["juice", "water"] },
+    ],
   },
   {
     id: "rest-sakura",
@@ -133,6 +165,13 @@ export const restaurants: Restaurant[] = [
     servesZones: ["A", "B"],
     whatsapp: "201080068685",
     productIds: ["rest-sushi", "rest-burger", "rest-pizza"],
+    hook: "سوشي ياباني طازج يومياً",
+    menu: [
+      { id: "popular", label: "الأكثر طلباً", productIds: ["rest-sushi", "rest-burger", "rest-pizza"] },
+      { id: "sushi", label: "سوشي", productIds: ["rest-sushi"] },
+      { id: "hot", label: "أطباق ساخنة", productIds: ["rest-grill", "rest-burger"] },
+      { id: "drinks", label: "مشروبات", productIds: ["juice", "water", "coffee"] },
+    ],
   },
   {
     id: "rest-rural-grill",
@@ -150,6 +189,14 @@ export const restaurants: Restaurant[] = [
     servesZones: ["A", "B", "C", "D", "M"],
     whatsapp: "201080068686",
     productIds: ["rest-grill", "rest-shawarma", "rest-koshary"],
+    hook: "مشاوي على الفحم البلدي بطعم الريف",
+    menu: [
+      { id: "popular", label: "الأكثر طلباً", productIds: ["rest-grill", "rest-shawarma", "rest-koshary"] },
+      { id: "mixed", label: "مشكّل مشاوي", productIds: ["rest-grill"] },
+      { id: "sandwich", label: "ساندويتشات", productIds: ["rest-shawarma", "rest-burger"] },
+      { id: "sides", label: "أطباق جانبية", productIds: ["rest-koshary"] },
+      { id: "drinks", label: "مشروبات", productIds: ["juice", "water"] },
+    ],
   },
 ];
 

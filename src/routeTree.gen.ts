@@ -36,6 +36,7 @@ import { Route as AppStoreKitchenRouteImport } from './routes/_app/store.kitchen
 import { Route as AppStoreHomeRouteImport } from './routes/_app/store.home'
 import { Route as AppStoreDairyRouteImport } from './routes/_app/store.dairy'
 import { Route as AppStoreBasketsRouteImport } from './routes/_app/store.baskets'
+import { Route as AppRestaurantIdRouteImport } from './routes/_app/restaurant.$id'
 import { Route as AppProductProductIdRouteImport } from './routes/_app/product.$productId'
 import { Route as AppAccountSettingsRouteImport } from './routes/_app/account.settings'
 import { Route as AppAccountProfileRouteImport } from './routes/_app/account.profile'
@@ -180,6 +181,11 @@ const AppStoreBasketsRoute = AppStoreBasketsRouteImport.update({
   path: '/store/baskets',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRestaurantIdRoute = AppRestaurantIdRouteImport.update({
+  id: '/restaurant/$id',
+  path: '/restaurant/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProductProductIdRoute = AppProductProductIdRouteImport.update({
   id: '/product/$productId',
   path: '/product/$productId',
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/account/profile': typeof AppAccountProfileRoute
   '/account/settings': typeof AppAccountSettingsRoute
   '/product/$productId': typeof AppProductProductIdRoute
+  '/restaurant/$id': typeof AppRestaurantIdRoute
   '/store/baskets': typeof AppStoreBasketsRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
@@ -281,6 +288,7 @@ export interface FileRoutesByTo {
   '/account/profile': typeof AppAccountProfileRoute
   '/account/settings': typeof AppAccountSettingsRoute
   '/product/$productId': typeof AppProductProductIdRoute
+  '/restaurant/$id': typeof AppRestaurantIdRoute
   '/store/baskets': typeof AppStoreBasketsRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
@@ -320,6 +328,7 @@ export interface FileRoutesById {
   '/_app/account/profile': typeof AppAccountProfileRoute
   '/_app/account/settings': typeof AppAccountSettingsRoute
   '/_app/product/$productId': typeof AppProductProductIdRoute
+  '/_app/restaurant/$id': typeof AppRestaurantIdRoute
   '/_app/store/baskets': typeof AppStoreBasketsRoute
   '/_app/store/dairy': typeof AppStoreDairyRoute
   '/_app/store/home': typeof AppStoreHomeRoute
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/account/profile'
     | '/account/settings'
     | '/product/$productId'
+    | '/restaurant/$id'
     | '/store/baskets'
     | '/store/dairy'
     | '/store/home'
@@ -395,6 +405,7 @@ export interface FileRouteTypes {
     | '/account/profile'
     | '/account/settings'
     | '/product/$productId'
+    | '/restaurant/$id'
     | '/store/baskets'
     | '/store/dairy'
     | '/store/home'
@@ -433,6 +444,7 @@ export interface FileRouteTypes {
     | '/_app/account/profile'
     | '/_app/account/settings'
     | '/_app/product/$productId'
+    | '/_app/restaurant/$id'
     | '/_app/store/baskets'
     | '/_app/store/dairy'
     | '/_app/store/home'
@@ -648,6 +660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStoreBasketsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/restaurant/$id': {
+      id: '/_app/restaurant/$id'
+      path: '/restaurant/$id'
+      fullPath: '/restaurant/$id'
+      preLoaderRoute: typeof AppRestaurantIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/product/$productId': {
       id: '/_app/product/$productId'
       path: '/product/$productId'
@@ -752,6 +771,7 @@ interface AppRouteChildren {
   AppWalletRoute: typeof AppWalletRoute
   AppIndexRoute: typeof AppIndexRoute
   AppProductProductIdRoute: typeof AppProductProductIdRoute
+  AppRestaurantIdRoute: typeof AppRestaurantIdRoute
   AppStoreBasketsRoute: typeof AppStoreBasketsRoute
   AppStoreDairyRoute: typeof AppStoreDairyRoute
   AppStoreHomeRoute: typeof AppStoreHomeRoute
@@ -780,6 +800,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppWalletRoute: AppWalletRoute,
   AppIndexRoute: AppIndexRoute,
   AppProductProductIdRoute: AppProductProductIdRoute,
+  AppRestaurantIdRoute: AppRestaurantIdRoute,
   AppStoreBasketsRoute: AppStoreBasketsRoute,
   AppStoreDairyRoute: AppStoreDairyRoute,
   AppStoreHomeRoute: AppStoreHomeRoute,
