@@ -179,23 +179,23 @@ const MEAL_WINDOWS: Record<Recipe["section"], { startH: number; endH: number; ic
   "عشاء":  { startH: 18, endH: 23, icon: Moon,   label: "٦ م – ١١ م" },
 };
 
-const getMealForHour = (h: number): Recipe["section"] => {
+function getMealForHour(h: number): Recipe["section"] {
   if (h >= 6 && h < 12) return "إفطار";
   if (h >= 12 && h < 18) return "غداء";
   return "عشاء";
-};
+}
 
-const isMealOpenNow = (s: Recipe["section"], d: Date) => {
+function isMealOpenNow(s: Recipe["section"], d: Date) {
   const w = MEAL_WINDOWS[s];
   const h = d.getHours();
   return h >= w.startH && h < w.endH;
-};
+}
 
-const minutesUntilClose = (s: Recipe["section"], d: Date) => {
+function minutesUntilClose(s: Recipe["section"], d: Date) {
   const w = MEAL_WINDOWS[s];
   if (!isMealOpenNow(s, d)) return 0;
   return (w.endH - d.getHours()) * 60 - d.getMinutes();
-};
+}
 
 const Recipes = () => {
   const { add } = useCart();
@@ -617,7 +617,7 @@ const RecipeModal = ({ recipe, onClose }: { recipe: Recipe; onClose: () => void 
 };
 
 // ===== Daily browser (horizontal meal tabs + marketing-rich cards) =====
-const DailyBrowser = ({
+function DailyBrowser({
   activeMeal, setActiveMeal, now, filter, setFilter, filtered, onOpen,
 }: {
   activeMeal: Recipe["section"];
@@ -627,7 +627,7 @@ const DailyBrowser = ({
   setFilter: (s: string) => void;
   filtered: Recipe[];
   onOpen: (r: Recipe) => void;
-}) => {
+}) {
   const { add } = useCart();
   const list = filtered.filter((r) => r.section === activeMeal);
   const openNow = isMealOpenNow(activeMeal, now);
@@ -802,6 +802,6 @@ const DailyBrowser = ({
       </div>
     </div>
   );
-};
+}
 
 export default Recipes;
