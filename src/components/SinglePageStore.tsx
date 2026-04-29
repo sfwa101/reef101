@@ -160,9 +160,13 @@ const SinglePageStore = ({
             key={g.id}
             ref={(el) => { sectionRefs.current[g.id] = el; }}
             data-cat-id={g.id}
-            // Provide enough bottom anchor space so user can scroll the LAST
-            // section to the trigger line and have it become "active".
-            style={{ scrollMarginTop: HEADER_OFFSET + BAR_HEIGHT + 8 }}
+            // `content-visibility: auto` lets the browser skip rendering
+            // off-screen sections — massive saving on long product lists.
+            style={{
+              scrollMarginTop: HEADER_OFFSET + BAR_HEIGHT + 8,
+              contentVisibility: "auto",
+              containIntrinsicSize: "1px 1200px",
+            }}
           >
             <h2 className="mb-3 px-1 font-display text-xl font-extrabold text-foreground">
               {g.name} <span className="text-xs text-muted-foreground">· {g.items.length}</span>
