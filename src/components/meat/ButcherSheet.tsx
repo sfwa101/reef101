@@ -221,7 +221,7 @@ const ButcherSheet = ({ product, open, onClose }: Props) => {
                   <h2 className="font-display text-xl font-extrabold leading-tight text-foreground">
                     {product.name}
                   </h2>
-                  <p className="text-[11px] text-muted-foreground">{product.unit} · {fmtMoney(product.price)} للكيلو</p>
+                  <p className="text-[11px] text-muted-foreground">{product.unit} · {toLatin(product.price)} ج.م للكيلو</p>
                 </div>
                 {product.rating && (
                   <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-foreground/85 px-2 py-1 text-[10px] font-extrabold text-background backdrop-blur">
