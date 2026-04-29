@@ -90,9 +90,11 @@ const Meat = () => {
 
   const [activeMain, setActiveMain] = useState(groups[0].id);
   const [activeSub, setActiveSub] = useState(groups[0].subs[0].id);
+  const [scrolled, setScrolled] = useState(false);
   const [query, setQuery] = useState("");
 
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  const groupRefs = useRef<Record<string, HTMLElement | null>>({});
   const tier2Ref = useRef<HTMLDivElement>(null);
 
   const currentGroup = groups.find((g) => g.id === activeMain) ?? groups[0];
@@ -120,12 +122,27 @@ const Meat = () => {
     items: filteredForGroup.filter((p) => matchSub(s.id, p)),
   }));
 
-  // ScrollSpy for sub sections
+  // ScrollSpy: track both main group and active sub-section across the
+  // single continuous feed (Intersection-style via scroll position).
   useEffect(() => {
     const onScroll = () => {
+      setScrolled(window.scrollY > 8);
       const triggerY = HEADER_OFFSET + TIER1 + TIER2 + TRIGGER;
-      let current = currentGroup.subs[0].id;
-      for (const s of currentGroup.subs) {
+
+      // Pick active main group based on which group block is currently under the bar
+      let mainId = groups[0].id;
+      for (const g of groups) {
+        const el = groupRefs.current[g.id];
+        if (!el) continue;
+        const top = el.getBoundingClientRect().top;
+        if (top - triggerY <= 0) mainId = g.id;
+        else break;
+      }
+      setActiveMain((prev) => (prev !== mainId ? mainId : prev));
+
+      const grp = groups.find((g) => g.id === mainId) ?? groups[0];
+      let current = grp.subs[0].id;
+      for (const s of grp.subs) {
         const el = sectionRefs.current[s.id];
         if (!el) continue;
         const top = el.getBoundingClientRect().top;
@@ -137,7 +154,7 @@ const Meat = () => {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [currentGroup]);
+  }, []);
 
   // Auto-center active sub chip
   useEffect(() => {
@@ -155,6 +172,34 @@ const Meat = () => {
     window.scrollTo({ top, behavior: "smooth" });
   };
 
+  const jumpToGroup = (id: string) => {
+    const el = groupRefs.current[id];
+    if (!el) return;
+    const top =
+      el.getBoundingClientRect().top + window.scrollY -
+      (HEADER_OFFSET + TIER1 + TIER2 + 8);
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+
+  // Build the continuous feed: all groups, each with its sub-sections.
+  const feed = useMemo(() => {
+    const q = query.trim();
+    return groups.map((g) => {
+      const items = meatProducts
+        .filter((p) => groupOf(p.subCategory) === g.id)
+        .filter((p) => !q || p.name.includes(q));
+      const subs = g.subs.map((s) => ({
+        ...s,
+        items: items.filter((p) =>
+          s.id.startsWith("all-")
+            ? true
+            : (p.name + " " + (p.subCategory ?? "")).includes(s.id),
+        ),
+      }));
+      return { ...g, items, subs };
+    });
+  }, [meatProducts, query]);
+
   return (
     <div>
       <BackHeader
@@ -166,7 +211,7 @@ const Meat = () => {
 
       {/* Hero */}
       <section
-        className="rounded-[1.75rem] p-5 shadow-tile"
+        className="mt-3 rounded-[2rem] p-5 shadow-tile"
         style={{ background: theme.gradient }}
       >
         <span className="text-[10px] font-bold text-foreground/80">قطّع كما تحب</span>
@@ -179,7 +224,7 @@ const Meat = () => {
       </section>
 
       {/* Search */}
-      <div className="glass mb-3 mt-4 flex items-center gap-3 rounded-2xl px-4 py-3 shadow-soft">
+      <div className="glass mb-4 mt-5 flex items-center gap-3 rounded-2xl px-4 py-3 shadow-soft">
         <Search className="h-4 w-4 text-muted-foreground" strokeWidth={2.4} />
         <input
           value={query}
@@ -192,7 +237,9 @@ const Meat = () => {
       {/* Dual-tier sticky nav */}
       <div className="fixed inset-x-0 z-30" style={{ top: `${HEADER_OFFSET}px` }}>
         <div
-          className="mx-auto max-w-md"
+          className={`mx-auto max-w-md transition-shadow duration-300 ${
+            scrolled ? "shadow-[0_8px_24px_-12px_rgba(0,0,0,0.18)]" : "shadow-none"
+          }`}
           style={{
             background: `hsl(var(--card) / 0.96)`,
             backdropFilter: "saturate(180%) blur(24px)",
@@ -207,10 +254,7 @@ const Meat = () => {
               return (
                 <button
                   key={g.id}
-                  onClick={() => {
-                    setActiveMain(g.id);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
+                  onClick={() => jumpToGroup(g.id)}
                   className={`rounded-xl px-2 py-2 text-[11px] font-extrabold transition ease-apple ${
                     active
                       ? "text-white shadow-pill"
@@ -250,35 +294,54 @@ const Meat = () => {
       </div>
 
       {/* Spacer for the dual sticky bars */}
-      <div style={{ height: TIER1 + TIER2 + 8 }} />
+      <div style={{ height: TIER1 + TIER2 + 16 }} />
 
-      {/* Sections per sub */}
-      <div className="space-y-8">
-        {subSections.map((s) => (
-          <section
-            key={s.id}
+      {/* Continuous feed — all main groups stacked, ScrollSpy switches tiers */}
+      <div className="space-y-10">
+        {feed.map((g) => (
+          <div
+            key={g.id}
             ref={(el) => {
-              sectionRefs.current[s.id] = el;
+              groupRefs.current[g.id] = el;
             }}
-            data-sub-section={s.id}
+            data-group={g.id}
             style={{ scrollMarginTop: HEADER_OFFSET + TIER1 + TIER2 + 8 }}
           >
-            <h2 className="mb-3 px-1 font-display text-xl font-extrabold text-foreground">
-              {s.label}{" "}
-              <span className="text-xs text-muted-foreground">· {s.items.length}</span>
+            <h2 className="mb-4 flex items-center gap-2 px-1 font-display text-2xl font-extrabold text-foreground">
+              <span className="inline-block h-6 w-1.5 rounded-full" style={{ background: `hsl(${theme.hue})` }} />
+              {g.name}
+              <span className="text-xs font-bold text-muted-foreground">· {g.items.length}</span>
             </h2>
-            {s.items.length === 0 ? (
-              <p className="rounded-2xl bg-foreground/5 p-6 text-center text-xs text-muted-foreground">
-                لا توجد منتجات في هذا القسم بعد
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {s.items.map((p) => (
-                  <ProductCard key={`${s.id}-${p.id}`} product={p} />
-                ))}
-              </div>
-            )}
-          </section>
+
+            <div className="space-y-8">
+              {g.subs.map((s) => (
+                <section
+                  key={`${g.id}-${s.id}`}
+                  ref={(el) => {
+                    sectionRefs.current[s.id] = el;
+                  }}
+                  data-sub-section={s.id}
+                  style={{ scrollMarginTop: HEADER_OFFSET + TIER1 + TIER2 + 8 }}
+                >
+                  <h3 className="mb-3 px-1 font-display text-base font-extrabold text-foreground/90">
+                    {s.label}{" "}
+                    <span className="text-xs text-muted-foreground">· {s.items.length}</span>
+                  </h3>
+                  {s.items.length === 0 ? (
+                    <p className="rounded-2xl bg-foreground/5 p-6 text-center text-xs text-muted-foreground">
+                      لا توجد منتجات في هذا القسم بعد
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      {s.items.map((p) => (
+                        <ProductCard key={`${s.id}-${p.id}`} product={p} />
+                      ))}
+                    </div>
+                  )}
+                </section>
+              ))}
+            </div>
+          </div>
         ))}
         <div style={{ height: "60vh" }} />
       </div>
