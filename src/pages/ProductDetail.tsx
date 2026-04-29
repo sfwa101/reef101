@@ -294,13 +294,15 @@ const ProductDetail = () => {
               <h1 className="font-display text-2xl font-extrabold leading-tight">{product.name}</h1>
               <p className="text-xs text-muted-foreground">{product.unit}</p>
             </div>
-            <button
-              onClick={() => toggle(product.id)}
-              className="glass-strong flex h-10 w-10 items-center justify-center rounded-full shadow-soft transition active:scale-90"
-              aria-label="مفضلة"
-            >
-              <Heart className={`h-4 w-4 transition ${fav ? "fill-destructive text-destructive" : ""}`} strokeWidth={2} />
-            </button>
+            {!isVillage && (
+              <button
+                onClick={() => toggle(product.id)}
+                className="glass-strong flex h-10 w-10 items-center justify-center rounded-full shadow-soft transition active:scale-90"
+                aria-label="مفضلة"
+              >
+                <Heart className={`h-4 w-4 transition ${fav ? "fill-destructive text-destructive" : ""}`} strokeWidth={2} />
+              </button>
+            )}
           </div>
 
           {/* Trust badges */}
