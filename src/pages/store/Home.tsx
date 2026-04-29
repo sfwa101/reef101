@@ -638,6 +638,24 @@ const RailHeader = ({
   </div>
 );
 
+const toCompareItem = (p: HGProduct): CompareItem => ({
+  id: p.id,
+  name: p.name,
+  brand: p.brand,
+  image: p.image,
+  price: p.price,
+  oldPrice: p.oldPrice,
+  unit: p.unit,
+  rating: p.rating,
+  reviews: p.reviews,
+  category: p.category,
+  fulfillment: p.fulfillment,
+  etaDays: p.etaDays,
+  warranty: p.warranty,
+  badges: p.badges,
+  tagline: p.tagline,
+});
+
 const ProductCard = ({
   p,
   onOpen,
@@ -647,14 +665,36 @@ const ProductCard = ({
 }) => {
   const { add } = useCartActions();
   const qty = useCartLineQty(p.id);
+  const compare = useCompare();
   const isPre = p.fulfillment === "preorder";
   const deposit = isPre ? Math.round((p.price * (p.depositPct ?? 25)) / 100) : 0;
+  const inCompare = compare.has(p.id);
+  const compareFull = !inCompare && compare.items.length >= compare.max;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isPre) {
-      // Open detail to confirm preorder terms
-      onOpen();
+      // Add booking line directly (deposit meta) — keep detail accessible
+      add(
+        {
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          image: p.image,
+          unit: p.unit,
+          category: "أدوات منزلية",
+          source: "home",
+        } as unknown as import("@/lib/products").Product,
+        1,
+        {
+          payDeposit: true,
+          unitPrice: p.price,
+          bookingNote: `حجز مسبق · دفعة مقدمة ${toLatin(deposit.toLocaleString("en-US"))} ج.م`,
+        },
+      );
+      toast.success("تم تأكيد الحجز", {
+        description: `دفعة مقدمة ${toLatin(deposit.toLocaleString("en-US"))} ج.م`,
+      });
       return;
     }
     add({
@@ -667,6 +707,16 @@ const ProductCard = ({
       source: "home",
     } as unknown as import("@/lib/products").Product);
     toast.success("أُضيف إلى السلة", { description: p.name });
+  };
+
+  const handleCompare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (compareFull) {
+      toast.error("الحد الأقصى ٤ منتجات للمقارنة");
+      return;
+    }
+    compare.toggle(toCompareItem(p));
+    toast.success(inCompare ? "أُزيل من المقارنة" : "أُضيف للمقارنة");
   };
 
   return (
