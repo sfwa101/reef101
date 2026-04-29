@@ -107,9 +107,15 @@ const ProductDetail = () => {
   const handleAdd = () => {
     const variantSuffix = variant ? ` (${variant.label})` : "";
     const addonLabels = (product.addons ?? []).filter((a) => addonIds.includes(a.id)).map((a) => a.label);
-    const suffix = variantSuffix + (addonLabels.length ? ` + ${addonLabels.join(" + ")}` : "");
-    const customId = `${product.id}${variant ? `__${variant.id}` : ""}${addonIds.length ? `__${addonIds.sort().join("-")}` : ""}`;
-    add({ ...product, id: customId, name: `${product.name}${suffix}`, price: unitPrice }, qty);
+    const subSuffix = subMode ? " (اشتراك أسبوعي)" : "";
+    const suffix = variantSuffix + (addonLabels.length ? ` + ${addonLabels.join(" + ")}` : "") + subSuffix;
+    const customId = `${product.id}${variant ? `__${variant.id}` : ""}${addonIds.length ? `__${addonIds.sort().join("-")}` : ""}${subMode ? "__sub" : ""}`;
+    const finalPrice = subMode && village?.routine
+      ? Math.round(unitPrice * (1 - village.routine.discountPct / 100))
+      : unitPrice;
+    add({ ...product, id: customId, name: `${product.name}${suffix}`, price: finalPrice }, qty);
+    setAddBurst(true);
+    window.setTimeout(() => setAddBurst(false), 900);
   };
 
   const goPrev = () => {
