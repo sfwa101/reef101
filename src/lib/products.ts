@@ -199,6 +199,24 @@ export const products: Product[] = [
   { id: "sweet-macaron", name: "ماكرون فرنسي مشكّل", unit: "علبة 12 قطعة", price: 165, image: pCookies, rating: 4.7, category: "حلويات", subCategory: "غربية", source: "sweets", badge: "new" },
   { id: "sweet-donuts", name: "دونتس مغطّس بالشوكولاتة", unit: "علبة 6 حبات", price: 95, image: pCookies, rating: 4.6, category: "حلويات", subCategory: "غربية", source: "sweets" },
   { id: "sweet-ice-gelato", name: "جيلاتو إيطالي", brand: "جيلاتو روما", unit: "علبة 500مل", price: 110, image: pIcecream, rating: 4.8, category: "حلويات", subCategory: "مثلجات", source: "sweets", badge: "trending" },
+
+  // ========== Subscription meals — also sold standalone in Kitchen at premium prices ==========
+  // Subscribers pay subscriptionPrice (much lower). Standalone single-order price below
+  // is intentionally ~75-85% higher to incentivize the subscription.
+  ...subscriptionMeals.map<Product>((m) => ({
+    id: `kitchen-${m.id}`,
+    name: m.name,
+    unit: `وجبة فردية · ${m.calories} سعرة`,
+    price: m.standalonePrice,
+    oldPrice: undefined,
+    image: m.image,
+    rating: 4.8,
+    category: "وجبات",
+    subCategory: "وجبات الاشتراك (طلب فردي)",
+    source: "kitchen" as const,
+    badge: "premium" as const,
+    addons: mealAddons,
+  })),
 ];
 
 // Dynamically-generated product variants (e.g. wholesale bulk packs) register
