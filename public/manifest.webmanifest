@@ -1,7 +1,7 @@
 {
-  "name": "ريف المدينة",
-  "short_name": "ريف",
-  "description": "ريف المدينة — عبق الريف داخل المدينة",
+  "name": "ريف المدينة - تسوق ما يناسب يومك",
+  "short_name": "ريف المدينة",
+  "description": "ريف المدينة — عبق الريف داخل المدينة. كل ما تحتاج إليه في مكان واحد.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
@@ -11,7 +11,9 @@
   "background_color": "#f3f8f1",
   "theme_color": "#3b7a4d",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
