@@ -6,6 +6,7 @@ import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { LocationProvider } from "@/context/LocationContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { registerPWA } from "@/lib/pwa";
@@ -101,10 +102,12 @@ function RootComponent() {
       <ThemeProvider>
         <TooltipProvider>
           <AuthProvider>
-            <CartProvider>
-              <Toaster />
-              <Outlet />
-            </CartProvider>
+            <LocationProvider>
+              <CartProvider>
+                <Toaster />
+                <Outlet />
+              </CartProvider>
+            </LocationProvider>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>

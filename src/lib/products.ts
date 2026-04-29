@@ -67,6 +67,13 @@ export type Product = {
   badge?: "best" | "trending" | "premium" | "new";
   variants?: ProductVariant[];
   addons?: ProductAddon[];
+  /**
+   * If true, the product cannot survive long-distance shipping
+   * (fresh produce, dairy, meat, frozen, ready meals, fresh sweets).
+   * Hidden / blocked when the active delivery zone has acceptsPerishables=false.
+   * Defaults are derived from `source` when this flag is absent — see isPerishable().
+   */
+  perishable?: boolean;
 };
 
 const sizeVariants: ProductVariant[] = [
