@@ -347,32 +347,53 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_key: string | null
           avatar_url: string | null
           birth_date: string | null
+          budget_range: string | null
           created_at: string
+          dislikes: string[] | null
           full_name: string | null
           gender: string | null
+          household_size: number | null
           id: string
+          lifestyle_tags: string[] | null
+          likes: string[] | null
+          occupation: string | null
           phone: string | null
           updated_at: string
         }
         Insert: {
+          avatar_key?: string | null
           avatar_url?: string | null
           birth_date?: string | null
+          budget_range?: string | null
           created_at?: string
+          dislikes?: string[] | null
           full_name?: string | null
           gender?: string | null
+          household_size?: number | null
           id: string
+          lifestyle_tags?: string[] | null
+          likes?: string[] | null
+          occupation?: string | null
           phone?: string | null
           updated_at?: string
         }
         Update: {
+          avatar_key?: string | null
           avatar_url?: string | null
           birth_date?: string | null
+          budget_range?: string | null
           created_at?: string
+          dislikes?: string[] | null
           full_name?: string | null
           gender?: string | null
+          household_size?: number | null
           id?: string
+          lifestyle_tags?: string[] | null
+          likes?: string[] | null
+          occupation?: string | null
           phone?: string | null
           updated_at?: string
         }
