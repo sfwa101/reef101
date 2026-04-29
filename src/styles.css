@@ -40,6 +40,18 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
+  --color-surface: hsl(var(--surface));
+  --color-surface-muted: hsl(var(--surface-muted));
+  --color-foreground-secondary: hsl(var(--foreground-secondary));
+  --color-foreground-tertiary: hsl(var(--foreground-tertiary));
+  --color-info: hsl(var(--info));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-purple: hsl(var(--purple));
+  --color-pink: hsl(var(--pink));
+  --color-teal: hsl(var(--teal));
+  --color-indigo: hsl(var(--indigo));
+
   --font-display: 'Tajawal', 'Cairo', system-ui, -apple-system, sans-serif;
 }
 
@@ -112,6 +124,28 @@
 
   /* Motion */
   --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Admin / iOS18 dashboard tokens */
+  --surface: 0 0% 100%;
+  --surface-muted: 220 20% 95.5%;
+  --foreground-secondary: 240 6% 36%;
+  --foreground-tertiary: 240 6% 56%;
+  --info: 211 100% 50%;
+  --success: 145 63% 42%;
+  --warning: 35 100% 50%;
+  --purple: 280 60% 56%;
+  --pink: 335 80% 60%;
+  --teal: 175 70% 41%;
+  --indigo: 235 78% 60%;
+  --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
+  --shadow-elegant: 0 20px 50px -12px hsl(var(--primary) / 0.25);
+}
+
+.dark {
+  --surface: 150 10% 12%;
+  --surface-muted: 150 8% 16%;
+  --foreground-secondary: 130 12% 78%;
+  --foreground-tertiary: 140 10% 60%;
 }
 
 /* Dark theme */
@@ -853,3 +887,22 @@
 /* Hide scrollbar utility (used by wheel pickers) */
 .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ============================================
+   Admin / ERP iOS18 utilities
+============================================ */
+@layer utilities {
+  .bg-gradient-primary { background-image: var(--gradient-primary); }
+  .glass-strong { backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: hsl(var(--surface) / 0.85); }
+  .glass { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: hsl(var(--surface) / 0.7); }
+  .press { transition: transform 0.15s; }
+  .press:active { transform: scale(0.96); }
+  .transition-base { transition: all 0.2s ease; }
+  .transition-spring { transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .pb-tab { padding-bottom: 5rem; }
+  .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .ios-divider > * + * { border-top: 0.5px solid hsl(var(--border)); }
+  .shadow-glow { box-shadow: 0 0 20px hsl(var(--primary) / 0.3); }
+}
