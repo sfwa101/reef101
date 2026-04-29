@@ -15,7 +15,7 @@ const RestaurantDetail = () => {
   const navigate = useNavigate();
   const r = getRestaurant(id);
   const tabsRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const [activeTab, setActiveTab] = useState<string>(r?.menu?.[0]?.id ?? "popular");
   const [sheetProduct, setSheetProduct] = useState<Product | null>(null);
 
@@ -154,7 +154,7 @@ const RestaurantDetail = () => {
           <section
             key={s.id}
             data-cat={s.id}
-            ref={(el: HTMLDivElement | null) => {
+            ref={(el: HTMLElement | null) => {
               sectionRefs.current[s.id] = el;
             }}
           >
