@@ -69,6 +69,9 @@ type Addr = {
   is_default: boolean;
 };
 
+// content-visibility helper for offscreen heavy sections (60fps scroll)
+const cv = { contentVisibility: "auto" as const, containIntrinsicSize: "1px 360px" };
+
 const HomePage = () => {
   const { user, profile } = useAuth();
   const { zone } = useLocation();
