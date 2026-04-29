@@ -1,6 +1,7 @@
 import BackHeader from "@/components/BackHeader";
-import { Check, Sparkles, Dumbbell, Heart, Calendar, Pause, Settings, Clock, Truck, Leaf, Flame, AlertCircle } from "lucide-react";
+import { Check, Sparkles, Dumbbell, Heart, Pause, Clock, Truck, Leaf, Flame, AlertCircle, UtensilsCrossed, ChefHat, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { subscriptionMeals, type SubscriptionMeal } from "@/lib/subscriptionMeals";
 
 type PlanId = "loss" | "maintain" | "muscle" | "family";
 const plans: { id: PlanId; title: string; icon: any; calories: string; basePrice: number; color: string; tag: string }[] = [
@@ -22,6 +23,16 @@ const durations = [
 const dietPrefs = ["نباتي", "بدون جلوتين", "كيتو", "حلال", "خالي لاكتوز"];
 const allergies = ["مكسرات", "بيض", "أسماك", "صويا", "قمح"];
 const timeSlots = ["7-9 ص", "11-1 م", "5-7 م", "8-10 م"];
+const weekDays = [
+  { id: "sat", short: "سبت",   long: "السبت" },
+  { id: "sun", short: "أحد",   long: "الأحد" },
+  { id: "mon", short: "اثنين", long: "الاثنين" },
+  { id: "tue", short: "ثلاثاء", long: "الثلاثاء" },
+  { id: "wed", short: "أربعاء", long: "الأربعاء" },
+  { id: "thu", short: "خميس",  long: "الخميس" },
+  { id: "fri", short: "جمعة",  long: "الجمعة" },
+] as const;
+type DayId = typeof weekDays[number]["id"];
 
 const Subscriptions = () => {
   const [planId, setPlanId] = useState<PlanId>("maintain");
@@ -32,10 +43,28 @@ const Subscriptions = () => {
   const [allergic, setAllergic] = useState<Set<string>>(new Set());
   const [slot, setSlot] = useState(timeSlots[1]);
   const [paused, setPaused] = useState(false);
+  // Daily meal picker — one meal per active day in the week
+  const [dailyMeals, setDailyMeals] = useState<Partial<Record<DayId, string>>>({});
+  const [pickerDay, setPickerDay] = useState<DayId | null>(null);
 
   const plan = plans.find((p) => p.id === planId)!;
   const freqObj = frequencies.find((f) => f.id === freq)!;
   const durObj = durations.find((d) => d.id === dur)!;
+
+  // Active days based on frequency selection
+  const activeDays: DayId[] = useMemo(() => {
+    if (freq === "daily") return weekDays.map((d) => d.id);
+    if (freq === "5days") return ["sun", "mon", "tue", "wed", "thu"];
+    // alternate days
+    return ["sat", "mon", "wed", "fri"];
+  }, [freq]);
+
+  // Filter meals based on selected plan and allergies
+  const availableMeals: SubscriptionMeal[] = useMemo(() => {
+    return subscriptionMeals.filter((m) => m.fitsPlans.includes(planId));
+  }, [planId]);
+
+  const filledCount = activeDays.filter((d) => dailyMeals[d]).length;
 
   const totalPrice = useMemo(() => {
     const weekly = plan.basePrice * freqObj.multiplier * people;
@@ -45,6 +74,20 @@ const Subscriptions = () => {
 
   const toggle = (s: Set<string>, set: (n: Set<string>) => void, val: string) => {
     const n = new Set(s); n.has(val) ? n.delete(val) : n.add(val); set(n);
+  };
+
+  const pickMealForDay = (mealId: string) => {
+    if (!pickerDay) return;
+    setDailyMeals((prev) => ({ ...prev, [pickerDay]: mealId }));
+    setPickerDay(null);
+  };
+
+  const autoFillWeek = () => {
+    const next: Partial<Record<DayId, string>> = { ...dailyMeals };
+    activeDays.forEach((d, i) => {
+      if (!next[d]) next[d] = availableMeals[i % availableMeals.length]?.id;
+    });
+    setDailyMeals(next);
   };
 
   return (
@@ -122,6 +165,75 @@ const Subscriptions = () => {
               </button>
             );
           })}
+        </div>
+      </section>
+
+      {/* Daily meal picker — NEW */}
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between px-1">
+          <h3 className="font-display text-xl font-extrabold flex items-center gap-2">
+            <UtensilsCrossed className="h-5 w-5 text-primary" />
+            اختر وجبات الأسبوع
+          </h3>
+          <button
+            onClick={autoFillWeek}
+            className="text-[11px] font-bold text-primary underline-offset-2 hover:underline"
+          >
+            ملء تلقائي
+          </button>
+        </div>
+        <p className="px-1 text-[11px] text-muted-foreground">
+          اختر وجبة لكل يوم من أيام اشتراكك ({filledCount}/{activeDays.length})
+        </p>
+
+        <div className="grid grid-cols-1 gap-2">
+          {activeDays.map((dayId) => {
+            const day = weekDays.find((d) => d.id === dayId)!;
+            const mealId = dailyMeals[dayId];
+            const meal = mealId ? subscriptionMeals.find((m) => m.id === mealId) : null;
+            return (
+              <button
+                key={dayId}
+                onClick={() => setPickerDay(dayId)}
+                className={`flex items-center gap-3 rounded-2xl p-3 text-right transition ease-apple ${
+                  meal ? "glass-strong shadow-soft" : "border-2 border-dashed border-border bg-card/40"
+                }`}
+              >
+                <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <span className="text-[10px] font-bold leading-none">{day.short}</span>
+                </div>
+                {meal ? (
+                  <>
+                    <img src={meal.image} alt={meal.shortName} className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+                    <div className="flex-1 min-w-0 text-right">
+                      <p className="truncate font-display text-sm font-extrabold">{meal.shortName}</p>
+                      <p className="text-[10px] text-muted-foreground tabular-nums">
+                        <Flame className="inline h-3 w-3" /> {meal.calories} سعرة
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary">تغيير</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex-1 text-right">
+                      <p className="text-sm font-bold text-muted-foreground">اضغط لاختيار وجبة</p>
+                      <p className="text-[10px] text-muted-foreground">من قائمة الشيف</p>
+                    </div>
+                    <ChefHat className="h-5 w-5 text-muted-foreground" />
+                  </>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Reminder — change deadline */}
+        <div className="flex items-start gap-2 rounded-2xl bg-amber-500/10 p-3 text-[11px] leading-relaxed text-amber-900 dark:text-amber-200">
+          <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <p className="font-bold">يمكنك تغيير وجبة أي يوم قبل <span className="tabular-nums">8 ساعات</span> من موعد الاستلام</p>
+            <p className="mt-0.5 opacity-80">بعد ذلك يبدأ الشيف في التحضير ولا يمكن التعديل.</p>
+          </div>
         </div>
       </section>
 
@@ -228,16 +340,84 @@ const Subscriptions = () => {
         <div className="space-y-1">
           <div className="flex justify-between text-xs"><span className="text-muted-foreground">الباقة</span><span className="font-bold">{plan.title}</span></div>
           <div className="flex justify-between text-xs"><span className="text-muted-foreground">المدة</span><span className="font-bold">{durObj.label}</span></div>
+          <div className="flex justify-between text-xs"><span className="text-muted-foreground">الوجبات المختارة</span><span className="font-bold tabular-nums">{filledCount}/{activeDays.length}</span></div>
           <div className="flex justify-between text-xs"><span className="text-muted-foreground">التوصيل</span><span className="font-bold">{slot}</span></div>
         </div>
         <div className="flex items-baseline justify-between border-t border-border pt-2">
           <span className="font-display text-sm font-bold">الإجمالي</span>
           <span className="font-display text-2xl font-extrabold text-primary tabular-nums">{totalPrice} ج.م</span>
         </div>
-        <button className="w-full rounded-2xl bg-primary py-4 font-bold text-primary-foreground shadow-pill">
-          ابدأ اشتراكك الآن
+        <button
+          disabled={filledCount === 0}
+          className="w-full rounded-2xl bg-primary py-4 font-bold text-primary-foreground shadow-pill transition disabled:opacity-50"
+        >
+          {filledCount === 0 ? "اختر وجبات الأسبوع أولاً" : "ابدأ اشتراكك الآن"}
         </button>
       </section>
+
+      {/* Meal picker bottom-sheet */}
+      {pickerDay && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in"
+          onClick={() => setPickerDay(null)}
+        >
+          <div
+            className="max-h-[85vh] w-full max-w-md overflow-hidden rounded-t-[2rem] bg-background shadow-float animate-in slide-in-from-bottom"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/95 p-4 backdrop-blur">
+              <div>
+                <h4 className="font-display text-lg font-extrabold">اختر وجبة {weekDays.find((d) => d.id === pickerDay)?.long}</h4>
+                <p className="text-[11px] text-muted-foreground">السعر داخل الاشتراك مختلف عن الطلب الفردي</p>
+              </div>
+              <button
+                onClick={() => setPickerDay(null)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground/10"
+                aria-label="إغلاق"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-2 overflow-y-auto p-4 pb-8" style={{ maxHeight: "70vh" }}>
+              {availableMeals.map((m) => {
+                const isSelected = dailyMeals[pickerDay] === m.id;
+                const savings = Math.round(((m.standalonePrice - m.subscriptionPrice) / m.standalonePrice) * 100);
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => pickMealForDay(m.id)}
+                    className={`flex w-full items-start gap-3 rounded-2xl p-3 text-right transition ${
+                      isSelected ? "bg-primary/10 ring-2 ring-primary" : "glass-strong"
+                    }`}
+                  >
+                    <img src={m.image} alt={m.shortName} className="h-20 w-20 shrink-0 rounded-xl object-cover" />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <p className="font-display text-sm font-extrabold leading-tight">{m.name}</p>
+                      <p className="text-[11px] leading-snug text-muted-foreground line-clamp-2">{m.description}</p>
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        {m.tags.slice(0, 3).map((t) => (
+                          <span key={t} className="rounded-full bg-foreground/5 px-2 py-0.5 text-[9px] font-bold">{t}</span>
+                        ))}
+                        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground tabular-nums">
+                          <Flame className="h-3 w-3" /> {m.calories}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline justify-between pt-1">
+                        <span className="text-[10px] text-muted-foreground line-through tabular-nums">
+                          {m.standalonePrice} ج.م مفرد
+                        </span>
+                        <span className="font-display text-sm font-extrabold text-primary tabular-nums">
+                          {m.subscriptionPrice} ج.م · وفّر {savings}%
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
