@@ -1,15 +1,18 @@
-import { Wallet as WalletIcon, Plus, ArrowDownRight, ArrowUpRight, Gift, CreditCard, Loader2, X, Banknote, Smartphone, Building2, TrendingUp, Users, Copy, Share2, Sparkles, ChevronLeft, BarChart3 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Wallet as WalletIcon, Plus, ArrowDownRight, ArrowUpRight, Gift, CreditCard, Loader2, X, Banknote, Smartphone, Building2, TrendingUp, Users, Copy, Share2, Sparkles, ChevronLeft, BarChart3, PiggyBank, Target, Settings2, Minus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toLatin, fmtMoney } from "@/lib/format";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { fireConfetti, fireMiniConfetti } from "@/lib/confetti";
 
 type WalletBalance = { balance: number; points: number; coupons: number; cashback: number };
 type Tx = { id: string; label: string; amount: number; kind: string; created_at: string; source?: string | null };
 type CategoryStat = { name: string; value: number; color: string };
 type ReferralRow = { id: string; status: string; commission: number; first_order_at: string | null; created_at: string };
+type SavingsJar = { balance: number; auto_save_enabled: boolean; round_to: number; goal: number | null; goal_label: string | null };
+type SavingsTx = { id: string; amount: number; kind: string; label: string; created_at: string };
 
 const CATEGORY_LABELS: Record<string, string> = {
   supermarket: "السوبر ماركت",
