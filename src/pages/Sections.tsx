@@ -18,7 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { VectorBackdrop, motifInk, type MotifId } from "@/components/sections/VectorBackdrop";
+import { MeshBg, MotifIcon, motifInk, type MotifId } from "@/components/sections/MeshTile";
 
 /* ------------------------------------------------------------------ */
 /* Adaptive accent palette (kept for chips + smart-shopping cards)     */
@@ -121,7 +121,7 @@ const personalRail: PantryChip[] = [
 /* ------------------------------------------------------------------ */
 
 const TILE_SHADOW =
-  "0 1px 2px rgba(0,0,0,.03), 0 8px 22px -14px rgba(0,0,0,.18)";
+  "0 1px 2px rgba(15,23,42,.04), 0 6px 18px -10px rgba(15,23,42,.18), 0 22px 40px -28px rgba(15,23,42,.22)";
 
 const HeroTile = ({
   card,
@@ -136,32 +136,49 @@ const HeroTile = ({
   return (
     <button
       onClick={() => onPick(card.to)}
-      className={`relative overflow-hidden rounded-[24px] text-right ring-1 ring-black/5 transition-transform duration-200 ease-apple active:scale-[0.97] ${className}`}
-      style={{ boxShadow: TILE_SHADOW, contain: "layout paint" }}
+      className={`group relative overflow-hidden rounded-[24px] text-right ring-1 ring-black/5 transition-transform duration-200 ease-apple active:scale-[0.97] ${className}`}
+      style={{ boxShadow: TILE_SHADOW, contain: "layout paint", willChange: "transform" }}
       aria-label={card.title}
     >
-      <VectorBackdrop motif={card.motif} />
+      <MeshBg motif={card.motif} />
+
+      {/* Inline SVG icon — top-left corner */}
+      <div
+        className="absolute left-3 top-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/55 ring-1 ring-white/70 backdrop-blur-md"
+        style={{ color: ink, boxShadow: "0 6px 14px -8px rgba(15,23,42,.25)" }}
+        aria-hidden
+      >
+        <MotifIcon motif={card.motif} className="h-5 w-5" />
+      </div>
+
       {card.badge && (
         <span
-          className="absolute right-3 top-3 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-extrabold shadow-sm"
-          style={{ color: ink }}
+          className="absolute right-3 top-3 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-extrabold ring-1 ring-white/60 backdrop-blur-md"
+          style={{ color: ink, boxShadow: "0 4px 10px -6px rgba(15,23,42,.2)" }}
         >
           {card.badge}
         </span>
       )}
-      <div className="relative flex h-full w-full flex-col justify-end p-4">
-        <h3
-          className="font-display text-[19px] font-extrabold leading-tight"
-          style={{ color: ink }}
+
+      {/* Glass title chip — bottom */}
+      <div className="absolute inset-x-3 bottom-3">
+        <div
+          className="rounded-2xl bg-white/55 px-3.5 py-2.5 ring-1 ring-white/70 backdrop-blur-xl"
+          style={{ boxShadow: "0 8px 22px -14px rgba(15,23,42,.25)" }}
         >
-          {card.title}
-        </h3>
-        <p
-          className="mt-1 text-[12px] font-medium leading-snug line-clamp-2"
-          style={{ color: ink, opacity: 0.72 }}
-        >
-          {card.desc}
-        </p>
+          <h3
+            className="font-display text-[16px] font-extrabold leading-tight"
+            style={{ color: ink }}
+          >
+            {card.title}
+          </h3>
+          <p
+            className="mt-0.5 text-[11.5px] font-medium leading-snug line-clamp-1"
+            style={{ color: ink, opacity: 0.72 }}
+          >
+            {card.desc}
+          </p>
+        </div>
       </div>
     </button>
   );
@@ -178,34 +195,46 @@ const SmartTile = ({
   return (
     <button
       onClick={() => onPick(s.to)}
-      className="relative h-[150px] overflow-hidden rounded-[22px] text-right ring-1 ring-black/5 transition-transform duration-200 ease-apple active:scale-[0.97]"
-      style={{ boxShadow: TILE_SHADOW, contain: "layout paint" }}
+      className="relative h-[160px] overflow-hidden rounded-[22px] text-right ring-1 ring-black/5 transition-transform duration-200 ease-apple active:scale-[0.97]"
+      style={{ boxShadow: TILE_SHADOW, contain: "layout paint", willChange: "transform" }}
       aria-label={s.title}
     >
-      <VectorBackdrop motif={s.motif} />
+      <MeshBg motif={s.motif} />
+
+      <div
+        className="absolute left-3 top-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/55 ring-1 ring-white/70 backdrop-blur-md"
+        style={{ color: ink, boxShadow: "0 6px 14px -8px rgba(15,23,42,.25)" }}
+        aria-hidden
+      >
+        <MotifIcon motif={s.motif} className="h-5 w-5" />
+      </div>
+
       <span
-        className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-extrabold shadow-sm"
-        style={{ color: ink }}
+        className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/85 px-2.5 py-1 text-[10px] font-extrabold ring-1 ring-white/60 backdrop-blur-md"
+        style={{ color: ink, boxShadow: "0 4px 10px -6px rgba(15,23,42,.2)" }}
       >
         💸 {s.saving}
       </span>
-      <div className="relative flex h-full w-full flex-col justify-between p-4">
-        <s.icon className="h-6 w-6" strokeWidth={2.2} style={{ color: ink, opacity: 0.85 }} />
-        <div>
+
+      <div className="absolute inset-x-3 bottom-3">
+        <div
+          className="rounded-2xl bg-white/55 px-3.5 py-2.5 ring-1 ring-white/70 backdrop-blur-xl"
+          style={{ boxShadow: "0 8px 22px -14px rgba(15,23,42,.25)" }}
+        >
           <h3
-            className="font-display text-[18px] font-extrabold leading-tight"
+            className="font-display text-[16px] font-extrabold leading-tight"
             style={{ color: ink }}
           >
             {s.title}
           </h3>
           <p
-            className="mt-1 text-[11.5px] font-medium leading-snug line-clamp-2"
+            className="mt-0.5 text-[11px] font-medium leading-snug line-clamp-1"
             style={{ color: ink, opacity: 0.72 }}
           >
             {s.pitch}
           </p>
           <span
-            className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold"
+            className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold"
             style={{ color: ink }}
           >
             ابدأ التوفير <ArrowLeft className="h-3 w-3" />
