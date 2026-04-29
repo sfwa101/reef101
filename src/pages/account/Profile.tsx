@@ -442,40 +442,34 @@ const Profile = () => {
                 <div className="mb-2 flex items-center gap-2 text-[11px] font-extrabold text-muted-foreground">
                   <CalendarDays className="h-3.5 w-3.5 text-primary" /> تاريخ الميلاد
                 </div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button type="button" variant="outline" className={cn("h-13 w-full justify-between rounded-[1.1rem] border-border/60 bg-card px-4 text-right font-bold text-foreground", !form.birthDate && "text-muted-foreground")}>
-                      <span>{formatBirthDate(form.birthDate)}</span>
-                      <CalendarDays className="h-4 w-4 text-primary" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={form.birthDate ? new Date(`${form.birthDate}T00:00:00`) : undefined}
-                      onSelect={(date) => { setForm((c) => ({ ...c, birthDate: date ? toIsoDate(date) : "" })); setSaveState("idle"); }}
-                      disabled={(d) => d > new Date() || d < new Date("1950-01-01")}
-                      initialFocus className="p-3 pointer-events-auto" />
-                  </PopoverContent>
-                </Popover>
-                <p className="mt-2 text-[11px] leading-6 text-muted-foreground">يُستخدم لعروض المناسبات.</p>
+                <div className="mb-2 text-center text-sm font-extrabold text-foreground">
+                  {formatBirthDate(form.birthDate)}
+                </div>
+                <DateWheelPicker
+                  value={form.birthDate}
+                  onChange={(iso) => { setForm((c) => ({ ...c, birthDate: iso })); setSaveState("idle"); }}
+                />
+                <p className="mt-2 text-[11px] leading-6 text-muted-foreground">مرّر للأعلى/الأسفل لاختيار السنة، الشهر، واليوم.</p>
               </div>
             </div>
           </Section>
 
           <Section icon={VenusAndMars} title="النوع">
-            <div className="grid grid-cols-1 gap-2">
-              {genderOptions.map((o) => (
-                <button key={o.value} type="button"
-                  onClick={() => { setForm((c) => ({ ...c, gender: o.value })); setSaveState("idle"); }}
-                  className={cn("flex items-center justify-between rounded-[1.3rem] border px-4 py-3 text-right transition ease-apple",
-                    form.gender === o.value ? "border-primary bg-primary-soft text-foreground shadow-soft" : "border-border/60 bg-background/80 text-foreground")}>
-                  <div>
-                    <div className="text-sm font-extrabold">{o.label}</div>
-                    <div className="mt-1 text-[11px] text-muted-foreground">{o.note}</div>
-                  </div>
-                  <div className={cn("h-5 w-5 rounded-full border-2 transition", form.gender === o.value ? "border-primary bg-primary" : "border-border bg-card")} />
-                </button>
-              ))}
-            </div>
+            <Select
+              value={form.gender === "unspecified" ? undefined : form.gender}
+              onValueChange={(v) => { setForm((c) => ({ ...c, gender: v as Gender })); setSaveState("idle"); }}
+            >
+              <SelectTrigger className="h-12 rounded-[1.1rem] border-border/60 bg-background/80 text-sm font-extrabold">
+                <SelectValue placeholder="اختر النوع" />
+              </SelectTrigger>
+              <SelectContent>
+                {genderOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value} className="text-sm font-extrabold">
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Section>
 
           <Section icon={Briefcase} title="الوضع المهني">
