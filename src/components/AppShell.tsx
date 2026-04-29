@@ -8,6 +8,7 @@ import CartPanel from "@/components/desktop/CartPanel";
 const HIDE_TABBAR_ROUTES = [
   "/store/recipes",
   "/product/", // any product detail
+  "/cart",
 ];
 
 const AppShell = () => {
