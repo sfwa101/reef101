@@ -35,6 +35,7 @@ import { Route as AppStoreLibraryRouteImport } from './routes/_app/store.library
 import { Route as AppStoreKitchenRouteImport } from './routes/_app/store.kitchen'
 import { Route as AppStoreHomeRouteImport } from './routes/_app/store.home'
 import { Route as AppStoreDairyRouteImport } from './routes/_app/store.dairy'
+import { Route as AppStoreBasketsSubsRouteImport } from './routes/_app/store.baskets-subs'
 import { Route as AppStoreBasketsBuildRouteImport } from './routes/_app/store.baskets-build'
 import { Route as AppStoreBasketsRouteImport } from './routes/_app/store.baskets'
 import { Route as AppRestaurantIdRouteImport } from './routes/_app/restaurant.$id'
@@ -177,6 +178,11 @@ const AppStoreDairyRoute = AppStoreDairyRouteImport.update({
   path: '/store/dairy',
   getParentRoute: () => AppRoute,
 } as any)
+const AppStoreBasketsSubsRoute = AppStoreBasketsSubsRouteImport.update({
+  id: '/store/baskets-subs',
+  path: '/store/baskets-subs',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppStoreBasketsBuildRoute = AppStoreBasketsBuildRouteImport.update({
   id: '/store/baskets-build',
   path: '/store/baskets-build',
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/restaurant/$id': typeof AppRestaurantIdRoute
   '/store/baskets': typeof AppStoreBasketsRoute
   '/store/baskets-build': typeof AppStoreBasketsBuildRoute
+  '/store/baskets-subs': typeof AppStoreBasketsSubsRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
   '/store/kitchen': typeof AppStoreKitchenRoute
@@ -298,6 +305,7 @@ export interface FileRoutesByTo {
   '/restaurant/$id': typeof AppRestaurantIdRoute
   '/store/baskets': typeof AppStoreBasketsRoute
   '/store/baskets-build': typeof AppStoreBasketsBuildRoute
+  '/store/baskets-subs': typeof AppStoreBasketsSubsRoute
   '/store/dairy': typeof AppStoreDairyRoute
   '/store/home': typeof AppStoreHomeRoute
   '/store/kitchen': typeof AppStoreKitchenRoute
@@ -339,6 +347,7 @@ export interface FileRoutesById {
   '/_app/restaurant/$id': typeof AppRestaurantIdRoute
   '/_app/store/baskets': typeof AppStoreBasketsRoute
   '/_app/store/baskets-build': typeof AppStoreBasketsBuildRoute
+  '/_app/store/baskets-subs': typeof AppStoreBasketsSubsRoute
   '/_app/store/dairy': typeof AppStoreDairyRoute
   '/_app/store/home': typeof AppStoreHomeRoute
   '/_app/store/kitchen': typeof AppStoreKitchenRoute
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/restaurant/$id'
     | '/store/baskets'
     | '/store/baskets-build'
+    | '/store/baskets-subs'
     | '/store/dairy'
     | '/store/home'
     | '/store/kitchen'
@@ -418,6 +428,7 @@ export interface FileRouteTypes {
     | '/restaurant/$id'
     | '/store/baskets'
     | '/store/baskets-build'
+    | '/store/baskets-subs'
     | '/store/dairy'
     | '/store/home'
     | '/store/kitchen'
@@ -458,6 +469,7 @@ export interface FileRouteTypes {
     | '/_app/restaurant/$id'
     | '/_app/store/baskets'
     | '/_app/store/baskets-build'
+    | '/_app/store/baskets-subs'
     | '/_app/store/dairy'
     | '/_app/store/home'
     | '/_app/store/kitchen'
@@ -665,6 +677,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStoreDairyRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/store/baskets-subs': {
+      id: '/_app/store/baskets-subs'
+      path: '/store/baskets-subs'
+      fullPath: '/store/baskets-subs'
+      preLoaderRoute: typeof AppStoreBasketsSubsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/store/baskets-build': {
       id: '/_app/store/baskets-build'
       path: '/store/baskets-build'
@@ -793,6 +812,7 @@ interface AppRouteChildren {
   AppRestaurantIdRoute: typeof AppRestaurantIdRoute
   AppStoreBasketsRoute: typeof AppStoreBasketsRoute
   AppStoreBasketsBuildRoute: typeof AppStoreBasketsBuildRoute
+  AppStoreBasketsSubsRoute: typeof AppStoreBasketsSubsRoute
   AppStoreDairyRoute: typeof AppStoreDairyRoute
   AppStoreHomeRoute: typeof AppStoreHomeRoute
   AppStoreKitchenRoute: typeof AppStoreKitchenRoute
@@ -823,6 +843,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppRestaurantIdRoute: AppRestaurantIdRoute,
   AppStoreBasketsRoute: AppStoreBasketsRoute,
   AppStoreBasketsBuildRoute: AppStoreBasketsBuildRoute,
+  AppStoreBasketsSubsRoute: AppStoreBasketsSubsRoute,
   AppStoreDairyRoute: AppStoreDairyRoute,
   AppStoreHomeRoute: AppStoreHomeRoute,
   AppStoreKitchenRoute: AppStoreKitchenRoute,
