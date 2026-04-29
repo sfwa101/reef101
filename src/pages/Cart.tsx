@@ -914,7 +914,7 @@ const Cart = () => {
         )}
 
         {/* Split-shipment notice for sweets bookings */}
-        {isSplitShipment && (
+        {hasBooking && hasNonBookingItems && !anyWaitForAll && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
