@@ -85,22 +85,10 @@ const TopBar = ({ title = "ريف المدينة" }: TopBarProps) => {
           />
           <div className="min-w-0">
             <p
-              className={`font-display font-extrabold tracking-tight text-foreground leading-none transition-[font-size] duration-300 ${shrunk ? "text-[17px]" : "text-[20px] lg:text-2xl"}`}
+              className={`font-display font-extrabold tracking-tight text-foreground leading-none transition-[font-size] duration-300 ${shrunk ? "text-[18px]" : "text-[22px] lg:text-2xl"}`}
             >
               {title}
             </p>
-            {/* Tiny zone badge — only the short zone name (no "توصيل سريع") */}
-            <span
-              className={`mt-1 inline-flex items-center gap-1 text-[10px] font-bold leading-none transition-opacity ${shrunk ? "opacity-0 h-0 mt-0" : "opacity-100"}`}
-            >
-              <span
-                aria-hidden
-                className={`inline-block h-1.5 w-1.5 rounded-full ${fastZone ? "bg-emerald-500 animate-pulse-soft" : "bg-amber-500"}`}
-              />
-              <span className={fastZone ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"}>
-                {zone.shortName}
-              </span>
-            </span>
           </div>
         </Link>
 
@@ -118,7 +106,8 @@ const TopBar = ({ title = "ريف المدينة" }: TopBarProps) => {
           <Link
             to="/cart"
             aria-label="السلة"
-            className="group relative inline-flex h-11 items-center gap-2 rounded-2xl bg-card/85 pl-1.5 pr-3.5 ring-1 ring-border/60 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] backdrop-blur-md transition hover:bg-card lg:hidden"
+            dir="ltr"
+            className="group relative inline-flex h-11 items-center gap-2 rounded-2xl bg-card/85 pr-3.5 pl-1.5 ring-1 ring-border/60 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] backdrop-blur-md transition hover:bg-card lg:hidden"
           >
             <span className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[inset_0_-2px_0_rgba(0,0,0,0.12)]">
               <BagGlyph className="h-4 w-4" />
