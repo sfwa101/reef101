@@ -971,17 +971,29 @@ const DetailSheet = ({
   }, []);
 
   const handleConfirm = () => {
-    add({
-      id: product.id,
-      name: product.name,
-      price: isPre ? deposit : product.price,
-      image: product.image,
-      unit: isPre ? `دفعة مقدمة — ${product.unit}` : product.unit,
-      category: "أدوات منزلية",
-      source: "home",
-    } as unknown as import("@/lib/products").Product);
+    add(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        unit: product.unit,
+        category: "أدوات منزلية",
+        source: "home",
+      } as unknown as import("@/lib/products").Product,
+      1,
+      isPre
+        ? {
+            payDeposit: true,
+            unitPrice: product.price,
+            bookingNote: `حجز مسبق · دفعة مقدمة ${toLatin(deposit.toLocaleString("en-US"))} ج.م — المتبقي ${toLatin(remaining.toLocaleString("en-US"))} ج.م عند الاستلام`,
+          }
+        : undefined,
+    );
     toast.success(isPre ? "تم تأكيد الحجز" : "أُضيف إلى السلة", {
-      description: product.name,
+      description: isPre
+        ? `دفعة مقدمة ${toLatin(deposit.toLocaleString("en-US"))} ج.م`
+        : product.name,
     });
     onClose();
   };
