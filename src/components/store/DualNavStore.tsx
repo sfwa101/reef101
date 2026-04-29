@@ -22,8 +22,9 @@ interface DualNavStoreProps {
 }
 
 // Header height + visual gap between header and dual rail.
+// Increased gap so the sticky nav feels detached from the top bar (premium).
 const HEADER_OFFSET = 64;
-const HEADER_GAP = 10;
+const HEADER_GAP = 16;
 const MAIN_BAR = 46;
 const SUB_BAR = 40;
 const STICKY_TOTAL = HEADER_OFFSET + HEADER_GAP + MAIN_BAR + SUB_BAR + 6;
