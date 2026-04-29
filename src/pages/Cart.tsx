@@ -1259,14 +1259,24 @@ const Cart = () => {
                 <div className="flex-1">
                   <p className="text-sm font-extrabold">{m.label}</p>
                   {isWallet && user ? (
-                    <p className="text-[10px] font-bold text-primary">
-                      متاح: {toLatin(Math.round(walletBalance))} ج.م
-                      {active && walletBalance >= grand && grand > 0 && (
-                        <span className="ms-1 text-foreground/60 font-extrabold">
-                          · المتبقي بعد العملية {toLatin(Math.round(walletAfter))} ج.م
-                        </span>
+                    <>
+                      <p className="text-[10px] font-bold text-primary">
+                        متاح: {toLatin(Math.round(walletBalance))} ج.م
+                        {active && walletBalance >= grand && grand > 0 && (
+                          <span className="ms-1 text-foreground/60 font-extrabold">
+                            · المتبقي بعد العملية {toLatin(Math.round(walletAfter))} ج.م
+                          </span>
+                        )}
+                      </p>
+                      {trustLimit > 0 && (
+                        <p className="mt-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                          🛡️ رصيد ثقة: +{toLatin(trustLimit)} ج.م
+                          {active && trustUsed > 0 && (
+                            <span className="ms-1 font-extrabold">· مستخدم {toLatin(Math.round(trustUsed))} ج (يُسدَّد لاحقًا)</span>
+                          )}
+                        </p>
                       )}
-                    </p>
+                    </>
                   ) : (
                     <p className="text-[10px] text-muted-foreground">{m.sub}</p>
                   )}
