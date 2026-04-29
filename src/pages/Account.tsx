@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { User, MapPin, CreditCard, Bell, Heart, ShoppingBag, Settings, HelpCircle, LogOut, ChevronLeft, Award, Medal, Crown, Gem, Sparkles, Phone } from "lucide-react";
+import { User, MapPin, CreditCard, Bell, Heart, ShoppingBag, Settings, HelpCircle, LogOut, ChevronLeft, Award, Medal, Crown, Gem, Sparkles, Phone, Wrench, Database } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useTheme } from "@/context/ThemeContext";
@@ -59,6 +59,9 @@ const groups = [
     { icon: HelpCircle, label: "المساعدة والدعم", sub: "تواصل معنا", to: "/account/help" as const },
   ]},
 ];
+
+// Direct link to the project's backend (Lovable Cloud) console.
+const BACKEND_CONSOLE_URL = "https://supabase.com/dashboard/project/omdyopbpwhzduuqfnxbk";
 
 const Account = () => {
   const { resolvedMode } = useTheme();
@@ -120,8 +123,22 @@ const Account = () => {
   return (
     <div className="space-y-6">
       <section>
-        <h1 className="font-display text-3xl font-extrabold">حسابي</h1>
-        <p className="mt-1 text-xs text-muted-foreground">أدر بياناتك، طلباتك، ومحفظتك في مكان واحد.</p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <h1 className="font-display text-3xl font-extrabold">حسابي</h1>
+            <p className="mt-1 text-xs text-muted-foreground">أدر بياناتك، طلباتك، ومحفظتك في مكان واحد.</p>
+          </div>
+          <a
+            href={BACKEND_CONSOLE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="أدوات المطوّر"
+            title="أدوات المطوّر · Backend"
+            className="mt-1 inline-flex h-9 w-9 items-center justify-center rounded-full bg-foreground/5 text-muted-foreground ring-1 ring-border/60 transition hover:bg-foreground/10 hover:text-foreground active:scale-95"
+          >
+            <Wrench className="h-4 w-4" strokeWidth={2.4} />
+          </a>
+        </div>
       </section>
       <Link
         to="/account/profile"
@@ -188,6 +205,23 @@ const Account = () => {
                 </Link>
               );
             })}
+            {g.title === "أخرى" && (
+              <a
+                href={BACKEND_CONSOLE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center gap-3 px-4 py-3 text-right transition active:bg-foreground/5"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft">
+                  <Database className="h-4 w-4 text-primary" strokeWidth={2.4} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold">أدوات المطوّر</p>
+                  <p className="text-[10px] text-muted-foreground">لوحة الـ Backend والتكاملات</p>
+                </div>
+                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+              </a>
+            )}
           </div>
         </section>
       ))}
