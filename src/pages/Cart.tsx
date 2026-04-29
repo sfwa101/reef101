@@ -499,9 +499,18 @@ const Cart = () => {
 
       {/* ============ Payment ============ */}
       <section className="rounded-2xl bg-card p-4 shadow-[0_4px_18px_-8px_rgba(0,0,0,0.1)] ring-1 ring-border/30">
-        <p className="mb-2 text-sm font-bold">طريقة الدفع</p>
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-sm font-bold">طريقة الدفع</p>
+          {!zone.codAllowed && (
+            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-extrabold text-amber-700 dark:text-amber-400">
+              الدفع عند الاستلام غير متاح في {zone.shortName}
+            </span>
+          )}
+        </div>
         <div className="space-y-2">
-          {paymentOptions.map((m) => {
+          {paymentOptions
+            .filter((m) => zone.codAllowed || m.id !== "cash")
+            .map((m) => {
             const Icon = m.icon;
             const active = payment === m.id;
             const isWallet = m.id === "wallet";
@@ -547,7 +556,10 @@ const Cart = () => {
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {paymentOptions.filter((p) => p.id !== "wallet").map((m) => {
+                {paymentOptions
+                  .filter((p) => p.id !== "wallet")
+                  .filter((p) => zone.codAllowed || p.id !== "cash")
+                  .map((m) => {
                   const Icon = m.icon;
                   const a = secondaryPayment === m.id;
                   return (
