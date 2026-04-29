@@ -607,6 +607,36 @@ const Cart = () => {
     [vendorGroups, payment],
   );
 
+  /* ============ Fulfillment timing classification ============
+   * Splits vendor groups into:
+   *   - instantGroups   → arrives within ~1 hour (store + kitchen instant + sweets Type A)
+   *   - scheduledGroups → arrives by appointment (sweets Type B fresh, Type C bookings)
+   * Restaurants ride with "instant" (cooked-to-order, fast delivery).
+   * Used for the elegant section headers shown in the cart.
+   */
+  const groupIsScheduled = (g: VendorGroup) => {
+    // a vendor group is scheduled if EVERY line is sweets B/C (booking).
+    return (
+      g.lines.length > 0 &&
+      g.lines.every((l) => {
+        if (!isSweetsProduct(l.product.source)) return false;
+        const t = fulfillmentTypeFor(l.product.id, l.product.subCategory);
+        return t === "B" || t === "C";
+      })
+    );
+  };
+  const groupIsMixedScheduled = (g: VendorGroup) =>
+    g.lines.some((l) => {
+      if (!isSweetsProduct(l.product.source)) return false;
+      const t = fulfillmentTypeFor(l.product.id, l.product.subCategory);
+      return t === "B" || t === "C";
+    });
+
+  const instantGroups = vendorGroups.filter((g) => !groupIsScheduled(g));
+  const scheduledGroups = vendorGroups.filter((g) => groupIsScheduled(g));
+  const showFulfillmentSections =
+    instantGroups.length > 0 && scheduledGroups.length > 0;
+
   const applyPromo = () => {
     const code = promo.trim().toUpperCase();
     if (!code) return;
