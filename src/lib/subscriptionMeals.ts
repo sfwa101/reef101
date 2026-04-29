@@ -1,7 +1,9 @@
-import pChicken from "@/assets/p-grilled-chicken.jpg";
-import pSalmon from "@/assets/p-salmon.jpg";
-import pRisotto from "@/assets/p-risotto.jpg";
-import pBowl from "@/assets/p-bowl.jpg";
+// Images are served from Supabase Storage (product-images bucket).
+const STORAGE = "https://aqqxravppmtdbalsjyam.supabase.co/storage/v1/object/public/product-images";
+const pChicken = `${STORAGE}/p-grilled-chicken.jpg`;
+const pSalmon = `${STORAGE}/p-salmon.jpg`;
+const pRisotto = `${STORAGE}/p-risotto.jpg`;
+const pBowl = `${STORAGE}/p-bowl.jpg`;
 
 /**
  * Single source of truth for subscription meals.
