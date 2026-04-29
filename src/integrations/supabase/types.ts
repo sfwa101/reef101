@@ -310,6 +310,60 @@ export type Database = {
           },
         ]
       }
+      print_jobs: {
+        Row: {
+          binding: string
+          color_mode: string
+          copies: number
+          created_at: string
+          file_name: string | null
+          file_path: string | null
+          id: string
+          notes: string | null
+          pages: number
+          ready_at: string | null
+          sided: string
+          status: string
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          binding?: string
+          color_mode?: string
+          copies?: number
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          pages?: number
+          ready_at?: string | null
+          sided?: string
+          status?: string
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          binding?: string
+          color_mode?: string
+          copies?: number
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          pages?: number
+          ready_at?: string | null
+          sided?: string
+          status?: string
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           addons: Json | null
