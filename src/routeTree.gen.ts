@@ -20,6 +20,7 @@ import { Route as AppOffersRouteImport } from './routes/_app/offers'
 import { Route as AppCartRouteImport } from './routes/_app/cart'
 import { Route as AppAccountRouteImport } from './routes/_app/account'
 import { Route as AppAccountIndexRouteImport } from './routes/_app/account.index'
+import { Route as AppSubSlugRouteImport } from './routes/_app/sub.$slug'
 import { Route as AppStoreWholesaleRouteImport } from './routes/_app/store.wholesale'
 import { Route as AppStoreVillageRouteImport } from './routes/_app/store.village'
 import { Route as AppStoreSweetsRouteImport } from './routes/_app/store.sweets'
@@ -98,6 +99,11 @@ const AppAccountIndexRoute = AppAccountIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppAccountRoute,
+} as any)
+const AppSubSlugRoute = AppSubSlugRouteImport.update({
+  id: '/sub/$slug',
+  path: '/sub/$slug',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppStoreWholesaleRoute = AppStoreWholesaleRouteImport.update({
   id: '/store/wholesale',
@@ -254,6 +260,7 @@ export interface FileRoutesByFullPath {
   '/store/sweets': typeof AppStoreSweetsRoute
   '/store/village': typeof AppStoreVillageRoute
   '/store/wholesale': typeof AppStoreWholesaleRoute
+  '/sub/$slug': typeof AppSubSlugRoute
   '/account/': typeof AppAccountIndexRoute
 }
 export interface FileRoutesByTo {
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/store/sweets': typeof AppStoreSweetsRoute
   '/store/village': typeof AppStoreVillageRoute
   '/store/wholesale': typeof AppStoreWholesaleRoute
+  '/sub/$slug': typeof AppSubSlugRoute
   '/account': typeof AppAccountIndexRoute
 }
 export interface FileRoutesById {
@@ -327,6 +335,7 @@ export interface FileRoutesById {
   '/_app/store/sweets': typeof AppStoreSweetsRoute
   '/_app/store/village': typeof AppStoreVillageRoute
   '/_app/store/wholesale': typeof AppStoreWholesaleRoute
+  '/_app/sub/$slug': typeof AppSubSlugRoute
   '/_app/account/': typeof AppAccountIndexRoute
 }
 export interface FileRouteTypes {
@@ -365,6 +374,7 @@ export interface FileRouteTypes {
     | '/store/sweets'
     | '/store/village'
     | '/store/wholesale'
+    | '/sub/$slug'
     | '/account/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/store/sweets'
     | '/store/village'
     | '/store/wholesale'
+    | '/sub/$slug'
     | '/account'
   id:
     | '__root__'
@@ -437,6 +448,7 @@ export interface FileRouteTypes {
     | '/_app/store/sweets'
     | '/_app/store/village'
     | '/_app/store/wholesale'
+    | '/_app/sub/$slug'
     | '/_app/account/'
   fileRoutesById: FileRoutesById
 }
@@ -523,6 +535,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/account/'
       preLoaderRoute: typeof AppAccountIndexRouteImport
       parentRoute: typeof AppAccountRoute
+    }
+    '/_app/sub/$slug': {
+      id: '/_app/sub/$slug'
+      path: '/sub/$slug'
+      fullPath: '/sub/$slug'
+      preLoaderRoute: typeof AppSubSlugRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/store/wholesale': {
       id: '/_app/store/wholesale'
@@ -748,6 +767,7 @@ interface AppRouteChildren {
   AppStoreSweetsRoute: typeof AppStoreSweetsRoute
   AppStoreVillageRoute: typeof AppStoreVillageRoute
   AppStoreWholesaleRoute: typeof AppStoreWholesaleRoute
+  AppSubSlugRoute: typeof AppSubSlugRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -775,6 +795,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppStoreSweetsRoute: AppStoreSweetsRoute,
   AppStoreVillageRoute: AppStoreVillageRoute,
   AppStoreWholesaleRoute: AppStoreWholesaleRoute,
+  AppSubSlugRoute: AppSubSlugRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
