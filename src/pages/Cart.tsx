@@ -688,6 +688,49 @@ const Cart = () => {
           </div>
         )}
 
+        {/* Split-shipment notice for sweets bookings */}
+        {isSplitShipment && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500/10 via-violet-400/5 to-fuchsia-500/10 p-3 ring-1 ring-violet-500/25"
+          >
+            <div className="mb-2 flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-violet-600 text-white">
+                <CalendarDays className="h-3.5 w-3.5" />
+              </div>
+              <p className="text-[12px] font-extrabold text-foreground">
+                طلبك يصل على دفعتين 📦
+              </p>
+            </div>
+            <ul className="space-y-1.5 text-[11px] font-bold text-foreground/85">
+              {(hasInstantSweets || lines.some((l) => !isSweetsProduct(l.product.source))) && (
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                  <span>المنتجات الفورية تصلك خلال {zone.etaLabel}</span>
+                </li>
+              )}
+              {hasFreshSweets && (
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                  <span>حلويات «يُحضّر طازجاً» تصلك خلال 4 ساعات</span>
+                </li>
+              )}
+              {hasBooking && (
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-violet-600" />
+                  <span>
+                    حجوزات الأسر المنتجة في موعدها المحدّد
+                    {sweetsBuckets.C.lines[0]?.meta?.date
+                      ? ` (${formatBookingShort(new Date(sweetsBuckets.C.lines[0].meta.date!))})`
+                      : ""}
+                  </span>
+                </li>
+              )}
+            </ul>
+          </motion.div>
+        )}
+
         {vendorGroups.map((g) => {
           const v = g.vendor;
           const hue = vendorBrandHue(v);
