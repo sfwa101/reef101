@@ -1,9 +1,27 @@
-import { User, MapPin, CreditCard, Bell, Heart, ShoppingBag, Settings, HelpCircle, LogOut, ChevronLeft, Crown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { User, MapPin, CreditCard, Bell, Heart, ShoppingBag, Settings, HelpCircle, LogOut, ChevronLeft, Award, Medal, Crown, Gem, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
 import { toLatin } from "@/lib/format";
+import { supabase } from "@/integrations/supabase/client";
+
+type TierKey = "bronze" | "silver" | "gold" | "platinum" | "vip";
+const TIERS: Record<TierKey, { label: string; min: number; icon: typeof Award; cls: string }> = {
+  bronze:   { label: "برونزي",  min: 0,    icon: Award,    cls: "bg-amber-700/15 text-amber-700 dark:text-amber-400 ring-amber-700/30" },
+  silver:   { label: "فضي",    min: 200,  icon: Medal,    cls: "bg-slate-400/15 text-slate-600 dark:text-slate-300 ring-slate-400/30" },
+  gold:     { label: "ذهبي",   min: 500,  icon: Crown,    cls: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 ring-yellow-500/30" },
+  platinum: { label: "بلاتيني", min: 1000, icon: Gem,      cls: "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 ring-cyan-500/30" },
+  vip:      { label: "VIP",    min: 2500, icon: Sparkles, cls: "bg-gradient-to-r from-fuchsia-500/20 to-amber-400/20 text-fuchsia-700 dark:text-fuchsia-300 ring-fuchsia-500/30" },
+};
+const tierFor = (points: number): TierKey => {
+  if (points >= TIERS.vip.min) return "vip";
+  if (points >= TIERS.platinum.min) return "platinum";
+  if (points >= TIERS.gold.min) return "gold";
+  if (points >= TIERS.silver.min) return "silver";
+  return "bronze";
+};
 
 const groups = [
   { title: "حسابي", items: [
@@ -26,6 +44,25 @@ const Account = () => {
   const { resolvedMode } = useTheme();
   const { user, profile, signOut } = useAuth();
   const nav = useNavigate();
+  const [points, setPoints] = useState(0);
+  const [balance, setBalance] = useState(0);
+  const [ordersCount, setOrdersCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    (async () => {
+      const [{ data: w }, { count }] = await Promise.all([
+        supabase.from("wallet_balances").select("balance, points").eq("user_id", user.id).maybeSingle(),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+      ]);
+      if (!alive) return;
+      setPoints(Number(w?.points ?? 0));
+      setBalance(Number(w?.balance ?? 0));
+      setOrdersCount(count ?? 0);
+    })().catch(() => {});
+    return () => { alive = false; };
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -46,6 +83,9 @@ const Account = () => {
   }
 
   const initials = (profile?.full_name || "ر م").split(" ").filter(Boolean).slice(0, 2).map((s) => s[0]).join("");
+  const tierKey = tierFor(points);
+  const tier = TIERS[tierKey];
+  const TierIcon = tier.icon;
 
   return (
     <div className="space-y-6">
@@ -58,14 +98,28 @@ const Account = () => {
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-primary-foreground">
             <span className="font-display text-xl font-extrabold">{initials}</span>
           </div>
-          <div className="flex-1">
-            <h2 className="font-display text-lg font-extrabold">{profile?.full_name || "مرحباً بك"}</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-display text-lg font-extrabold truncate">{profile?.full_name || "مرحباً بك"}</h2>
             <p dir="ltr" className="text-xs text-muted-foreground tabular-nums">+{toLatin(profile?.phone ?? "")}</p>
-            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
-              <Crown className="h-3 w-3" /> عضو ريف +
+            <span className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ${tier.cls}`}>
+              <TierIcon className="h-3 w-3" /> {tier.label}
             </span>
           </div>
           <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="mt-4 grid grid-cols-3 divide-x divide-x-reverse divide-border border-t border-border pt-4">
+          <div className="text-center">
+            <p className="font-display text-xl font-extrabold text-primary tabular-nums">{toLatin(points)}</p>
+            <p className="text-[10px] text-muted-foreground">نقطة</p>
+          </div>
+          <div className="text-center">
+            <p className="font-display text-xl font-extrabold text-primary tabular-nums">{toLatin(balance.toFixed(0))}</p>
+            <p className="text-[10px] text-muted-foreground">ج.م في المحفظة</p>
+          </div>
+          <div className="text-center">
+            <p className="font-display text-xl font-extrabold text-primary tabular-nums">{toLatin(ordersCount)}</p>
+            <p className="text-[10px] text-muted-foreground">طلب</p>
+          </div>
         </div>
       </Link>
       {groups.map((g) => (
