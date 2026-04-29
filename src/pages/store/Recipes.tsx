@@ -925,12 +925,27 @@ function RecipeModal({ recipe, onClose }: { recipe: Recipe; onClose: () => void 
                   {content.tools.map((t) => {
                     const stockProduct = t.productId ? getById(t.productId) : undefined;
                     const inStock = !!stockProduct;
-                    const displayPrice = stockProduct?.price ?? t.price;
+                    const fallbackProduct = !inStock && t.fallbackId ? getById(t.fallbackId) : undefined;
+                    const effective = stockProduct ?? fallbackProduct;
+                    const displayPrice = effective?.price ?? t.price;
                     return (
                     <div key={t.id} className="glass-strong rounded-2xl p-3 shadow-soft">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
-                          <p className="font-display text-sm font-extrabold">{t.name}</p>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <p className="font-display text-sm font-extrabold">{t.name}</p>
+                            {!inStock && fallbackProduct && (
+                              <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400">
+                                بديل تلقائي
+                              </span>
+                            )}
+                          </div>
+                          {!inStock && fallbackProduct && (
+                            <p className="mt-1 flex items-start gap-1 text-[11px] text-foreground/80">
+                              <Sparkles className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
+                              <span>سنضيف <b>{fallbackProduct.name}</b> بدلاً منه</span>
+                            </p>
+                          )}
                           {t.alternatives && t.alternatives.length > 0 && (
                             <p className="mt-1 flex items-start gap-1 text-[11px] text-muted-foreground">
                               <Repeat className="mt-0.5 h-3 w-3 shrink-0" />
@@ -938,18 +953,20 @@ function RecipeModal({ recipe, onClose }: { recipe: Recipe; onClose: () => void 
                             </p>
                           )}
                         </div>
-                        {inStock && displayPrice ? (
+                        {effective && displayPrice ? (
                           <button
                             onClick={() => addTool(t)}
-                            className="flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[11px] font-extrabold text-primary-foreground shadow-pill active:scale-95"
+                            className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-extrabold shadow-pill active:scale-95 ${
+                              inStock
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-amber-500 text-white"
+                            }`}
                           >
                             <ShoppingBasket className="h-3 w-3" />
-                            <span className="tabular-nums">{toLatin(displayPrice)} ج</span>
+                            <span className="tabular-nums">
+                              {inStock ? "" : "البديل "}{toLatin(displayPrice)} ج
+                            </span>
                           </button>
-                        ) : t.productId ? (
-                          <span className="shrink-0 rounded-full bg-destructive/10 px-2.5 py-1 text-[10px] font-bold text-destructive">
-                            نفذ من المخزون
-                          </span>
                         ) : (
                           <span className="shrink-0 rounded-full bg-foreground/5 px-2.5 py-1 text-[10px] font-bold text-muted-foreground">
                             غير متوفر
