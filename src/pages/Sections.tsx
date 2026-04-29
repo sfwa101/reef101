@@ -51,8 +51,9 @@ const largeSections: LargeSection[] = [
   { id: "personal",      title: "العناية الشخصية",      subtitle: "إطلالة وراحة",                 to: "/sub/personal",        emoji: "🧴", bg: "#9B3A6E", span: "one" },
   { id: "kitchenTools",  title: "أدوات المطبخ",         subtitle: "كل ما تحتاجه",                 to: "/sub/kitchen-tools",   emoji: "🍳", bg: "#3D6B7A", span: "one" },
   { id: "paper",         title: "ورقيات ومنظفات",       subtitle: "نظافة ولمعان",                 to: "/sub/paper",           emoji: "🧼", bg: "#2E7DAF", span: "one" },
-  // Row 9 — full width
-  { id: "gifts",         title: "الهدايا والتغليف",     subtitle: "لكل مناسبة هدية مميزة",        to: "/sub/gifts",           emoji: "🎁", bg: "#6E3FA3", span: "full" },
+  // Row 9 — 1/3 + 2/3
+  { id: "gifts",         title: "الهدايا والتغليف",     subtitle: "لكل مناسبة هدية مميزة",        to: "/sub/gifts",           emoji: "🎁", bg: "#6E3FA3", span: "one" },
+  { id: "library",       title: "مكتبة الطلبة",         subtitle: "قرطاسية · كتب · تصوير",         to: "/store/library",       emoji: "📚", bg: "#1B5E8C", span: "two" },
 ];
 
 type SmallSection = {
