@@ -10,6 +10,12 @@ export type Profile = {
   birth_date: string | null;
   gender: string | null;
   email: string | null;
+  occupation?: string | null;
+  household_size?: number | null;
+  lifestyle_tags?: string[] | null;
+  likes?: string[] | null;
+  dislikes?: string[] | null;
+  budget_range?: string | null;
 };
 
 type AuthCtx = {
