@@ -93,6 +93,18 @@ const Account = () => {
     nav({ to: "/auth", replace: true });
   };
 
+  // Resolve display data with safe fallbacks (DB → auth metadata)
+  // IMPORTANT: All hooks must be called before any early return.
+  const displayName = useMemo(() => {
+    const meta = (user?.user_metadata ?? {}) as { full_name?: string };
+    return profile?.full_name || meta.full_name || "عضو ريف";
+  }, [profile, user]);
+  const displayPhone = useMemo(() => {
+    const meta = (user?.user_metadata ?? {}) as { phone?: string };
+    const raw = profile?.phone || meta.phone || "";
+    return formatPhone(raw);
+  }, [profile, user]);
+
   if (!user) {
     return (
       <div className="space-y-6">
@@ -105,16 +117,6 @@ const Account = () => {
     );
   }
 
-  // Resolve display data with safe fallbacks (DB → auth metadata)
-  const displayName = useMemo(() => {
-    const meta = (user?.user_metadata ?? {}) as { full_name?: string };
-    return profile?.full_name || meta.full_name || "عضو ريف";
-  }, [profile, user]);
-  const displayPhone = useMemo(() => {
-    const meta = (user?.user_metadata ?? {}) as { phone?: string };
-    const raw = profile?.phone || meta.phone || "";
-    return formatPhone(raw);
-  }, [profile, user]);
   const initials = displayName.split(" ").filter(Boolean).slice(0, 2).map((s) => s[0]).join("") || "ر م";
   const tierKey = tierFor(points);
   const tier = TIERS[tierKey];
