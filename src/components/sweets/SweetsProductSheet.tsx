@@ -615,7 +615,8 @@ const SweetsProductSheet = ({ product, open, onClose }: Props) => {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 };
 
