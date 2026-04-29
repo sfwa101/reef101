@@ -217,13 +217,13 @@ export const products: Product[] = [
   { id: "meat-frozen-veg", name: "خضار مجمّدة مشكّلة", unit: "علبة 800غ", price: 65, image: pLettuce, rating: 4.6, category: "لحوم ومجمدات", subCategory: "مجمدات", source: "meat" },
 
   // ========== Sweets & Cakes (الحلويات والتورتة) ==========
-  { id: "cake-choco", name: "تورتة الشوكولاتة الفاخرة", unit: "1 كجم", price: 320, image: pCookies, rating: 4.9, category: "حلويات", subCategory: "تورتات", source: "sweets", badge: "best", variants: sizeVariants },
-  { id: "cake-cheese", name: "تشيز كيك الفراولة", unit: "علبة 8 شرائح", price: 285, image: pStrawberry, rating: 4.8, category: "حلويات", subCategory: "تورتات", source: "sweets", badge: "trending" },
-  { id: "sweet-konafa", name: "كنافة بالقشطة بلدي", unit: "صينية متوسطة", price: 180, image: pCookies, rating: 4.9, category: "حلويات", subCategory: "شرقية", source: "sweets", badge: "premium" },
-  { id: "sweet-baklava", name: "بقلاوة فستق حلبي", unit: "علبة 500غ", price: 220, image: pCookies, rating: 4.8, category: "حلويات", subCategory: "شرقية", source: "sweets" },
-  { id: "sweet-macaron", name: "ماكرون فرنسي مشكّل", unit: "علبة 12 قطعة", price: 165, image: pCookies, rating: 4.7, category: "حلويات", subCategory: "غربية", source: "sweets", badge: "new" },
-  { id: "sweet-donuts", name: "دونتس مغطّس بالشوكولاتة", unit: "علبة 6 حبات", price: 95, image: pCookies, rating: 4.6, category: "حلويات", subCategory: "غربية", source: "sweets" },
-  { id: "sweet-ice-gelato", name: "جيلاتو إيطالي", brand: "جيلاتو روما", unit: "علبة 500مل", price: 110, image: pIcecream, rating: 4.8, category: "حلويات", subCategory: "مثلجات", source: "sweets", badge: "trending" },
+  { id: "cake-choco", name: "تورتة الشوكولاتة الفاخرة", unit: "1 كجم", price: 320, image: pCookies, rating: 4.9, category: "حلويات", subCategory: "تورتات", source: "sweets", badge: "best", variants: cakeSizeVariants, addons: cakeAddons },
+  { id: "cake-cheese", name: "تشيز كيك الفراولة", unit: "علبة 8 شرائح", price: 285, image: pStrawberry, rating: 4.8, category: "حلويات", subCategory: "تورتات", source: "sweets", badge: "trending", variants: cakeSizeVariants, addons: cakeAddons },
+  { id: "sweet-konafa", name: "كنافة بالقشطة بلدي", unit: "صينية متوسطة", price: 180, image: pCookies, rating: 4.9, category: "حلويات", subCategory: "شرقية", source: "sweets", badge: "premium", variants: sweetTrayVariants, addons: [{ id: "extra-nuts", label: "مكسرات إضافية", price: 15 }, { id: "gift-wrap", label: "تغليف هدية", price: 10 }] },
+  { id: "sweet-baklava", name: "بقلاوة فستق حلبي", unit: "علبة 500غ", price: 220, image: pCookies, rating: 4.8, category: "حلويات", subCategory: "شرقية", source: "sweets", variants: weightVariants, addons: [{ id: "gift-wrap", label: "تغليف هدية", price: 10 }] },
+  { id: "sweet-macaron", name: "ماكرون فرنسي مشكّل", unit: "علبة 12 قطعة", price: 165, image: pCookies, rating: 4.7, category: "حلويات", subCategory: "غربية", source: "sweets", badge: "new", variants: [{ id: "mac-6", label: "علبة 6 قطع", priceDelta: -70 }, { id: "mac-12", label: "علبة 12 قطعة", priceDelta: 0 }, { id: "mac-24", label: "علبة 24 قطعة", priceDelta: 140 }], addons: [{ id: "gift-wrap", label: "تغليف هدية", price: 10 }] },
+  { id: "sweet-donuts", name: "دونتس مغطّس بالشوكولاتة", unit: "علبة 6 حبات", price: 95, image: pCookies, rating: 4.6, category: "حلويات", subCategory: "غربية", source: "sweets", variants: [{ id: "dn-6", label: "6 قطع", priceDelta: 0 }, { id: "dn-12", label: "12 قطعة", priceDelta: 80 }] },
+  { id: "sweet-ice-gelato", name: "جيلاتو إيطالي", brand: "جيلاتو روما", unit: "علبة 500مل", price: 110, image: pIcecream, rating: 4.8, category: "حلويات", subCategory: "مثلجات", source: "sweets", badge: "trending", variants: [{ id: "ice-250", label: "250مل", priceDelta: -45 }, { id: "ice-500", label: "500مل", priceDelta: 0 }, { id: "ice-1000", label: "1 لتر", priceDelta: 95 }] },
 
   // ========== Subscription meals — also sold standalone in Kitchen at premium prices ==========
   // Subscribers pay subscriptionPrice (much lower). Standalone single-order price below
