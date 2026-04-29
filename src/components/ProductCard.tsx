@@ -1,9 +1,9 @@
 import { Plus, Minus, Heart } from "lucide-react";
-import { useCart } from "@/context/CartContext";
+import { useCartActions, useCartLineQty } from "@/context/CartContext";
 import { isPerishable, type Product } from "@/lib/products";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { useFavorites } from "@/lib/favorites";
+import { memo, useEffect, useRef, useState } from "react";
+import { useIsFavorite, useToggleFavorite } from "@/context/FavoritesContext";
 import { toLatin } from "@/lib/format";
 import { useLocation } from "@/context/LocationContext";
 import {
@@ -29,28 +29,23 @@ const badgeStyle: Record<string, { label: string; cls: string }> = {
   new: { label: "جديد", cls: "bg-primary-soft text-primary" },
 };
 
-const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProps) => {
-  const { add, setQty, lines } = useCart();
-  const { has, toggle } = useFavorites();
+const ProductCardImpl = ({ product, variant = "grid", volumeBadge }: ProductCardProps) => {
+  // Granular subscriptions — only this card re-renders when its qty/fav flips.
+  const { add, setQty } = useCartActions();
+  const qty = useCartLineQty(product.id);
+  const fav = useIsFavorite(product.id);
+  const toggleFav = useToggleFavorite();
   const { zone } = useLocation();
   const badge = product.badge ? badgeStyle[product.badge] : null;
-  const line = lines.find((l) => l.product.id === product.id);
-  const qty = line?.qty ?? 0;
-  const fav = has(product.id);
 
   const unavailable = !zone.acceptsPerishables && isPerishable(product);
 
-  // Sweets fulfillment metadata: drives the small status badge under the
-  // category badge and forces a booking flow for Type C (pre-order) items.
   const sweets = isSweetsProduct(product.source);
   const fType = sweets
     ? fulfillmentTypeFor(product.id, product.subCategory)
     : null;
   const fMeta = fType ? fulfillmentMeta[fType] : null;
   const meat = isButcheryProduct(product.source);
-  // Tapping any sweets card opens the unified sheet (full details + booking).
-  // Meat / poultry / seafood opens the Butcher's Block sheet.
-  // Other product types keep their classic add-to-cart behaviour.
   const opensSheet = sweets || meat;
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -89,13 +84,19 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
   const handleFav = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggle(product.id);
+    void toggleFav(product.id);
   };
 
+  // NOTE: switched from `glass-strong` (heavy backdrop-filter on every card —
+  // a major scrolling bottleneck on low-end devices) to a flat surface card.
+  // `content-visibility: auto` lets the browser skip painting offscreen cards.
   return (
-    <article className={`glass-strong group relative flex flex-col overflow-hidden rounded-2xl shadow-soft ${widthCls} ${unavailable ? "opacity-95" : ""}`}>
+    <article
+      className={`product-card group relative flex flex-col overflow-hidden rounded-2xl bg-card shadow-soft ring-1 ring-border/50 ${widthCls} ${unavailable ? "opacity-95" : ""}`}
+      style={{ contentVisibility: "auto", containIntrinsicSize: "320px 260px" }}
+    >
       {unavailable && (
-        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-background/60 backdrop-blur-[2px]">
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-background/70">
           <span className="rounded-full bg-foreground/85 px-3 py-1.5 text-[10px] font-extrabold text-background shadow-pill">
             قريبًا في منطقتك
           </span>
@@ -116,7 +117,8 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
           src={product.image}
           alt={product.name}
           loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 ease-apple group-hover:scale-105"
+          decoding="async"
+          className="h-full w-full object-cover"
         />
         {badge && (
           <span className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.cls}`}>
@@ -148,8 +150,8 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
           onClick={handleFav}
           role="button"
           aria-label="مفضلة"
-          className={`absolute bottom-2 left-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full backdrop-blur-md transition ease-apple ${
-            fav ? "bg-destructive/90 text-white" : "bg-background/70 text-foreground"
+          className={`absolute bottom-2 left-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full transition ${
+            fav ? "bg-destructive/90 text-white" : "bg-background/80 text-foreground"
           }`}
         >
           <Heart className={`h-3.5 w-3.5 ${fav ? "fill-white" : ""}`} strokeWidth={2.4} />
@@ -179,7 +181,8 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
             src={product.image}
             alt={product.name}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 ease-apple group-hover:scale-105"
+            decoding="async"
+            className="h-full w-full object-cover"
           />
           {badge && (
             <span className={`absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.cls}`}>
@@ -210,8 +213,8 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
           <button
             onClick={handleFav}
             aria-label="مفضلة"
-            className={`absolute bottom-2 left-2 flex h-7 w-7 items-center justify-center rounded-full backdrop-blur-md transition ease-apple ${
-              fav ? "bg-destructive/90 text-white" : "bg-background/70 text-foreground"
+            className={`absolute bottom-2 left-2 flex h-7 w-7 items-center justify-center rounded-full transition ${
+              fav ? "bg-destructive/90 text-white" : "bg-background/80 text-foreground"
             }`}
           >
             <Heart className={`h-3.5 w-3.5 ${fav ? "fill-white" : ""}`} strokeWidth={2.4} />
@@ -287,16 +290,16 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
               <button
                 onClick={handleAdd}
                 aria-label="أضف إلى السلة"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-pill transition ease-apple active:scale-90"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-pill transition active:scale-90"
               >
                 <Plus className="h-4 w-4" strokeWidth={3} />
               </button>
             ) : (
-              <div className="animate-qty-capsule flex h-9 items-center gap-1 rounded-full bg-primary text-primary-foreground shadow-pill">
+              <div className="flex h-9 items-center gap-1 rounded-full bg-primary text-primary-foreground shadow-pill">
                 <button
                   onClick={handleDec}
                   aria-label="إنقاص"
-                  className="flex h-9 w-8 items-center justify-center rounded-full transition ease-apple active:scale-90"
+                  className="flex h-9 w-8 items-center justify-center rounded-full transition active:scale-90"
                 >
                   <Minus className="h-3.5 w-3.5" strokeWidth={3} />
                 </button>
@@ -306,7 +309,7 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
                 <button
                   onClick={handleInc}
                   aria-label="زيادة"
-                  className="flex h-9 w-8 items-center justify-center rounded-full transition ease-apple active:scale-90"
+                  className="flex h-9 w-8 items-center justify-center rounded-full transition active:scale-90"
                 >
                   <Plus className="h-3.5 w-3.5" strokeWidth={3} />
                 </button>
@@ -332,5 +335,18 @@ const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProp
     </article>
   );
 };
+
+// Memoize so the parent (e.g. ProductCarousel/SinglePageStore) doesn't force
+// every card to re-render when an unrelated sibling state changes. Equality is
+// shallow on product reference + variant + volumeBadge fields.
+const ProductCard = memo(ProductCardImpl, (prev, next) => {
+  if (prev.product !== next.product) return false;
+  if (prev.variant !== next.variant) return false;
+  const a = prev.volumeBadge;
+  const b = next.volumeBadge;
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return a.buy === b.buy && a.save === b.save;
+});
 
 export default ProductCard;
