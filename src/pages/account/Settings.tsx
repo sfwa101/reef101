@@ -29,6 +29,11 @@ const cutePalette: PaletteItem[] = [
   { id: "peach", label: "خوخي", swatch: "linear-gradient(135deg, hsl(14 85% 65%), hsl(25 95% 82%))" },
 ];
 
+const premiumDarkPalette: PaletteItem[] = [
+  { id: "plum", label: "بنفسجي ملكي", swatch: "linear-gradient(135deg, hsl(295 55% 22%), hsl(320 60% 50%))" },
+  { id: "navy", label: "أزرق ليلي", swatch: "linear-gradient(135deg, hsl(220 65% 14%), hsl(195 80% 50%))" },
+];
+
 const Settings = () => {
   const { mode, setMode, colorTheme, setColorTheme } = useTheme();
 
@@ -67,6 +72,12 @@ const Settings = () => {
       <PaletteSection
         title="ثيمات لطيفة ✿"
         items={cutePalette}
+        active={colorTheme}
+        onPick={setColorTheme}
+      />
+      <PaletteSection
+        title="ثيمات داكنة فاخرة ✦"
+        items={premiumDarkPalette}
         active={colorTheme}
         onPick={setColorTheme}
       />
