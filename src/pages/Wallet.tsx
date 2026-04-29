@@ -987,7 +987,7 @@ const TransferDialog = ({ onClose, balance, onDone }: { onClose: () => void; bal
     const { data, error } = await supabase.rpc("wallet_transfer", {
       _recipient_phone: phone,
       _amount: amt,
-      _note: note || null,
+      _note: note || undefined,
     });
     setBusy(false);
     if (error) {
