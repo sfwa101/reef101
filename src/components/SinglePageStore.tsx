@@ -116,14 +116,16 @@ const SinglePageStore = ({
 
       {intro}
 
-      {/* Sticky category chip bar — pinned right below the global header */}
-      <div className="fixed inset-x-0 z-30" style={{ top: `${HEADER_OFFSET}px` }}>
+      {/* Sticky category chip bar — pinned right below the global header.
+          Solid background (no backdrop-filter) keeps scroll smooth on low-end devices. */}
+      <div
+        className="fixed inset-x-0 z-30"
+        style={{ top: `${HEADER_OFFSET}px`, contain: "layout paint" }}
+      >
         <div
           className="mx-auto max-w-md px-4 py-2"
           style={{
-            background: `hsl(var(--card) / 0.96)`,
-            backdropFilter: "saturate(180%) blur(24px)",
-            WebkitBackdropFilter: "saturate(180%) blur(24px)",
+            background: "hsl(var(--card))",
             borderBottom: "1px solid hsl(var(--border) / 0.5)",
           }}
         >
@@ -135,7 +137,7 @@ const SinglePageStore = ({
                   key={c.id}
                   data-cat={c.id}
                   onClick={() => jumpTo(c.id)}
-                  className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition ease-apple ${
+                  className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold transition ${
                     isActive ? "text-primary-foreground shadow-pill" : "bg-foreground/5 text-foreground"
                   }`}
                   style={isActive ? { background: `hsl(${theme.hue})` } : undefined}
