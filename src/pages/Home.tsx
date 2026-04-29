@@ -151,8 +151,8 @@ const HomePage = () => {
   );
 
   const recommended = useMemo(
-    () => personalizedProducts(profile, { limit: 10, pool: zoneSafePool }),
-    [profile, zoneSafePool],
+    () => personalizedProducts(profile, { limit: 10, pool: zoneSafePool, slot }),
+    [profile, zoneSafePool, slot],
   );
   const slotPicks = useMemo(
     () => productsForSlot(slot, 16).filter((p) => zone.acceptsPerishables || !isPerishable(p)).slice(0, 10),
@@ -160,12 +160,12 @@ const HomePage = () => {
   );
   const personalizedOffers = useMemo(() => smartOffers(profile, 10), [profile]);
   const trending = useMemo(
-    () => personalizedProducts(profile, { limit: 10, pool: zoneSafePool.filter((p) => p.badge === "trending" || p.badge === "best") }),
-    [profile, zoneSafePool],
+    () => personalizedProducts(profile, { limit: 10, pool: zoneSafePool.filter((p) => p.badge === "trending" || p.badge === "best"), slot }),
+    [profile, zoneSafePool, slot],
   );
   const newForYou = useMemo(
-    () => personalizedProducts(profile, { limit: 10, pool: zoneSafePool.filter((p) => p.badge === "new" || p.badge === "premium") }),
-    [profile, zoneSafePool],
+    () => personalizedProducts(profile, { limit: 10, pool: zoneSafePool.filter((p) => p.badge === "new" || p.badge === "premium"), slot }),
+    [profile, zoneSafePool, slot],
   );
 
   // Buy-it-again — pulled from local interaction history
