@@ -1,6 +1,6 @@
 import BackHeader from "@/components/BackHeader";
 import { useCart } from "@/context/CartContext";
-import { Minus, Plus, Trash2, Tag, ShoppingBag, MessageCircle, Truck, Clock, MapPin, Banknote, Smartphone, CreditCard, Wallet as WalletIcon, Sparkles, Gift, X, Check, PiggyBank } from "lucide-react";
+import { Minus, Plus, Trash2, Tag, ShoppingBag, MessageCircle, Truck, Clock, MapPin, Banknote, Smartphone, CreditCard, Wallet as WalletIcon, Sparkles, Gift, X, Check, PiggyBank, Store, ChefHat, Utensils } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { fmtMoney, toLatin } from "@/lib/format";
@@ -12,6 +12,12 @@ import { products as allProducts, type Product } from "@/lib/products";
 import { fireConfetti, fireMiniConfetti } from "@/lib/confetti";
 import { useLocation } from "@/context/LocationContext";
 import { detectZoneFromAddress } from "@/lib/geoZones";
+import {
+  vendorForProduct,
+  vendorLabel,
+  vendorBrandHue,
+  type VendorKey,
+} from "@/lib/restaurants";
 
 const WA_NUMBER = "201080068689";
 const GIFT_BONUS = 200; // gift threshold = free-delivery + this
