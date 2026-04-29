@@ -1,8 +1,11 @@
 import BackHeader from "@/components/BackHeader";
 import BottomCTA from "@/components/BottomCTA";
 import { useCart } from "@/context/CartContext";
-import { useMemo, useState } from "react";
-import { Clock, Users, Flame, X, Minus, Plus, Check, Calendar, Sparkles } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import {
+  Clock, Users, Flame, X, Minus, Plus, Check, Calendar, Sparkles,
+  Sun, Sunset, Moon, Flame as FlameIcon, TrendingUp, Timer, Zap, BadgePercent, Truck,
+} from "lucide-react";
 import { fmtMoney, toLatin } from "@/lib/format";
 import type { Product } from "@/lib/products";
 
@@ -29,6 +32,26 @@ import pCereal from "@/assets/p-cereal.jpg";
 import pBread from "@/assets/p-bread.jpg";
 import pPasta from "@/assets/p-pasta.jpg";
 import pBeef from "@/assets/p-beef.jpg";
+
+// Marketing metadata per recipe (badges, social proof, scarcity, discounts).
+// Static + deterministic so SSR matches CSR (no Math.random at render time).
+type Marketing = {
+  oldPrice?: number;       // strike-through to show discount
+  soldToday?: number;      // social proof
+  remaining?: number;      // scarcity
+  badge?: "الأكثر طلبًا" | "جديد" | "توصية الشيف" | "صحي" | "وفّر";
+};
+const MARKETING: Record<string, Marketing> = {
+  "r-eggs":    { soldToday: 47, remaining: 12, badge: "الأكثر طلبًا" },
+  "r-cereal":  { soldToday: 22, remaining: 18, badge: "صحي" },
+  "r-bread":   { oldPrice: 70, soldToday: 31, remaining: 9, badge: "وفّر" },
+  "r-chicken": { soldToday: 88, remaining: 14, badge: "الأكثر طلبًا" },
+  "r-pasta":   { oldPrice: 110, soldToday: 54, remaining: 7, badge: "وفّر" },
+  "r-bowl":    { soldToday: 36, remaining: 21, badge: "توصية الشيف" },
+  "r-salmon":  { soldToday: 19, remaining: 6, badge: "توصية الشيف" },
+  "r-risotto": { oldPrice: 210, soldToday: 25, remaining: 8, badge: "وفّر" },
+  "r-beef":    { soldToday: 14, remaining: 4, badge: "جديد" },
+};
 
 const RECIPES: Recipe[] = [
   {
