@@ -1,6 +1,6 @@
 import BackHeader from "@/components/BackHeader";
 import { useCart } from "@/context/CartContext";
-import { Minus, Plus, Trash2, Tag, ShoppingBag, MessageCircle, Truck, Clock, MapPin, Banknote, Smartphone, CreditCard, Wallet as WalletIcon, Sparkles, Gift, X, Check, PiggyBank, Store, ChefHat, Utensils, CalendarDays, Cake, AlertCircle } from "lucide-react";
+import { Minus, Plus, Trash2, Tag, ShoppingBag, MessageCircle, Truck, Clock, MapPin, Banknote, Smartphone, CreditCard, Wallet as WalletIcon, Sparkles, Gift, X, Check, PiggyBank, Store, ChefHat, Utensils, CalendarDays, Cake, Pencil, Zap, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { fmtMoney, toLatin } from "@/lib/format";
@@ -149,21 +149,24 @@ const CartLineItem = ({
             <span className="font-display text-base font-extrabold text-primary">
               <NumberFlow value={unitPrice * l.qty} /> <span className="text-[10px] font-bold text-muted-foreground">ج.م</span>
             </span>
-            <div className="flex items-center gap-1 rounded-[12px] bg-foreground/5 p-0.5">
+            {/* Pill-shaped, refined qty stepper */}
+            <div className="flex items-center gap-0.5 rounded-full bg-foreground/[0.06] p-0.5 ring-1 ring-border/40">
               <button
                 onClick={() => setQty(l.product.id, l.qty - 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-background shadow-sm transition active:scale-90"
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-background text-foreground/70 shadow-sm transition active:scale-90"
+                aria-label="إنقاص"
               >
-                <Minus className="h-3 w-3" />
+                <Minus className="h-2.5 w-2.5" strokeWidth={2.6} />
               </button>
-              <span className="w-7 text-center text-sm font-extrabold">
+              <span className="w-6 text-center text-[12px] font-extrabold tabular-nums">
                 <NumberFlow value={l.qty} />
               </span>
               <button
                 onClick={() => setQty(l.product.id, l.qty + 1)}
-                className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-primary text-primary-foreground shadow-sm transition active:scale-90"
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition active:scale-90"
+                aria-label="زيادة"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-2.5 w-2.5" strokeWidth={2.8} />
               </button>
             </div>
           </div>
@@ -195,8 +198,16 @@ const CartLineItem = ({
                  </p>
                </div>
              </div>
-             <span className="rounded-md bg-violet-600 px-2 py-1 text-[9.5px] font-extrabold text-white">
-               {editOpen ? "إغلاق" : "تعديل"}
+             {/* Compact pencil icon instead of a wide "تعديل" button */}
+             <span
+               className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition ${
+                 editOpen
+                   ? "bg-violet-600 text-white"
+                   : "bg-violet-600/15 text-violet-700 dark:text-violet-300"
+               }`}
+               aria-label={editOpen ? "إغلاق التعديل" : "تعديل الموعد"}
+             >
+               {editOpen ? <X className="h-3.5 w-3.5" /> : <Pencil className="h-3 w-3" strokeWidth={2.6} />}
              </span>
            </button>
 
