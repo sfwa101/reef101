@@ -1,6 +1,6 @@
 import BackHeader from "@/components/BackHeader";
 import { useCart } from "@/context/CartContext";
-import { Minus, Plus, Trash2, Tag, ShoppingBag, MessageCircle, Truck, Clock, MapPin, Banknote, Smartphone, CreditCard, Wallet as WalletIcon, Sparkles, Gift, X, Check, PiggyBank, Store, ChefHat, Utensils } from "lucide-react";
+import { Minus, Plus, Trash2, Tag, ShoppingBag, MessageCircle, Truck, Clock, MapPin, Banknote, Smartphone, CreditCard, Wallet as WalletIcon, Sparkles, Gift, X, Check, PiggyBank, Store, ChefHat, Utensils, CalendarDays, Cake, AlertCircle } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { fmtMoney, toLatin } from "@/lib/format";
@@ -18,9 +18,19 @@ import {
   vendorBrandHue,
   type VendorKey,
 } from "@/lib/restaurants";
+import {
+  computeSweetsRules,
+  fulfillmentTypeFor,
+  isSweetsProduct,
+  bookingTimeSlots,
+  formatBookingShort,
+  DEPOSIT_THRESHOLD,
+} from "@/lib/sweetsFulfillment";
 
 const WA_NUMBER = "201080068689";
 const GIFT_BONUS = 200; // gift threshold = free-delivery + this
+/** Mock WhatsApp endpoint for the home-producers desk that handles Type C */
+const HOME_PRODUCERS_WA = "201080068690";
 
 type Addr = {
   id: string; label: string; city: string; district: string | null;
@@ -180,6 +190,81 @@ const Cart = () => {
       : zone.deliveryFee;
   const grand = Math.max(0, subtotal - discount + delivery + tip);
 
+  /* ============ Sweets fulfillment segmentation ============
+   * Walk every cart line and classify into:
+   *   - bookingLines (Type C — pre-order from home producers)
+   *   - sameDayFreshLines (Type B — Reef Kitchen same-day)
+   *   - instantLines (Type A — ready stock)
+   * Used to: render the "split shipment" notice, force COD off when any
+   * Type C exists, and decide whether deposit is mandatory.
+   */
+  type BookingMeta = { date?: string; slot?: string; note?: string };
+  type SweetsBucket = {
+    type: "A" | "B" | "C";
+    lines: { product: Product; qty: number; meta?: BookingMeta }[];
+    subtotal: number;
+  };
+  const sweetsBuckets = useMemo(() => {
+    const buckets: Record<"A" | "B" | "C", SweetsBucket> = {
+      A: { type: "A", lines: [], subtotal: 0 },
+      B: { type: "B", lines: [], subtotal: 0 },
+      C: { type: "C", lines: [], subtotal: 0 },
+    };
+    for (const l of lines) {
+      if (!isSweetsProduct(l.product.source)) continue;
+      const t = fulfillmentTypeFor(l.product.id, l.product.subCategory);
+      buckets[t].lines.push({
+        product: l.product,
+        qty: l.qty,
+        meta: {
+          date: l.meta?.bookingDate,
+          slot: l.meta?.bookingSlot,
+          note: l.meta?.bookingNote,
+        },
+      });
+      buckets[t].subtotal += l.product.price * l.qty;
+    }
+    return buckets;
+  }, [lines]);
+
+  const sweetsRules = useMemo(
+    () => computeSweetsRules(sweetsBuckets.C.subtotal, grand),
+    [sweetsBuckets.C.subtotal, grand],
+  );
+  const hasInstantSweets = sweetsBuckets.A.lines.length > 0;
+  const hasFreshSweets = sweetsBuckets.B.lines.length > 0;
+  const hasBooking = sweetsBuckets.C.lines.length > 0;
+  const isSplitShipment =
+    hasBooking && (hasInstantSweets || hasFreshSweets || lines.some(
+      (l) => !isSweetsProduct(l.product.source),
+    ));
+
+  /* Deposit toggle (when not mandatory the user can opt in). */
+  const [payDeposit, setPayDeposit] = useState<boolean>(false);
+  // Force-on when threshold hit
+  useEffect(() => {
+    if (sweetsRules.depositRequired) setPayDeposit(true);
+  }, [sweetsRules.depositRequired]);
+
+  /* Final amount the customer pays NOW (deposit) vs. on delivery */
+  const payNowAmount = payDeposit && sweetsRules.hasBooking
+    ? sweetsRules.depositAmount + Math.max(0, grand - sweetsRules.bookingSubtotal)
+    : grand;
+  const payOnDelivery = grand - payNowAmount;
+
+  /* Auto-disable COD when any Type C booking exists */
+  useEffect(() => {
+    if (sweetsRules.blockCOD && payment === "cash") {
+      setPayment("wallet");
+      toast.message("الدفع عند الاستلام غير متاح للحجوزات المسبقة 🍰", {
+        description: "تم التحويل إلى المحفظة الذكية",
+      });
+    }
+    if (sweetsRules.blockCOD && secondaryPayment === "cash") {
+      setSecondaryPayment("instapay");
+    }
+  }, [sweetsRules.blockCOD, payment, secondaryPayment]);
+
   /* Savings on this bill: discount + (free delivery saved) */
   const billSavings = discount + (subtotal >= FREE_DELIVERY_THRESHOLD && subtotal > 0 ? zone.deliveryFee : 0);
 
@@ -316,6 +401,8 @@ const Cart = () => {
         !selectedAddr && guestNotes ? `العنوان: ${guestNotes}` : null,
         isSplit ? `دفع مُجزّأ: محفظة ${Math.round(walletApplied)} + ${secondaryLabel} ${Math.round(walletShortfall)}` : null,
         showChangeJar && saveChange ? `ادخار الفكة: ${changeRemainder} ج.م للحصّالة` : null,
+        sweetsRules.hasBooking ? `حجوزات: ${fmtMoney(sweetsRules.bookingSubtotal)}` : null,
+        payDeposit && sweetsRules.hasBooking ? `عربون مُسدّد: ${fmtMoney(sweetsRules.depositAmount)}` : null,
       ].filter(Boolean);
 
       const { data: order, error } = await supabase
@@ -437,12 +524,27 @@ const Cart = () => {
             `\n\n`
           : "") +
         `🛒 *المنتجات:*\n${lineItems}\n\n` +
+        (sweetsRules.hasBooking
+          ? `📅 *حجوزات الحلويات (${toLatin(sweetsBuckets.C.lines.length)}):*\n` +
+            sweetsBuckets.C.lines
+              .map((l) => {
+                const slot = bookingTimeSlots.find((s) => s.id === l.meta?.slot)?.label ?? "—";
+                const day = l.meta?.date ? formatBookingShort(new Date(l.meta.date)) : "—";
+                return `• ${l.product.name} × ${toLatin(l.qty)} → ${day} · ${slot}`;
+              })
+              .join("\n") +
+            `\n\n`
+          : "") +
         `━━━━━━━━━━━━━━\n` +
         `💵 المجموع الفرعي: ${fmtMoney(subtotal)}\n` +
         (discount > 0 ? `🏷️ خصم (${appliedPromo?.code}): -${fmtMoney(discount)}\n` : "") +
         `🚚 التوصيل: ${delivery === 0 ? "مجاني" : fmtMoney(delivery)}\n` +
         (tip > 0 ? `💚 إكرامية: ${fmtMoney(tip)}\n` : "") +
         `\n*💰 الإجمالي:* *${fmtMoney(grand)}*\n\n` +
+        (payDeposit && sweetsRules.hasBooking
+          ? `🔒 *عربون مسدّد الآن:* ${fmtMoney(sweetsRules.depositAmount)}\n` +
+            `📦 *يُحصّل عند التوصيل:* ${fmtMoney(payOnDelivery)}\n\n`
+          : "") +
         (isSplit
           ? `💳 *طريقة الدفع:* مُجزّأ\n   • محفظة: ${fmtMoney(walletApplied)}\n   • ${secondaryLabel}: ${fmtMoney(walletShortfall)}\n`
           : `💳 *طريقة الدفع:* ${paymentLabel}\n`) +
@@ -491,6 +593,35 @@ const Cart = () => {
         // Stagger to bypass popup blocking
         setTimeout(() => window.open(vUrl, "_blank"), 600 * (idx + 1));
       });
+
+      /* ============ Type C → Home producers WhatsApp routing ============ */
+      if (sweetsBuckets.C.lines.length > 0) {
+        const producerLines = sweetsBuckets.C.lines
+          .map((l, i) => {
+            const slot = bookingTimeSlots.find((s) => s.id === l.meta?.slot)?.label ?? "—";
+            const day = l.meta?.date ? formatBookingShort(new Date(l.meta.date)) : "—";
+            const note = l.meta?.note ? `\n   📝 ملاحظة: ${l.meta.note}` : "";
+            return `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(l.product.price * l.qty)}\n   📅 ${day} · ${slot}${note}`;
+          })
+          .join("\n\n");
+        const producerMsg =
+          `🎂 *حجز جديد — الأسر المنتجة*\n` +
+          `━━━━━━━━━━━━━━\n` +
+          `🆔 *رقم الطلب:* ${orderNum}\n\n` +
+          `🛒 *الحجوزات:*\n${producerLines}\n\n` +
+          `━━━━━━━━━━━━━━\n` +
+          `💵 إجمالي الحجز: ${fmtMoney(sweetsBuckets.C.subtotal)}\n` +
+          (payDeposit
+            ? `🔒 عربون مُسدّد: ${fmtMoney(sweetsRules.depositAmount)}\n`
+            : `⚠️ لم يُدفع عربون — تأكّد قبل البدء\n`) +
+          `\n📍 *عنوان التوصيل:*\n${addrLine}\n\n` +
+          `✅ برجاء البدء بالتجهيز`;
+        const pUrl = `https://wa.me/${HOME_PRODUCERS_WA}?text=${encodeURIComponent(producerMsg)}`;
+        setTimeout(
+          () => window.open(pUrl, "_blank"),
+          600 * (restaurantGroups.length + 1),
+        );
+      }
 
       const orderId = order.id;
       const orderTotal = grand;
@@ -554,6 +685,49 @@ const Cart = () => {
               طلبك يحتوي على <span className="text-accent-foreground">{toLatin(vendorGroups.length)} موردين</span> — كل قسم سيصل من مصدره الخاص.
             </p>
           </div>
+        )}
+
+        {/* Split-shipment notice for sweets bookings */}
+        {isSplitShipment && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500/10 via-violet-400/5 to-fuchsia-500/10 p-3 ring-1 ring-violet-500/25"
+          >
+            <div className="mb-2 flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-[10px] bg-violet-600 text-white">
+                <CalendarDays className="h-3.5 w-3.5" />
+              </div>
+              <p className="text-[12px] font-extrabold text-foreground">
+                طلبك يصل على دفعتين 📦
+              </p>
+            </div>
+            <ul className="space-y-1.5 text-[11px] font-bold text-foreground/85">
+              {(hasInstantSweets || lines.some((l) => !isSweetsProduct(l.product.source))) && (
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                  <span>المنتجات الفورية تصلك خلال {zone.etaLabel}</span>
+                </li>
+              )}
+              {hasFreshSweets && (
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                  <span>حلويات «يُحضّر طازجاً» تصلك خلال 4 ساعات</span>
+                </li>
+              )}
+              {hasBooking && (
+                <li className="flex items-center gap-2">
+                  <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-violet-600" />
+                  <span>
+                    حجوزات الأسر المنتجة في موعدها المحدّد
+                    {sweetsBuckets.C.lines[0]?.meta?.date
+                      ? ` (${formatBookingShort(new Date(sweetsBuckets.C.lines[0].meta.date!))})`
+                      : ""}
+                  </span>
+                </li>
+              )}
+            </ul>
+          </motion.div>
         )}
 
         {vendorGroups.map((g) => {
@@ -698,9 +872,21 @@ const Cart = () => {
             </span>
           )}
         </div>
+
+        {/* Sweets booking — payment rules notice */}
+        {sweetsRules.hasBooking && (
+          <div className="mb-3 flex items-start gap-2 rounded-2xl bg-violet-500/10 p-2.5 ring-1 ring-violet-500/25">
+            <Cake className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
+            <div className="flex-1 text-[11px] font-bold leading-relaxed text-foreground/90">
+              يحتوي طلبك على حجز خاص — يُرجى الدفع مسبقاً (محفظة أو إلكتروني) لتأكيد الحجز.
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2">
           {paymentOptions
             .filter((m) => zone.codAllowed || m.id !== "cash")
+            .filter((m) => !sweetsRules.blockCOD || m.id !== "cash")
             .map((m) => {
             const Icon = m.icon;
             const active = payment === m.id;
@@ -731,6 +917,75 @@ const Cart = () => {
           })}
         </div>
 
+        {/* Deposit toggle — appears only for Type C bookings */}
+        {sweetsRules.hasBooking && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-3 overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500/8 to-fuchsia-500/8 p-3 ring-1 ring-violet-500/25"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[12px] font-extrabold">دفع عربون 50٪</p>
+                  {sweetsRules.depositRequired && (
+                    <span className="rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-800 dark:text-amber-300">
+                      إجباري
+                    </span>
+                  )}
+                </div>
+                <p className="mt-0.5 text-[10px] text-muted-foreground">
+                  {sweetsRules.depositRequired
+                    ? `الحجز يتجاوز ${toLatin(DEPOSIT_THRESHOLD)} ج.م — يجب تأكيده بعربون.`
+                    : "ادفع نصف قيمة الحجز الآن، والباقي عند التوصيل."}
+                </p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={payDeposit}
+                onClick={() =>
+                  !sweetsRules.depositRequired && setPayDeposit((v) => !v)
+                }
+                disabled={sweetsRules.depositRequired}
+                className={`relative h-7 w-12 shrink-0 rounded-full transition ${
+                  payDeposit ? "bg-violet-600" : "bg-foreground/15"
+                } ${sweetsRules.depositRequired ? "opacity-90" : ""}`}
+              >
+                <span
+                  className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow-pill transition-all ${
+                    payDeposit ? "right-0.5" : "right-[1.625rem]"
+                  }`}
+                />
+              </button>
+            </div>
+            <AnimatePresence>
+              {payDeposit && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="mt-2 overflow-hidden rounded-[12px] bg-card/70 p-2.5 ring-1 ring-violet-500/20"
+                >
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-bold text-foreground/80">العربون الآن</span>
+                    <span className="font-display font-extrabold text-violet-700 tabular-nums dark:text-violet-300">
+                      {fmtMoney(sweetsRules.depositAmount)}
+                    </span>
+                  </div>
+                  {payOnDelivery > 0 && (
+                    <div className="mt-1 flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-foreground/80">يُحصّل عند التوصيل</span>
+                      <span className="font-display font-extrabold tabular-nums">
+                        {fmtMoney(payOnDelivery)}
+                      </span>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
         {/* Split-payment helper when wallet < grand */}
         <AnimatePresence>
           {isSplit && (
@@ -750,6 +1005,7 @@ const Cart = () => {
                 {paymentOptions
                   .filter((p) => p.id !== "wallet")
                   .filter((p) => zone.codAllowed || p.id !== "cash")
+                  .filter((p) => !sweetsRules.blockCOD || p.id !== "cash")
                   .map((m) => {
                   const Icon = m.icon;
                   const a = secondaryPayment === m.id;

@@ -1,15 +1,30 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Product } from "@/lib/products";
 
-type CartLine = { product: Product; qty: number };
+/**
+ * Optional per-line meta. Used by the sweets section to attach a chosen
+ * pickup date/time slot on Type C (pre-order) bookings, but generic enough
+ * that other sections can extend it (e.g. kitchen scheduled meals).
+ */
+export type CartLineMeta = {
+  /** ISO date (YYYY-MM-DD) chosen for pickup/delivery */
+  bookingDate?: string;
+  /** Slot id from sweetsFulfillment.bookingTimeSlots */
+  bookingSlot?: string;
+  /** Free-form note kept on the line (e.g. "اكتب اسم العميل على التورتة") */
+  bookingNote?: string;
+};
+
+type CartLine = { product: Product; qty: number; meta?: CartLineMeta };
 
 type CartCtx = {
   lines: CartLine[];
   count: number;
   total: number;
-  add: (p: Product, qty?: number) => void;
+  add: (p: Product, qty?: number, meta?: CartLineMeta) => void;
   remove: (id: string) => void;
   setQty: (id: string, qty: number) => void;
+  updateMeta: (id: string, meta: CartLineMeta) => void;
   clear: () => void;
 };
 
@@ -41,15 +56,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [lines]);
 
-  const add = useCallback((p: Product, qty = 1) => {
+  const add = useCallback((p: Product, qty = 1, meta?: CartLineMeta) => {
     setLines((prev) => {
       const i = prev.findIndex((l) => l.product.id === p.id);
       if (i >= 0) {
         const next = [...prev];
-        next[i] = { ...next[i], qty: next[i].qty + qty };
+        next[i] = {
+          ...next[i],
+          qty: next[i].qty + qty,
+          // Latest booking meta wins so the user can update their slot
+          meta: meta ? { ...next[i].meta, ...meta } : next[i].meta,
+        };
         return next;
       }
-      return [...prev, { product: p, qty }];
+      return [...prev, { product: p, qty, meta }];
     });
   }, []);
 
@@ -65,13 +85,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   }, []);
 
+  const updateMeta = useCallback((id: string, meta: CartLineMeta) => {
+    setLines((prev) =>
+      prev.map((l) =>
+        l.product.id === id ? { ...l, meta: { ...l.meta, ...meta } } : l,
+      ),
+    );
+  }, []);
+
   const clear = useCallback(() => setLines([]), []);
 
   const value = useMemo<CartCtx>(() => {
     const count = lines.reduce((s, l) => s + l.qty, 0);
     const total = lines.reduce((s, l) => s + l.qty * l.product.price, 0);
-    return { lines, count, total, add, remove, setQty, clear };
-  }, [lines, add, remove, setQty, clear]);
+    return { lines, count, total, add, remove, setQty, updateMeta, clear };
+  }, [lines, add, remove, setQty, updateMeta, clear]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };
