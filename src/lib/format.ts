@@ -12,4 +12,24 @@ export const toLatin = (input: string | number | null | undefined): string => {
   return String(input).replace(arabicIndic, (d) => map[d] ?? d);
 };
 
-export const fmtMoney = (n: number) => `${toLatin(Math.round(n))} ج.م`;
+export const fmtMoney = (n: number | null | undefined) =>
+  `${toLatin(Math.round(Number(n ?? 0)))} ج.م`;
+
+export const fmtNum = (n: number | null | undefined) =>
+  toLatin(Number(n ?? 0).toLocaleString("en-US"));
+
+export const fmtDate = (d: string | Date) =>
+  new Intl.DateTimeFormat("ar-EG", {
+    year: "numeric", month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  }).format(typeof d === "string" ? new Date(d) : d);
+
+export const fmtRelative = (d: string | Date) => {
+  const date = typeof d === "string" ? new Date(d) : d;
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (diff < 60) return "الآن";
+  if (diff < 3600) return `قبل ${Math.floor(diff / 60)} د`;
+  if (diff < 86400) return `قبل ${Math.floor(diff / 3600)} س`;
+  if (diff < 2592000) return `قبل ${Math.floor(diff / 86400)} يوم`;
+  return fmtDate(date);
+};
