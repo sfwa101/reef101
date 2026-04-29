@@ -18,6 +18,8 @@ import { isButcheryProduct } from "@/lib/butcheryPrep";
 interface ProductCardProps {
   product: Product;
   variant?: "grid" | "carousel" | "wide";
+  /** Optional bulk-discount hint rendered as an overlay chip on the image. */
+  volumeBadge?: { buy: number; save: number };
 }
 
 const badgeStyle: Record<string, { label: string; cls: string }> = {
@@ -27,7 +29,7 @@ const badgeStyle: Record<string, { label: string; cls: string }> = {
   new: { label: "جديد", cls: "bg-primary-soft text-primary" },
 };
 
-const ProductCard = ({ product, variant = "grid" }: ProductCardProps) => {
+const ProductCard = ({ product, variant = "grid", volumeBadge }: ProductCardProps) => {
   const { add, setQty, lines } = useCart();
   const { has, toggle } = useFavorites();
   const { zone } = useLocation();
