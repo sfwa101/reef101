@@ -382,6 +382,38 @@ const Cart = () => {
         }
       }
 
+      /* ============ Wallet cashback (only when paying via wallet) ============ */
+      if (payment === "wallet" && totalCashback > 0) {
+        try {
+          const { data: bal } = await supabase
+            .from("wallet_balances")
+            .select("balance,cashback")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          const newBalance = Number(bal?.balance ?? 0) + totalCashback;
+          const newCashback = Number(bal?.cashback ?? 0) + totalCashback;
+          if (bal) {
+            await supabase
+              .from("wallet_balances")
+              .update({ balance: newBalance, cashback: newCashback })
+              .eq("user_id", user.id);
+          } else {
+            await supabase
+              .from("wallet_balances")
+              .insert({ user_id: user.id, balance: newBalance, cashback: newCashback });
+          }
+          await supabase.from("wallet_transactions").insert({
+            user_id: user.id,
+            kind: "credit",
+            amount: totalCashback,
+            label: `كاش باك المطاعم — طلب ${orderNum}`,
+            source: "restaurants_cashback",
+          });
+        } catch (e) {
+          console.warn("cashback credit skipped", e);
+        }
+      }
+
       const lineItems = lines
         .map((l, i) => `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(l.product.price * l.qty)}`)
         .join("\n");
@@ -389,11 +421,21 @@ const Cart = () => {
         ? `${[selectedAddr.label, selectedAddr.street, selectedAddr.building, selectedAddr.district, selectedAddr.city].filter(Boolean).join("، ")}`
         : guestNotes || "—";
 
-      const message =
+      /* ============ Per-vendor WhatsApp routing ============
+       * Open ONE main WhatsApp message to the platform (with the full bill),
+       * then a separate message for each restaurant vendor with only their
+       * items + the platform commission breakdown.
+       */
+      const mainMessage =
         `🌿 *طلب جديد — ريف المدينة*\n` +
         `━━━━━━━━━━━━━━\n` +
         `🆔 *رقم الطلب:* ${orderNum}\n` +
         `👤 *العميل:* ${user.email ?? "عميل"}\n\n` +
+        (isMultiVendor
+          ? `🧩 *موردون متعدّدون:* ${toLatin(vendorGroups.length)}\n` +
+            vendorGroups.map((g) => `• ${vendorLabel(g.vendor)} — ${fmtMoney(g.subtotal)}`).join("\n") +
+            `\n\n`
+          : "") +
         `🛒 *المنتجات:*\n${lineItems}\n\n` +
         `━━━━━━━━━━━━━━\n` +
         `💵 المجموع الفرعي: ${fmtMoney(subtotal)}\n` +
@@ -404,12 +446,51 @@ const Cart = () => {
         (isSplit
           ? `💳 *طريقة الدفع:* مُجزّأ\n   • محفظة: ${fmtMoney(walletApplied)}\n   • ${secondaryLabel}: ${fmtMoney(walletShortfall)}\n`
           : `💳 *طريقة الدفع:* ${paymentLabel}\n`) +
+        (payment === "wallet" && totalCashback > 0
+          ? `🎁 *كاش باك المحفظة:* +${fmtMoney(totalCashback)} (تمت إضافته لرصيدك)\n`
+          : "") +
         (showChangeJar && saveChange ? `🐷 *ادخار الفكة:* ${fmtMoney(changeRemainder)} للحصّالة\n` : "") +
         `📍 *العنوان:* ${addrLine}\n\n` +
         `✅ برجاء تأكيد الطلب`;
 
-      const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
-      window.open(url, "_blank");
+      const mainUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(mainMessage)}`;
+      window.open(mainUrl, "_blank");
+
+      // Per-restaurant routing: each restaurant gets its own message with
+      // only its lines + commission breakdown. Stagger window.open calls
+      // to avoid popup blocking by browsers.
+      const restaurantGroups = vendorGroups.filter(
+        (g) => g.vendor.kind === "restaurant",
+      );
+      restaurantGroups.forEach((g, idx) => {
+        if (g.vendor.kind !== "restaurant") return;
+        const r = g.vendor.restaurant;
+        const commission = Math.round((g.subtotal * r.commissionPct) / 100);
+        const netToVendor = g.subtotal - commission;
+        const vendorLines = g.lines
+          .map(
+            (l, i) =>
+              `${toLatin(i + 1)}. ${l.product.name} × ${toLatin(l.qty)} = ${fmtMoney(
+                l.product.price * l.qty,
+              )}`,
+          )
+          .join("\n");
+        const vendorMsg =
+          `🍽️ *طلب جديد عبر ريف المدينة*\n` +
+          `━━━━━━━━━━━━━━\n` +
+          `🆔 *رقم الطلب:* ${orderNum}\n` +
+          `🏷️ *المطعم:* ${r.name}\n\n` +
+          `🛒 *الأصناف المطلوبة:*\n${vendorLines}\n\n` +
+          `━━━━━━━━━━━━━━\n` +
+          `💵 إجمالي المطعم: ${fmtMoney(g.subtotal)}\n` +
+          `📊 عمولة المنصة (${toLatin(r.commissionPct)}٪): -${fmtMoney(commission)}\n` +
+          `💰 *صافي المستحق للمطعم:* *${fmtMoney(netToVendor)}*\n\n` +
+          `📍 *عنوان التوصيل:*\n${addrLine}\n\n` +
+          `✅ برجاء البدء بالتجهيز`;
+        const vUrl = `https://wa.me/${r.whatsapp}?text=${encodeURIComponent(vendorMsg)}`;
+        // Stagger to bypass popup blocking
+        setTimeout(() => window.open(vUrl, "_blank"), 600 * (idx + 1));
+      });
 
       const orderId = order.id;
       const orderTotal = grand;
