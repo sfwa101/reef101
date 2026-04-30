@@ -62,6 +62,9 @@ export default function More() {
     ]},
     { title: "التوصيل", items: [
       { to: "/admin/delivery", icon: Truck, label: "مهام التوصيل", color: "from-primary to-primary-glow" },
+      { to: "/admin/drivers", icon: Truck, label: "المناديب", color: "from-[hsl(var(--info))] to-[hsl(var(--indigo))]" },
+      { to: "/admin/driver-settlements", icon: Wallet, label: "تصفية العهدة", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
+      { to: "/admin/delivery-settings", icon: ShieldCheck, label: "إعدادات التحقق", color: "from-[hsl(var(--purple))] to-[hsl(var(--pink))]" },
       { to: "/admin/delivery/zones", icon: MapPin, label: "المناطق", color: "from-[hsl(var(--teal))] to-[hsl(var(--info))]" },
     ]},
     { title: "الإدارة", items: [
