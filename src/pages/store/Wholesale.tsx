@@ -29,8 +29,8 @@ const cats: StoreCategory[] = [
 ];
 
 const Wholesale = () => {
-  const v = const _pv = useProductsVersion();
-  const bulkProducts = useMemo(() => buildBulk(), [v]);
+  const _pv = useProductsVersion();
+  const bulkProducts = useMemo(() => buildBulk(), [_pv]);
   return (
   <SinglePageStore
     themeKey="wholesale"
