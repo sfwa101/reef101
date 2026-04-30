@@ -1,5 +1,3 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Placeholder from "@/pages/admin/Placeholder";
-export const Route = createFileRoute("/admin/staff")({
-  component: () => <Placeholder title="الموظفون" description="قيد التطوير" />,
-});
+import Staff from "@/pages/admin/Staff";
+export const Route = createFileRoute("/admin/staff")({ component: Staff });
