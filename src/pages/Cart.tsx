@@ -1023,13 +1023,17 @@ const Cart = () => {
           : "—";
         return `▪️ ${toLatin(l.qty)}x ${l.product.name} — استلام ${day} (${fmtMoney(unit * l.qty)})`;
       };
-      const addrLine = selectedAddr
-        ? `${[selectedAddr.label, selectedAddr.street, selectedAddr.building, selectedAddr.district, selectedAddr.city].filter(Boolean).join("، ")}`
-        : guestNotes || "—";
+      const addrLine = isGuest
+        ? guestAddress.trim()
+        : selectedAddr
+          ? `${[selectedAddr.label, selectedAddr.street, selectedAddr.building, selectedAddr.district, selectedAddr.city].filter(Boolean).join("، ")}`
+          : guestNotes || "—";
       const etaLine = bookingItems.length > 0 && instantItems.length === 0
         ? "مجدول"
         : `خلال ${zone.etaLabel}`;
-      const customerLabel = customerName || (currentUser.email ?? "عميل").split("@")[0];
+      const customerLabel = isGuest
+        ? guestName.trim()
+        : customerName || (currentUser?.email ?? "عميل").split("@")[0];
       // Map payment id → friendly Arabic label
       const payShort =
         payment === "wallet"
