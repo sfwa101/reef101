@@ -645,23 +645,43 @@ const Cart = () => {
     };
   }, [subtotal, FREE_DELIVERY_THRESHOLD, GIFT_THRESHOLD, zone.deliveryFee]);
 
-  /* Cross-sell: suggest complementary products */
+  /* Cross-sell: combine real co-purchase data (DB) with local heuristics */
+  const [coPurchaseIds, setCoPurchaseIds] = useState<string[]>([]);
+  useEffect(() => {
+    if (lines.length === 0) { setCoPurchaseIds([]); return; }
+    const ids = lines.map((l) => l.product.id);
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase as any).rpc("frequently_bought_together", {
+        _product_ids: ids, _limit: 6,
+      });
+      if (!cancelled && Array.isArray(data)) {
+        setCoPurchaseIds((data as any[]).map((r) => r.product_id));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [lines.map((l) => l.product.id).join(",")]);
+
   const crossSell = useMemo<Product[]>(() => {
     if (lines.length === 0) return [];
     const inCart = new Set(lines.map((l) => l.product.id));
     const cartSources = new Set(lines.map((l) => l.product.source));
     const cartCategories = new Set(lines.map((l) => l.product.category));
-    // pick complementary: same source/category but different from cart, prefer best/trending and lower price
-    const candidates = allProducts.filter((p) => !inCart.has(p.id) && (cartSources.has(p.source) || cartCategories.has(p.category)));
-    const ranked = candidates
+    // 1) Real co-purchase suggestions first
+    const coReal = coPurchaseIds
+      .map((id) => allProducts.find((p) => p.id === id))
+      .filter((p): p is Product => !!p && !inCart.has(p.id));
+    // 2) Heuristic complement fallback
+    const heur = allProducts
+      .filter((p) => !inCart.has(p.id) && !coReal.find((c) => c.id === p.id)
+                     && (cartSources.has(p.source) || cartCategories.has(p.category)))
       .sort((a, b) => {
         const scoreA = (a.badge === "best" ? 3 : a.badge === "trending" ? 2 : 1) - a.price / 200;
         const scoreB = (b.badge === "best" ? 3 : b.badge === "trending" ? 2 : 1) - b.price / 200;
         return scoreB - scoreA;
-      })
-      .slice(0, 6);
-    return ranked;
-  }, [lines]);
+      });
+    return [...coReal, ...heur].slice(0, 6);
+  }, [lines, coPurchaseIds]);
 
   /* ============ Multi-vendor segmentation ============
    * Group cart lines by their originating vendor (restaurant / kitchen / store)

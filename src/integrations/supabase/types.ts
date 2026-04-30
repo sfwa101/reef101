@@ -1028,6 +1028,51 @@ export type Database = {
         }
         Relationships: []
       }
+      flash_deals: {
+        Row: {
+          category: string | null
+          created_at: string
+          discount_pct: number
+          end_time: string
+          id: string
+          is_active: boolean
+          original_price: number
+          product_id: string
+          product_name: string | null
+          reason: string | null
+          start_time: string
+          target_segment: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          discount_pct: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          original_price: number
+          product_id: string
+          product_name?: string | null
+          reason?: string | null
+          start_time?: string
+          target_segment?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          discount_pct?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          original_price?: number
+          product_id?: string
+          product_name?: string | null
+          reason?: string | null
+          start_time?: string
+          target_segment?: string | null
+        }
+        Relationships: []
+      }
       flash_sale_products: {
         Row: {
           category: string | null
@@ -1616,6 +1661,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      product_batches: {
+        Row: {
+          batch_code: string | null
+          cost_per_unit: number | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          notes: string | null
+          product_id: string
+          quantity: number
+          received_at: string
+          updated_at: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          batch_code?: string | null
+          cost_per_unit?: number | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          product_id: string
+          quantity?: number
+          received_at?: string
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          batch_code?: string | null
+          cost_per_unit?: number | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          product_id?: string
+          quantity?: number
+          received_at?: string
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_batches_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_partners: {
         Row: {
@@ -2528,6 +2623,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          avg_order_value: number | null
+          created_at: string
+          frequent_products: Json
+          last_refreshed_at: string
+          price_sensitivity: string
+          top_categories: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_order_value?: number | null
+          created_at?: string
+          frequent_products?: Json
+          last_refreshed_at?: string
+          price_sensitivity?: string
+          top_categories?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_order_value?: number | null
+          created_at?: string
+          frequent_products?: Json
+          last_refreshed_at?: string
+          price_sensitivity?: string
+          top_categories?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           branch_id: string | null
@@ -3090,6 +3218,7 @@ export type Database = {
         Args: { _product_id: string; _qty: number; _unit_code: string }
         Returns: number
       }
+      current_mega_event: { Args: never; Returns: Json }
       driver_log_event: {
         Args: { _event: string; _lat?: number; _lng?: number; _task_id: string }
         Returns: Json
@@ -3118,6 +3247,15 @@ export type Database = {
           warehouse_type: string
         }[]
       }
+      frequently_bought_together: {
+        Args: { _limit?: number; _product_ids: string[] }
+        Returns: {
+          category: string
+          product_id: string
+          product_name: string
+          score: number
+        }[]
+      }
       hakim_deep_report: {
         Args: { _from?: string; _to?: string }
         Returns: Json
@@ -3129,6 +3267,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      home_layout: { Args: { _user_id?: string }; Returns: Json }
       i18n_text: {
         Args: { _fallback: string; _i18n: Json; _locale?: string }
         Returns: string
@@ -3179,6 +3318,7 @@ export type Database = {
         Args: { _code: string; _order_id: string; _order_total: number }
         Returns: Json
       }
+      refresh_user_preferences: { Args: { _user_id?: string }; Returns: Json }
       reject_wallet_topup: {
         Args: { _reason: string; _topup_id: string }
         Returns: Json
@@ -3189,6 +3329,7 @@ export type Database = {
         Returns: Json
       }
       rotate_flash_sale: { Args: never; Returns: string }
+      rotate_flash_sale_v2: { Args: never; Returns: Json }
       scan_riba_suspicions: { Args: never; Returns: Json }
       settle_vendor_payout: {
         Args: {

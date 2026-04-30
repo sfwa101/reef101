@@ -22,8 +22,9 @@ const Baskets = () => {
   const theme = storeThemes.baskets;
   const [active, setActive] = useState("all");
   const [subs, setSubs] = useState<SubscriptionRecord[]>([]);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setSubs(loadSubs()); }, []);
+  useEffect(() => { setSubs(loadSubs()); setMounted(true); }, []);
 
   const list = useMemo(() => {
     const all = products.filter((p) => p.source === "baskets");
@@ -133,7 +134,7 @@ const Baskets = () => {
             <ShoppingBasket className="h-5 w-5 text-emerald-600" /> السلال الجاهزة
           </h3>
           <span className="text-[10.5px] font-bold text-muted-foreground tabular-nums">
-            {toLatin(list.length)} سلة
+            {mounted ? `${toLatin(list.length)} سلة` : ""}
           </span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
