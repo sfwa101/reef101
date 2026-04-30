@@ -16,7 +16,8 @@ type Row = {
 };
 
 export default function AffiliateSettings() {
-  const { isAdmin, loading: rolesLoading } = useAdminRoles();
+  const { hasRole, loading: rolesLoading } = useAdminRoles();
+  const isAdmin = hasRole("admin");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
