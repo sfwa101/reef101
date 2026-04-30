@@ -23,6 +23,7 @@ type AuthCtx = {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  isInitializing: boolean;
   signUpWithPhone: (phone: string, password: string, fullName: string) => Promise<{ error?: string }>;
   signInWithPhone: (phone: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -170,7 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <Ctx.Provider value={{ session, user, profile, loading, signUpWithPhone, signInWithPhone, signOut, refreshProfile }}>
+    <Ctx.Provider value={{ session, user, profile, loading, isInitializing: loading, signUpWithPhone, signInWithPhone, signOut, refreshProfile }}>
       {children}
     </Ctx.Provider>
   );
