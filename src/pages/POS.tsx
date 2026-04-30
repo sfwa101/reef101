@@ -46,11 +46,11 @@ export default function POSPage() {
       setSearching(true);
       const { data } = await supabase
         .from("products")
-        .select("id, name, price, stock, barcode")
+        .select("id, name, price, stock")
         .eq("is_active", true)
-        .or(`name.ilike.%${query}%,barcode.eq.${query},id.eq.${query}`)
+        .or(`name.ilike.%${query}%,id.ilike.%${query}%`)
         .limit(12);
-      setResults((data ?? []) as Product[]);
+      setResults((data ?? []) as unknown as Product[]);
       setSearching(false);
     }, 200);
     return () => clearTimeout(t);
