@@ -64,7 +64,7 @@ export default function Settings() {
     setSavingTab(key);
     const { error } = await supabase
       .from("app_settings")
-      .upsert({ key, value }, { onConflict: "key" });
+      .upsert([{ key, value: value as never }], { onConflict: "key" });
     setSavingTab(null);
     if (error) toast.error("فشل الحفظ: " + error.message);
     else toast.success("تم الحفظ بنجاح");
