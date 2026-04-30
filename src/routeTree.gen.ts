@@ -28,18 +28,24 @@ import { Route as AdminVendorsRouteImport } from './routes/admin.vendors'
 import { Route as AdminVendorSettlementsRouteImport } from './routes/admin.vendor-settlements'
 import { Route as AdminTopupApprovalsRouteImport } from './routes/admin.topup-approvals'
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
+import { Route as AdminSuppliersRouteImport } from './routes/admin.suppliers'
 import { Route as AdminStoresRouteImport } from './routes/admin.stores'
 import { Route as AdminStaffRouteImport } from './routes/admin.staff'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSavingsRouteImport } from './routes/admin.savings'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
+import { Route as AdminPurchasesRouteImport } from './routes/admin.purchases'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminPrintJobsRouteImport } from './routes/admin.print-jobs'
+import { Route as AdminPaymentsScheduleRouteImport } from './routes/admin.payments-schedule'
+import { Route as AdminPartnersRouteImport } from './routes/admin.partners'
 import { Route as AdminMoreRouteImport } from './routes/admin.more'
 import { Route as AdminLowStockRouteImport } from './routes/admin.low-stock'
 import { Route as AdminKycRouteImport } from './routes/admin.kyc'
 import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
+import { Route as AdminHakimRouteImport } from './routes/admin.hakim'
 import { Route as AdminFinanceRouteImport } from './routes/admin.finance'
+import { Route as AdminExpensesRouteImport } from './routes/admin.expenses'
 import { Route as AdminExecutiveRouteImport } from './routes/admin.executive'
 import { Route as AdminDriversRouteImport } from './routes/admin.drivers'
 import { Route as AdminDriverSettlementsRouteImport } from './routes/admin.driver-settlements'
@@ -47,6 +53,7 @@ import { Route as AdminDeliverySettingsRouteImport } from './routes/admin.delive
 import { Route as AdminDeliveryRouteImport } from './routes/admin.delivery'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCostBulkRouteImport } from './routes/admin.cost-bulk'
+import { Route as AdminCharityRouteImport } from './routes/admin.charity'
 import { Route as AdminCfoRouteImport } from './routes/admin.cfo'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
@@ -195,6 +202,11 @@ const AdminSupportRoute = AdminSupportRouteImport.update({
   path: '/support',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSuppliersRoute = AdminSuppliersRouteImport.update({
+  id: '/suppliers',
+  path: '/suppliers',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminStoresRoute = AdminStoresRouteImport.update({
   id: '/stores',
   path: '/stores',
@@ -220,6 +232,11 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
   path: '/reviews',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPurchasesRoute = AdminPurchasesRouteImport.update({
+  id: '/purchases',
+  path: '/purchases',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProductsRoute = AdminProductsRouteImport.update({
   id: '/products',
   path: '/products',
@@ -228,6 +245,16 @@ const AdminProductsRoute = AdminProductsRouteImport.update({
 const AdminPrintJobsRoute = AdminPrintJobsRouteImport.update({
   id: '/print-jobs',
   path: '/print-jobs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsScheduleRoute = AdminPaymentsScheduleRouteImport.update({
+  id: '/payments-schedule',
+  path: '/payments-schedule',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPartnersRoute = AdminPartnersRouteImport.update({
+  id: '/partners',
+  path: '/partners',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminMoreRoute = AdminMoreRouteImport.update({
@@ -250,9 +277,19 @@ const AdminInventoryRoute = AdminInventoryRouteImport.update({
   path: '/inventory',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminHakimRoute = AdminHakimRouteImport.update({
+  id: '/hakim',
+  path: '/hakim',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminFinanceRoute = AdminFinanceRouteImport.update({
   id: '/finance',
   path: '/finance',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminExpensesRoute = AdminExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminExecutiveRoute = AdminExecutiveRouteImport.update({
@@ -288,6 +325,11 @@ const AdminCustomersRoute = AdminCustomersRouteImport.update({
 const AdminCostBulkRoute = AdminCostBulkRouteImport.update({
   id: '/cost-bulk',
   path: '/cost-bulk',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCharityRoute = AdminCharityRouteImport.update({
+  id: '/charity',
+  path: '/charity',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCfoRoute = AdminCfoRouteImport.update({
@@ -578,6 +620,7 @@ export interface FileRoutesByFullPath {
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cfo': typeof AdminCfoRoute
+  '/admin/charity': typeof AdminCharityRoute
   '/admin/cost-bulk': typeof AdminCostBulkRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
   '/admin/delivery': typeof AdminDeliveryRouteWithChildren
@@ -585,18 +628,24 @@ export interface FileRoutesByFullPath {
   '/admin/driver-settlements': typeof AdminDriverSettlementsRoute
   '/admin/drivers': typeof AdminDriversRoute
   '/admin/executive': typeof AdminExecutiveRoute
+  '/admin/expenses': typeof AdminExpensesRoute
   '/admin/finance': typeof AdminFinanceRoute
+  '/admin/hakim': typeof AdminHakimRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/low-stock': typeof AdminLowStockRoute
   '/admin/more': typeof AdminMoreRoute
+  '/admin/partners': typeof AdminPartnersRoute
+  '/admin/payments-schedule': typeof AdminPaymentsScheduleRoute
   '/admin/print-jobs': typeof AdminPrintJobsRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/purchases': typeof AdminPurchasesRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/savings': typeof AdminSavingsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
   '/admin/stores': typeof AdminStoresRoute
+  '/admin/suppliers': typeof AdminSuppliersRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/topup-approvals': typeof AdminTopupApprovalsRoute
   '/admin/vendor-settlements': typeof AdminVendorSettlementsRoute
@@ -665,6 +714,7 @@ export interface FileRoutesByTo {
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cfo': typeof AdminCfoRoute
+  '/admin/charity': typeof AdminCharityRoute
   '/admin/cost-bulk': typeof AdminCostBulkRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
   '/admin/delivery': typeof AdminDeliveryRouteWithChildren
@@ -672,18 +722,24 @@ export interface FileRoutesByTo {
   '/admin/driver-settlements': typeof AdminDriverSettlementsRoute
   '/admin/drivers': typeof AdminDriversRoute
   '/admin/executive': typeof AdminExecutiveRoute
+  '/admin/expenses': typeof AdminExpensesRoute
   '/admin/finance': typeof AdminFinanceRoute
+  '/admin/hakim': typeof AdminHakimRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/low-stock': typeof AdminLowStockRoute
   '/admin/more': typeof AdminMoreRoute
+  '/admin/partners': typeof AdminPartnersRoute
+  '/admin/payments-schedule': typeof AdminPaymentsScheduleRoute
   '/admin/print-jobs': typeof AdminPrintJobsRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/purchases': typeof AdminPurchasesRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/savings': typeof AdminSavingsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
   '/admin/stores': typeof AdminStoresRoute
+  '/admin/suppliers': typeof AdminSuppliersRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/topup-approvals': typeof AdminTopupApprovalsRoute
   '/admin/vendor-settlements': typeof AdminVendorSettlementsRoute
@@ -759,6 +815,7 @@ export interface FileRoutesById {
   '/admin/branches': typeof AdminBranchesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cfo': typeof AdminCfoRoute
+  '/admin/charity': typeof AdminCharityRoute
   '/admin/cost-bulk': typeof AdminCostBulkRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
   '/admin/delivery': typeof AdminDeliveryRouteWithChildren
@@ -766,18 +823,24 @@ export interface FileRoutesById {
   '/admin/driver-settlements': typeof AdminDriverSettlementsRoute
   '/admin/drivers': typeof AdminDriversRoute
   '/admin/executive': typeof AdminExecutiveRoute
+  '/admin/expenses': typeof AdminExpensesRoute
   '/admin/finance': typeof AdminFinanceRoute
+  '/admin/hakim': typeof AdminHakimRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kyc': typeof AdminKycRoute
   '/admin/low-stock': typeof AdminLowStockRoute
   '/admin/more': typeof AdminMoreRoute
+  '/admin/partners': typeof AdminPartnersRoute
+  '/admin/payments-schedule': typeof AdminPaymentsScheduleRoute
   '/admin/print-jobs': typeof AdminPrintJobsRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/purchases': typeof AdminPurchasesRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/savings': typeof AdminSavingsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/staff': typeof AdminStaffRoute
   '/admin/stores': typeof AdminStoresRoute
+  '/admin/suppliers': typeof AdminSuppliersRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/topup-approvals': typeof AdminTopupApprovalsRoute
   '/admin/vendor-settlements': typeof AdminVendorSettlementsRoute
@@ -854,6 +917,7 @@ export interface FileRouteTypes {
     | '/admin/branches'
     | '/admin/categories'
     | '/admin/cfo'
+    | '/admin/charity'
     | '/admin/cost-bulk'
     | '/admin/customers'
     | '/admin/delivery'
@@ -861,18 +925,24 @@ export interface FileRouteTypes {
     | '/admin/driver-settlements'
     | '/admin/drivers'
     | '/admin/executive'
+    | '/admin/expenses'
     | '/admin/finance'
+    | '/admin/hakim'
     | '/admin/inventory'
     | '/admin/kyc'
     | '/admin/low-stock'
     | '/admin/more'
+    | '/admin/partners'
+    | '/admin/payments-schedule'
     | '/admin/print-jobs'
     | '/admin/products'
+    | '/admin/purchases'
     | '/admin/reviews'
     | '/admin/savings'
     | '/admin/settings'
     | '/admin/staff'
     | '/admin/stores'
+    | '/admin/suppliers'
     | '/admin/support'
     | '/admin/topup-approvals'
     | '/admin/vendor-settlements'
@@ -941,6 +1011,7 @@ export interface FileRouteTypes {
     | '/admin/branches'
     | '/admin/categories'
     | '/admin/cfo'
+    | '/admin/charity'
     | '/admin/cost-bulk'
     | '/admin/customers'
     | '/admin/delivery'
@@ -948,18 +1019,24 @@ export interface FileRouteTypes {
     | '/admin/driver-settlements'
     | '/admin/drivers'
     | '/admin/executive'
+    | '/admin/expenses'
     | '/admin/finance'
+    | '/admin/hakim'
     | '/admin/inventory'
     | '/admin/kyc'
     | '/admin/low-stock'
     | '/admin/more'
+    | '/admin/partners'
+    | '/admin/payments-schedule'
     | '/admin/print-jobs'
     | '/admin/products'
+    | '/admin/purchases'
     | '/admin/reviews'
     | '/admin/savings'
     | '/admin/settings'
     | '/admin/staff'
     | '/admin/stores'
+    | '/admin/suppliers'
     | '/admin/support'
     | '/admin/topup-approvals'
     | '/admin/vendor-settlements'
@@ -1034,6 +1111,7 @@ export interface FileRouteTypes {
     | '/admin/branches'
     | '/admin/categories'
     | '/admin/cfo'
+    | '/admin/charity'
     | '/admin/cost-bulk'
     | '/admin/customers'
     | '/admin/delivery'
@@ -1041,18 +1119,24 @@ export interface FileRouteTypes {
     | '/admin/driver-settlements'
     | '/admin/drivers'
     | '/admin/executive'
+    | '/admin/expenses'
     | '/admin/finance'
+    | '/admin/hakim'
     | '/admin/inventory'
     | '/admin/kyc'
     | '/admin/low-stock'
     | '/admin/more'
+    | '/admin/partners'
+    | '/admin/payments-schedule'
     | '/admin/print-jobs'
     | '/admin/products'
+    | '/admin/purchases'
     | '/admin/reviews'
     | '/admin/savings'
     | '/admin/settings'
     | '/admin/staff'
     | '/admin/stores'
+    | '/admin/suppliers'
     | '/admin/support'
     | '/admin/topup-approvals'
     | '/admin/vendor-settlements'
@@ -1251,6 +1335,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSupportRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/suppliers': {
+      id: '/admin/suppliers'
+      path: '/suppliers'
+      fullPath: '/admin/suppliers'
+      preLoaderRoute: typeof AdminSuppliersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/stores': {
       id: '/admin/stores'
       path: '/stores'
@@ -1286,6 +1377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/purchases': {
+      id: '/admin/purchases'
+      path: '/purchases'
+      fullPath: '/admin/purchases'
+      preLoaderRoute: typeof AdminPurchasesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/products': {
       id: '/admin/products'
       path: '/products'
@@ -1298,6 +1396,20 @@ declare module '@tanstack/react-router' {
       path: '/print-jobs'
       fullPath: '/admin/print-jobs'
       preLoaderRoute: typeof AdminPrintJobsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/payments-schedule': {
+      id: '/admin/payments-schedule'
+      path: '/payments-schedule'
+      fullPath: '/admin/payments-schedule'
+      preLoaderRoute: typeof AdminPaymentsScheduleRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/partners': {
+      id: '/admin/partners'
+      path: '/partners'
+      fullPath: '/admin/partners'
+      preLoaderRoute: typeof AdminPartnersRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/more': {
@@ -1328,11 +1440,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInventoryRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/hakim': {
+      id: '/admin/hakim'
+      path: '/hakim'
+      fullPath: '/admin/hakim'
+      preLoaderRoute: typeof AdminHakimRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/finance': {
       id: '/admin/finance'
       path: '/finance'
       fullPath: '/admin/finance'
       preLoaderRoute: typeof AdminFinanceRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/expenses': {
+      id: '/admin/expenses'
+      path: '/expenses'
+      fullPath: '/admin/expenses'
+      preLoaderRoute: typeof AdminExpensesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/executive': {
@@ -1382,6 +1508,13 @@ declare module '@tanstack/react-router' {
       path: '/cost-bulk'
       fullPath: '/admin/cost-bulk'
       preLoaderRoute: typeof AdminCostBulkRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/charity': {
+      id: '/admin/charity'
+      path: '/charity'
+      fullPath: '/admin/charity'
+      preLoaderRoute: typeof AdminCharityRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/cfo': {
@@ -1886,6 +2019,7 @@ interface AdminRouteChildren {
   AdminBranchesRoute: typeof AdminBranchesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCfoRoute: typeof AdminCfoRoute
+  AdminCharityRoute: typeof AdminCharityRoute
   AdminCostBulkRoute: typeof AdminCostBulkRoute
   AdminCustomersRoute: typeof AdminCustomersRouteWithChildren
   AdminDeliveryRoute: typeof AdminDeliveryRouteWithChildren
@@ -1893,18 +2027,24 @@ interface AdminRouteChildren {
   AdminDriverSettlementsRoute: typeof AdminDriverSettlementsRoute
   AdminDriversRoute: typeof AdminDriversRoute
   AdminExecutiveRoute: typeof AdminExecutiveRoute
+  AdminExpensesRoute: typeof AdminExpensesRoute
   AdminFinanceRoute: typeof AdminFinanceRoute
+  AdminHakimRoute: typeof AdminHakimRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminKycRoute: typeof AdminKycRoute
   AdminLowStockRoute: typeof AdminLowStockRoute
   AdminMoreRoute: typeof AdminMoreRoute
+  AdminPartnersRoute: typeof AdminPartnersRoute
+  AdminPaymentsScheduleRoute: typeof AdminPaymentsScheduleRoute
   AdminPrintJobsRoute: typeof AdminPrintJobsRoute
   AdminProductsRoute: typeof AdminProductsRoute
+  AdminPurchasesRoute: typeof AdminPurchasesRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSavingsRoute: typeof AdminSavingsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminStaffRoute: typeof AdminStaffRoute
   AdminStoresRoute: typeof AdminStoresRoute
+  AdminSuppliersRoute: typeof AdminSuppliersRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTopupApprovalsRoute: typeof AdminTopupApprovalsRoute
   AdminVendorSettlementsRoute: typeof AdminVendorSettlementsRoute
@@ -1928,6 +2068,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBranchesRoute: AdminBranchesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCfoRoute: AdminCfoRoute,
+  AdminCharityRoute: AdminCharityRoute,
   AdminCostBulkRoute: AdminCostBulkRoute,
   AdminCustomersRoute: AdminCustomersRouteWithChildren,
   AdminDeliveryRoute: AdminDeliveryRouteWithChildren,
@@ -1935,18 +2076,24 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminDriverSettlementsRoute: AdminDriverSettlementsRoute,
   AdminDriversRoute: AdminDriversRoute,
   AdminExecutiveRoute: AdminExecutiveRoute,
+  AdminExpensesRoute: AdminExpensesRoute,
   AdminFinanceRoute: AdminFinanceRoute,
+  AdminHakimRoute: AdminHakimRoute,
   AdminInventoryRoute: AdminInventoryRoute,
   AdminKycRoute: AdminKycRoute,
   AdminLowStockRoute: AdminLowStockRoute,
   AdminMoreRoute: AdminMoreRoute,
+  AdminPartnersRoute: AdminPartnersRoute,
+  AdminPaymentsScheduleRoute: AdminPaymentsScheduleRoute,
   AdminPrintJobsRoute: AdminPrintJobsRoute,
   AdminProductsRoute: AdminProductsRoute,
+  AdminPurchasesRoute: AdminPurchasesRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSavingsRoute: AdminSavingsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminStaffRoute: AdminStaffRoute,
   AdminStoresRoute: AdminStoresRoute,
+  AdminSuppliersRoute: AdminSuppliersRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminTopupApprovalsRoute: AdminTopupApprovalsRoute,
   AdminVendorSettlementsRoute: AdminVendorSettlementsRoute,
