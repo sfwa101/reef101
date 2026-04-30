@@ -56,6 +56,36 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_settings: {
+        Row: {
+          category: string
+          created_at: string
+          default_commission_pct: number
+          id: string
+          notes: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          default_commission_pct?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          default_commission_pct?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -115,6 +145,57 @@ export type Database = {
           monthly_limit?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      commission_ledger: {
+        Row: {
+          affiliate_user_id: string
+          base_amount: number
+          category: string | null
+          commission_amount: number
+          commission_pct: number
+          created_at: string
+          customer_user_id: string | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          paid_at: string | null
+          product_id: string | null
+          product_name: string | null
+          status: string
+        }
+        Insert: {
+          affiliate_user_id: string
+          base_amount?: number
+          category?: string | null
+          commission_amount?: number
+          commission_pct?: number
+          created_at?: string
+          customer_user_id?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          paid_at?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          status?: string
+        }
+        Update: {
+          affiliate_user_id?: string
+          base_amount?: number
+          category?: string | null
+          commission_amount?: number
+          commission_pct?: number
+          created_at?: string
+          customer_user_id?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          paid_at?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          status?: string
         }
         Relationships: []
       }
@@ -1070,6 +1151,7 @@ export type Database = {
         Returns: Json
       }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
+      executive_dashboard_stats: { Args: { _days?: number }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1078,6 +1160,17 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      low_stock_products: {
+        Args: { _threshold?: number }
+        Returns: {
+          category: string
+          id: string
+          image_url: string
+          name: string
+          price: number
+          stock: number
+        }[]
+      }
       user_store_ids: { Args: { _user_id: string }; Returns: string[] }
       user_total_spent: { Args: { _user_id: string }; Returns: number }
       user_trust_limit: { Args: { _user_id: string }; Returns: number }
