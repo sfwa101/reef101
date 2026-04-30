@@ -288,10 +288,18 @@ export default function AdminWallets() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <p className="text-[13.5px] font-bold num">{fmtMoney(Number(t.amount))}</p>
-                            <p className="text-[11px] text-foreground-tertiary">
-                              {new Date(t.created_at).toLocaleString("ar-EG", { dateStyle: "short", timeStyle: "short" })}
-                            </p>
+                            <span className={cn(
+                              "text-[10px] px-1.5 py-0.5 rounded-full font-bold",
+                              t.status === "completed" && "bg-success/10 text-success",
+                              t.status === "pending" && "bg-warning/10 text-warning",
+                              t.status === "rejected" && "bg-destructive/10 text-destructive",
+                            )}>
+                              {t.status === "completed" ? "معتمد" : t.status === "pending" ? "معلّق" : t.status === "rejected" ? "مرفوض" : t.status}
+                            </span>
                           </div>
+                          <p className="text-[11px] text-foreground-tertiary mt-0.5">
+                            {new Date(t.created_at).toLocaleString("ar-EG", { dateStyle: "short", timeStyle: "short" })}
+                          </p>
                           <p className="text-[11.5px] text-foreground-secondary truncate num">
                             #{t.transfer_reference} • بواسطة {t.performed_by_name ?? "—"}
                           </p>
