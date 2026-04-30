@@ -98,6 +98,9 @@ export default function PurchaseInvoices() {
         product_name: it.product_name,
         quantity: it.quantity,
         unit_cost: it.unit_cost,
+        unit_code: it.unit_code || null,
+        conversion_factor: it.conversion_factor ?? 1,
+        base_quantity: it.base_quantity ?? it.quantity,
       }))
     );
     if (itErr) toast.error("خطأ بنود: " + itErr.message);
