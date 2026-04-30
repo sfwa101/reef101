@@ -86,12 +86,58 @@ export type Database = {
         }
         Relationships: []
       }
+      branches: {
+        Row: {
+          code: string
+          country: string
+          country_code: string
+          created_at: string
+          currency: string
+          default_locale: string
+          id: string
+          is_active: boolean
+          name: string
+          supported_locales: string[]
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          country: string
+          country_code: string
+          created_at?: string
+          currency?: string
+          default_locale?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          supported_locales?: string[]
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          country?: string
+          country_code?: string
+          created_at?: string
+          currency?: string
+          default_locale?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          supported_locales?: string[]
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
           icon: string | null
           id: string
           name: string
+          name_i18n: Json | null
           parent_id: string | null
           sort_order: number
         }
@@ -100,6 +146,7 @@ export type Database = {
           icon?: string | null
           id?: string
           name: string
+          name_i18n?: Json | null
           parent_id?: string | null
           sort_order?: number
         }
@@ -108,6 +155,7 @@ export type Database = {
           icon?: string | null
           id?: string
           name?: string
+          name_i18n?: Json | null
           parent_id?: string | null
           sort_order?: number
         }
@@ -614,6 +662,7 @@ export type Database = {
           cost_price: number | null
           created_at: string
           description: string | null
+          description_i18n: Json | null
           fulfillment_type: string
           id: string
           image: string | null
@@ -621,6 +670,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           name: string
+          name_i18n: Json | null
           old_price: number | null
           packaging_cost: number | null
           perishable: boolean | null
@@ -648,6 +698,7 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           description?: string | null
+          description_i18n?: Json | null
           fulfillment_type?: string
           id: string
           image?: string | null
@@ -655,6 +706,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           name: string
+          name_i18n?: Json | null
           old_price?: number | null
           packaging_cost?: number | null
           perishable?: boolean | null
@@ -682,6 +734,7 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           description?: string | null
+          description_i18n?: Json | null
           fulfillment_type?: string
           id?: string
           image?: string | null
@@ -689,6 +742,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           name?: string
+          name_i18n?: Json | null
           old_price?: number | null
           packaging_cost?: number | null
           perishable?: boolean | null
@@ -734,6 +788,7 @@ export type Database = {
           avatar_key: string | null
           avatar_url: string | null
           birth_date: string | null
+          branch_id: string | null
           budget_range: string | null
           created_at: string
           dislikes: string[] | null
@@ -745,12 +800,14 @@ export type Database = {
           likes: string[] | null
           occupation: string | null
           phone: string | null
+          preferred_locale: string | null
           updated_at: string
         }
         Insert: {
           avatar_key?: string | null
           avatar_url?: string | null
           birth_date?: string | null
+          branch_id?: string | null
           budget_range?: string | null
           created_at?: string
           dislikes?: string[] | null
@@ -762,12 +819,14 @@ export type Database = {
           likes?: string[] | null
           occupation?: string | null
           phone?: string | null
+          preferred_locale?: string | null
           updated_at?: string
         }
         Update: {
           avatar_key?: string | null
           avatar_url?: string | null
           birth_date?: string | null
+          branch_id?: string | null
           budget_range?: string | null
           created_at?: string
           dislikes?: string[] | null
@@ -779,9 +838,18 @@ export type Database = {
           likes?: string[] | null
           occupation?: string | null
           phone?: string | null
+          preferred_locale?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referral_codes: {
         Row: {
@@ -977,6 +1045,7 @@ export type Database = {
       stores: {
         Row: {
           address: string | null
+          branch_id: string | null
           commission_pct: number
           created_at: string
           id: string
@@ -991,6 +1060,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          branch_id?: string | null
           commission_pct?: number
           created_at?: string
           id?: string
@@ -1005,6 +1075,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          branch_id?: string | null
           commission_pct?: number
           created_at?: string
           id?: string
@@ -1017,7 +1088,15 @@ export type Database = {
           type?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "stores_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sub_orders: {
         Row: {
@@ -1078,6 +1157,7 @@ export type Database = {
       }
       user_roles: {
         Row: {
+          branch_id: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -1086,6 +1166,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -1094,6 +1175,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -1102,6 +1184,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_roles_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_roles_store_id_fkey"
             columns: ["store_id"]
@@ -1202,6 +1291,7 @@ export type Database = {
       vendors: {
         Row: {
           address: string | null
+          branch_id: string | null
           commission_pct: number
           contact_email: string | null
           contact_phone: string | null
@@ -1218,6 +1308,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          branch_id?: string | null
           commission_pct?: number
           contact_email?: string | null
           contact_phone?: string | null
@@ -1234,6 +1325,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          branch_id?: string | null
           commission_pct?: number
           contact_email?: string | null
           contact_phone?: string | null
@@ -1248,7 +1340,15 @@ export type Database = {
           updated_at?: string
           vendor_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vendors_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wallet_balances: {
         Row: {
@@ -1376,6 +1476,7 @@ export type Database = {
       warehouses: {
         Row: {
           address: string | null
+          branch_id: string | null
           city: string | null
           code: string
           created_at: string
@@ -1392,6 +1493,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          branch_id?: string | null
           city?: string | null
           code: string
           created_at?: string
@@ -1408,6 +1510,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          branch_id?: string | null
           city?: string | null
           code?: string
           created_at?: string
@@ -1424,10 +1527,69 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "warehouses_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "warehouses_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zone_availability: {
+        Row: {
+          branch_id: string | null
+          category_id: string | null
+          created_at: string
+          id: string
+          is_available: boolean
+          product_id: string | null
+          zone_id: string
+        }
+        Insert: {
+          branch_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          product_id?: string | null
+          zone_id: string
+        }
+        Update: {
+          branch_id?: string | null
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          product_id?: string | null
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_availability_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_availability_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "zone_availability_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -1474,6 +1636,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      i18n_text: {
+        Args: { _fallback: string; _i18n: Json; _locale?: string }
+        Returns: string
+      }
+      is_product_available_in_zone: {
+        Args: { _product_id: string; _zone_id: string }
+        Returns: boolean
+      }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       low_stock_products: {
         Args: { _threshold?: number }
@@ -1493,6 +1663,10 @@ export type Database = {
         Returns: Json
       }
       release_order_reservation: { Args: { _order_id: string }; Returns: Json }
+      resolve_fulfillment: {
+        Args: { _branch_id: string; _product_id: string; _zone?: string }
+        Returns: Json
+      }
       settle_vendor_payout: {
         Args: {
           _amount: number
@@ -1503,6 +1677,7 @@ export type Database = {
         }
         Returns: Json
       }
+      user_branch_ids: { Args: { _user_id: string }; Returns: string[] }
       user_store_ids: { Args: { _user_id: string }; Returns: string[] }
       user_total_spent: { Args: { _user_id: string }; Returns: number }
       user_trust_limit: { Args: { _user_id: string }; Returns: number }
