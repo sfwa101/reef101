@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Clock, Star, Wallet, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { getRestaurant } from "@/lib/restaurants";
-import { products as ALL_PRODUCTS, type Product } from "@/lib/products";
+import { products as ALL_PRODUCTS, type Product, useProductsVersion } from "@/lib/products";
 import { toLatin, fmtMoney } from "@/lib/format";
 import { useCart } from "@/context/CartContext";
 import { fireMiniConfetti } from "@/lib/confetti";
@@ -65,6 +65,7 @@ const RestaurantDetail = () => {
   const accent = `hsl(${r.brandHue})`;
 
   const scrollToCat = (catId: string) => {
+  useProductsVersion();
     const el = sectionRefs.current[catId];
     if (el) {
       const tabsH = tabsRef.current?.offsetHeight ?? 0;

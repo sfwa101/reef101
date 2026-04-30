@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import BackHeader from "@/components/BackHeader";
 import ProductCard from "@/components/ProductCard";
-import { products as allProducts, type Product } from "@/lib/products";
+import { products as allProducts, type Product, useProductsVersion } from "@/lib/products";
 import { useCartActions } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -441,6 +441,7 @@ const SchoolLibrary = () => {
   const products = useMemo(libraryProducts, []);
 
   const onBorrowClick = (p: Product) => {
+  useProductsVersion();
     if (!user) { toast.error("سجل الدخول أولاً"); return; }
     if (!isVerified) { setKycOpen(true); return; }
     setBorrowProduct(p);

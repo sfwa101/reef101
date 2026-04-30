@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCarousel from "@/components/ProductCarousel";
 import ProductCard from "@/components/ProductCard";
-import { products, isPerishable } from "@/lib/products";
+import { products, isPerishable, useProductsVersion } from "@/lib/products";
 import {
   getSmartGreeting,
   getTimeSlot,
@@ -73,6 +73,7 @@ type Addr = {
 const cv = { contentVisibility: "auto" as const, containIntrinsicSize: "1px 360px" };
 
 const HomePage = () => {
+  useProductsVersion();
   const { user, profile } = useAuth();
   const { zone } = useLocation();
   const [addresses, setAddresses] = useState<Addr[]>([]);

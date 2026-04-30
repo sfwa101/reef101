@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import BackHeader from "@/components/BackHeader";
-import { products as allProducts, type Product } from "@/lib/products";
+import { products as allProducts, type Product, useProductsVersion } from "@/lib/products";
 import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/lib/favorites";
 import {
@@ -46,6 +46,7 @@ const loadRoutines = (): RoutineRecord[] => {
   }
 };
 const saveRoutines = (r: RoutineRecord[]) => {
+  useProductsVersion();
   try { localStorage.setItem(ROUTINE_KEY, JSON.stringify(r)); } catch { /* */ }
 };
 

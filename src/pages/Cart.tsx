@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
-import { products as allProducts, type Product } from "@/lib/products";
+import { products as allProducts, type Product, useProductsVersion } from "@/lib/products";
 import { fireConfetti, fireMiniConfetti } from "@/lib/confetti";
 import { useLocation } from "@/context/LocationContext";
 import { detectZoneFromAddress } from "@/lib/geoZones";
@@ -49,6 +49,7 @@ const paymentOptions = [
 
 /* -------- Animated number counter -------- */
 const NumberFlow = ({ value, className = "" }: { value: number; className?: string }) => {
+  useProductsVersion();
   const mv = useMotionValue(value);
   const display = useTransform(mv, (v) => toLatin(Math.round(v)));
   useEffect(() => {

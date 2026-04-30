@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/lib/products";
+import { products, useProductsVersion } from "@/lib/products";
 import { Tag, Gift, Percent, Sparkles, Flame, Clock } from "lucide-react";
 import { toLatin } from "@/lib/format";
 
@@ -19,6 +19,7 @@ const tabs = [
 ] as const;
 
 const useDailyCountdown = () => {
+  useProductsVersion();
   const [left, setLeft] = useState("");
   useEffect(() => {
     const tick = () => {

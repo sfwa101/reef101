@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import BackHeader from "@/components/BackHeader";
-import { products } from "@/lib/products";
+import { products, useProductsVersion } from "@/lib/products";
 import { storeThemes } from "@/lib/storeThemes";
 import BasketCard from "@/components/baskets/BasketCard";
 import { loadSubs, findFrequency, type SubscriptionRecord } from "@/lib/baskets";
@@ -18,6 +18,7 @@ const categories = [
 ];
 
 const Baskets = () => {
+  useProductsVersion();
   const theme = storeThemes.baskets;
   const [active, setActive] = useState("all");
   const [subs, setSubs] = useState<SubscriptionRecord[]>([]);
