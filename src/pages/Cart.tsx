@@ -454,6 +454,10 @@ const Cart = () => {
   const [saveChange, setSaveChange] = useState<boolean>(true);
   const [customerName, setCustomerName] = useState<string>("");
   const [minOrderTotal, setMinOrderTotal] = useState<number>(0);
+  // Guest checkout fields (used when there is no logged-in user)
+  const [guestName, setGuestName] = useState<string>("");
+  const [guestPhone, setGuestPhone] = useState<string>("");
+  const [guestAddress, setGuestAddress] = useState<string>("");
 
   // Fetch finance settings (min order total) once on mount
   useEffect(() => {
@@ -822,12 +826,19 @@ const Cart = () => {
     // Hard check to bypass stale React state on slow/older devices
     const { data: { session } } = await supabase.auth.getSession();
     const currentUser = (user ?? session?.user) || null;
+    const isGuest = !currentUser;
 
-    if (!currentUser) {
-      toast.error("سجّل الدخول أولًا لإتمام الطلب");
-      navigate({ to: "/auth" });
-      return;
+    // Guest mode: require name + phone + address instead of forcing login
+    if (isGuest) {
+      const n = guestName.trim();
+      const p = guestPhone.trim();
+      const a = guestAddress.trim();
+      if (!n || !p || !a) {
+        toast.error("من فضلك اكتب الاسم ورقم الهاتف وعنوان التوصيل");
+        return;
+      }
     }
+
     if (minOrderTotal > 0 && grand < minOrderTotal) {
       toast.error(`الحد الأدنى للطلب هو ${toLatin(minOrderTotal)} ج.م`);
       return;
@@ -846,62 +857,69 @@ const Cart = () => {
         sweetsRules.hasBooking ? `يُدفع الآن من الحجوزات: ${fmtMoney(aggregateDeposit)}` : null,
       ].filter(Boolean);
 
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          user_id: currentUser.id,
-          total: grand,
-          payment_method: payment,
-          address_id: selectedAddr?.id ?? null,
-          status: "pending",
-          whatsapp_sent: true,
-          notes: noteParts.length ? noteParts.join(" · ") : null,
-        })
-        .select("id")
-        .single();
-
-      if (error || !order) {
-        console.error(error);
-        toast.error("تعذّر حفظ الطلب، حاول مرة أخرى");
-        setSubmitting(false);
-        return;
-      }
-
-      const items = lines.map((l) => ({
-        order_id: order.id,
-        product_id: l.product.id,
-        product_name: l.product.name,
-        product_image: l.product.image,
-        price: l.product.price,
-        quantity: l.qty,
-      }));
-      const { error: itemsErr } = await supabase.from("order_items").insert(items);
-      if (itemsErr) {
-        console.error(itemsErr);
-        toast.error("تعذّر حفظ تفاصيل الطلب، حاول مرة أخرى");
-        setSubmitting(false);
-        return;
-      }
-
-      // Smart Allocation: split order across nearest warehouses + reserve stock
-      try {
-        const { data: allocResult, error: allocErr } = await supabase.rpc(
-          "allocate_order_inventory",
-          { _order_id: order.id, _zone: zone.id },
-        );
-        if (allocErr) {
-          console.warn("[allocation] failed", allocErr);
-        } else {
-          console.info("[allocation]", allocResult);
-        }
-      } catch (e) {
-        console.warn("[allocation] exception", e);
-      }
-
+      // Generate order number up-front (used for both guest WA and DB persistence)
       const orderNum = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
+      let savedOrderId: string | null = null;
+
+      // Persist order to DB only when the user is logged in.
+      // Guests bypass DB to avoid RLS errors and just send via WhatsApp.
+      if (!isGuest && currentUser) {
+        const { data: order, error } = await supabase
+          .from("orders")
+          .insert({
+            user_id: currentUser.id,
+            total: grand,
+            payment_method: payment,
+            address_id: selectedAddr?.id ?? null,
+            status: "pending",
+            whatsapp_sent: true,
+            notes: noteParts.length ? noteParts.join(" · ") : null,
+          })
+          .select("id")
+          .single();
+
+        if (error || !order) {
+          console.error(error);
+          toast.error("تعذّر حفظ الطلب، حاول مرة أخرى");
+          setSubmitting(false);
+          return;
+        }
+        savedOrderId = order.id;
+
+        const items = lines.map((l) => ({
+          order_id: order.id,
+          product_id: l.product.id,
+          product_name: l.product.name,
+          product_image: l.product.image,
+          price: l.product.price,
+          quantity: l.qty,
+        }));
+        const { error: itemsErr } = await supabase.from("order_items").insert(items);
+        if (itemsErr) {
+          console.error(itemsErr);
+          toast.error("تعذّر حفظ تفاصيل الطلب، حاول مرة أخرى");
+          setSubmitting(false);
+          return;
+        }
+
+        // Smart Allocation: split order across nearest warehouses + reserve stock
+        try {
+          const { data: allocResult, error: allocErr } = await supabase.rpc(
+            "allocate_order_inventory",
+            { _order_id: order.id, _zone: zone.id },
+          );
+          if (allocErr) {
+            console.warn("[allocation] failed", allocErr);
+          } else {
+            console.info("[allocation]", allocResult);
+          }
+        } catch (e) {
+          console.warn("[allocation] exception", e);
+        }
+      }
 
       /* ============ Wallet debit (when paying via wallet, including BNPL) ============ */
-      if (isWalletPay && walletApplied > 0) {
+      if (!isGuest && currentUser && isWalletPay && walletApplied > 0) {
         try {
           const { data: bal } = await supabase
             .from("wallet_balances")
@@ -928,7 +946,7 @@ const Cart = () => {
       }
 
       // Auto-save change to savings jar (only if cash + user opted-in)
-      if (showChangeJar && saveChange && changeRemainder > 0) {
+      if (!isGuest && currentUser && showChangeJar && saveChange && changeRemainder > 0) {
         try {
           const { data: jarRow } = await supabase
             .from("savings_jar")
@@ -953,7 +971,7 @@ const Cart = () => {
       }
 
       /* ============ Wallet cashback (only when paying via wallet) ============ */
-      if (payment === "wallet" && totalCashback > 0) {
+      if (!isGuest && currentUser && payment === "wallet" && totalCashback > 0) {
         try {
           const { data: bal } = await supabase
             .from("wallet_balances")
@@ -1005,13 +1023,17 @@ const Cart = () => {
           : "—";
         return `▪️ ${toLatin(l.qty)}x ${l.product.name} — استلام ${day} (${fmtMoney(unit * l.qty)})`;
       };
-      const addrLine = selectedAddr
-        ? `${[selectedAddr.label, selectedAddr.street, selectedAddr.building, selectedAddr.district, selectedAddr.city].filter(Boolean).join("، ")}`
-        : guestNotes || "—";
+      const addrLine = isGuest
+        ? guestAddress.trim()
+        : selectedAddr
+          ? `${[selectedAddr.label, selectedAddr.street, selectedAddr.building, selectedAddr.district, selectedAddr.city].filter(Boolean).join("، ")}`
+          : guestNotes || "—";
       const etaLine = bookingItems.length > 0 && instantItems.length === 0
         ? "مجدول"
         : `خلال ${zone.etaLabel}`;
-      const customerLabel = customerName || (currentUser.email ?? "عميل").split("@")[0];
+      const customerLabel = isGuest
+        ? guestName.trim()
+        : customerName || (currentUser?.email ?? "عميل").split("@")[0];
       // Map payment id → friendly Arabic label
       const payShort =
         payment === "wallet"
@@ -1037,11 +1059,14 @@ const Cart = () => {
        * items + the platform commission breakdown.
        */
       // ===== Premium structured customer-facing message =====
+      const guestHeader = isGuest
+        ? `👤 *الاسم:* ${guestName.trim()}\n📞 *الهاتف:* ${guestPhone.trim()}\n📍 *العنوان:* ${guestAddress.trim()}\n\n`
+        : "";
       const mainMessage =
         `مرحباً ريف المدينة 👋\n\n` +
-        `أنا ${customerLabel}، وأريد تأكيد طلبي الجديد.\n\n` +
+        (isGuest ? `طلب جديد (ضيف):\n\n${guestHeader}` : `أنا ${customerLabel}، وأريد تأكيد طلبي الجديد.\n\n`) +
         `📝 *رقم الطلب:* #${orderNum}\n` +
-        `📍 *العنوان:* ${addrLine}\n` +
+        (isGuest ? "" : `📍 *العنوان:* ${addrLine}\n`) +
         `🛵 *وقت التوصيل المتوقع:* ${etaLine}\n\n` +
         (instantItems.length > 0
           ? `🛒 *تفاصيل الطلب:*\n${instantItems.map(fmtInstantLine).join("\n")}\n\n`
@@ -1139,7 +1164,7 @@ const Cart = () => {
         );
       }
 
-      const orderId = order.id;
+      const orderId = savedOrderId ?? orderNum;
       const orderTotal = grand;
       clear();
       fireConfetti();
@@ -1651,6 +1676,46 @@ const Cart = () => {
       </section>
 
       <button onClick={() => clear()} className="w-full rounded-2xl bg-foreground/5 py-3 text-xs font-bold text-muted-foreground">تفريغ السلة</button>
+
+      {/* ============ Guest Checkout Form (shown only when not logged in) ============ */}
+      {!user && (
+        <section className="space-y-3 rounded-2xl bg-card p-4 ring-1 ring-border/40">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-display text-sm font-extrabold">إتمام الطلب كضيف</p>
+              <p className="text-[11px] text-muted-foreground">أو <Link to="/auth" className="font-bold text-primary underline">سجّل الدخول</Link> لحفظ طلباتك</p>
+            </div>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-extrabold text-primary">سريع</span>
+          </div>
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              placeholder="الاسم بالكامل"
+              maxLength={80}
+              className="w-full rounded-xl bg-foreground/5 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+            />
+            <input
+              type="tel"
+              inputMode="tel"
+              value={guestPhone}
+              onChange={(e) => setGuestPhone(e.target.value)}
+              placeholder="رقم الهاتف"
+              maxLength={20}
+              className="w-full rounded-xl bg-foreground/5 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+            />
+            <textarea
+              value={guestAddress}
+              onChange={(e) => setGuestAddress(e.target.value)}
+              placeholder="عنوان التوصيل بالتفصيل"
+              maxLength={300}
+              rows={2}
+              className="w-full rounded-xl bg-foreground/5 px-3 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          </div>
+        </section>
+      )}
 
       {/* ============ Sticky Bottom Bar — theme-aware checkout button ============ */}
       <motion.div
