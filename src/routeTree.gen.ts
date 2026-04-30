@@ -16,6 +16,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as VendorIndexRouteImport } from './routes/vendor.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as VendorWalletRouteImport } from './routes/vendor.wallet'
 import { Route as VendorProductsRouteImport } from './routes/vendor.products'
 import { Route as AdminWarehousesRouteImport } from './routes/admin.warehouses'
 import { Route as AdminWalletsRouteImport } from './routes/admin.wallets'
@@ -124,6 +125,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const VendorWalletRoute = VendorWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => VendorRoute,
 } as any)
 const VendorProductsRoute = VendorProductsRouteImport.update({
   id: '/products',
@@ -538,6 +544,7 @@ export interface FileRoutesByFullPath {
   '/admin/wallets': typeof AdminWalletsRoute
   '/admin/warehouses': typeof AdminWarehousesRoute
   '/vendor/products': typeof VendorProductsRoute
+  '/vendor/wallet': typeof VendorWalletRoute
   '/admin/': typeof AdminIndexRoute
   '/vendor/': typeof VendorIndexRoute
   '/account/addresses': typeof AppAccountAddressesRoute
@@ -616,6 +623,7 @@ export interface FileRoutesByTo {
   '/admin/wallets': typeof AdminWalletsRoute
   '/admin/warehouses': typeof AdminWarehousesRoute
   '/vendor/products': typeof VendorProductsRoute
+  '/vendor/wallet': typeof VendorWalletRoute
   '/': typeof AppIndexRoute
   '/admin': typeof AdminIndexRoute
   '/vendor': typeof VendorIndexRoute
@@ -700,6 +708,7 @@ export interface FileRoutesById {
   '/admin/wallets': typeof AdminWalletsRoute
   '/admin/warehouses': typeof AdminWarehousesRoute
   '/vendor/products': typeof VendorProductsRoute
+  '/vendor/wallet': typeof VendorWalletRoute
   '/_app/': typeof AppIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/vendor/': typeof VendorIndexRoute
@@ -785,6 +794,7 @@ export interface FileRouteTypes {
     | '/admin/wallets'
     | '/admin/warehouses'
     | '/vendor/products'
+    | '/vendor/wallet'
     | '/admin/'
     | '/vendor/'
     | '/account/addresses'
@@ -863,6 +873,7 @@ export interface FileRouteTypes {
     | '/admin/wallets'
     | '/admin/warehouses'
     | '/vendor/products'
+    | '/vendor/wallet'
     | '/'
     | '/admin'
     | '/vendor'
@@ -946,6 +957,7 @@ export interface FileRouteTypes {
     | '/admin/wallets'
     | '/admin/warehouses'
     | '/vendor/products'
+    | '/vendor/wallet'
     | '/_app/'
     | '/admin/'
     | '/vendor/'
@@ -1047,6 +1059,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/vendor/wallet': {
+      id: '/vendor/wallet'
+      path: '/wallet'
+      fullPath: '/vendor/wallet'
+      preLoaderRoute: typeof VendorWalletRouteImport
+      parentRoute: typeof VendorRoute
     }
     '/vendor/products': {
       id: '/vendor/products'
@@ -1767,11 +1786,13 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface VendorRouteChildren {
   VendorProductsRoute: typeof VendorProductsRoute
+  VendorWalletRoute: typeof VendorWalletRoute
   VendorIndexRoute: typeof VendorIndexRoute
 }
 
 const VendorRouteChildren: VendorRouteChildren = {
   VendorProductsRoute: VendorProductsRoute,
+  VendorWalletRoute: VendorWalletRoute,
   VendorIndexRoute: VendorIndexRoute,
 }
 
