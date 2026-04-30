@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { X, Upload, Loader2, ImageIcon } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { X, Upload, Loader2, ImageIcon, AlertTriangle, Shield, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { refetchProducts } from "@/lib/products";
+import { useAdminRoles } from "@/components/admin/RoleGuard";
 
 export type ProductRow = {
   id: string;
@@ -11,6 +12,8 @@ export type ProductRow = {
   unit: string;
   price: number | string;
   old_price: number | string | null;
+  cost_price: number | string | null;
+  affiliate_commission_pct: number | string | null;
   image: string | null;
   image_url: string | null;
   image_path: string | null;
@@ -60,6 +63,8 @@ const empty: ProductRow = {
   unit: "قطعة",
   price: 0,
   old_price: null,
+  cost_price: null,
+  affiliate_commission_pct: 0,
   image: null,
   image_url: null,
   image_path: null,
@@ -94,14 +99,69 @@ export function ProductEditor({
   const [form, setForm] = useState<ProductRow>(product ?? empty);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [overrideReason, setOverrideReason] = useState("");
+  const [showOverride, setShowOverride] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { hasRole } = useAdminRoles();
+  const canOverride = hasRole("admin") || hasRole("store_manager");
 
   useEffect(() => {
     setForm(product ?? empty);
+    setShowOverride(false);
+    setOverrideReason("");
   }, [product]);
 
   const update = <K extends keyof ProductRow>(k: K, v: ProductRow[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  // Live margin/discount analysis
+  const marginInfo = useMemo(() => {
+    const sale = Number(form.price) || 0;
+    const cost = Number(form.cost_price) || 0;
+    const old = Number(form.old_price) || 0;
+    const affiliate = Number(form.affiliate_commission_pct) || 0;
+
+    if (cost <= 0 || sale <= 0) {
+      return { kind: "no_cost" as const };
+    }
+    const margin = sale - cost;
+    const marginPct = (margin / sale) * 100;
+    const affiliateAmount = (sale * affiliate) / 100;
+    const netProfit = margin - affiliateAmount;
+
+    let discountStatus: "ok" | "warn" | "block" = "ok";
+    let discountInfo: { discount: number; max: number; pct: number } | null = null;
+    if (old > sale) {
+      const discount = old - sale;
+      const max = (old - cost) * 0.5;
+      discountInfo = { discount, max, pct: (discount / old) * 100 };
+      if (margin <= 0) discountStatus = "block";
+      else if (discount > max) discountStatus = "block";
+      else if (discount > max * 0.85) discountStatus = "warn";
+    }
+
+    let affiliateStatus: "ok" | "warn" | "block" = "ok";
+    if (affiliate > 0) {
+      if (netProfit < 0) affiliateStatus = "block";
+      else if (netProfit < margin * 0.2) affiliateStatus = "warn";
+    }
+
+    return {
+      kind: "ok" as const,
+      sale, cost, margin, marginPct,
+      affiliate, affiliateAmount, netProfit,
+      discountStatus, discountInfo, affiliateStatus,
+    };
+  }, [form.price, form.cost_price, form.old_price, form.affiliate_commission_pct]);
+
+  const blocksSave =
+    marginInfo.kind === "ok" &&
+    ((marginInfo.discountStatus === "block" || marginInfo.affiliateStatus === "block")) &&
+    !showOverride;
+
+  const requiresOverride =
+    marginInfo.kind === "ok" &&
+    (marginInfo.discountStatus === "block" || marginInfo.affiliateStatus === "block");
 
   const handleUpload = async (file: File) => {
     setUploading(true);
@@ -124,23 +184,32 @@ export function ProductEditor({
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) {
-      toast.error("الاسم مطلوب");
+    if (!form.name.trim()) { toast.error("الاسم مطلوب"); return; }
+    if (!form.category.trim()) { toast.error("الفئة مطلوبة"); return; }
+
+    // Block save if discount violates 50% rule (unless override approved)
+    if (requiresOverride && !showOverride) {
+      setShowOverride(true);
+      toast.error("هذا الخصم يهدد الأرباح. ادخل سبب التجاوز اليدوي.");
       return;
     }
-    if (!form.category.trim()) {
-      toast.error("الفئة مطلوبة");
+    if (requiresOverride && showOverride && overrideReason.trim().length < 10) {
+      toast.error("سبب التجاوز يجب ألا يقل عن 10 أحرف");
       return;
     }
+
     setSaving(true);
     try {
+      const productId = form.id || `prod-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       const payload = {
-        id: form.id || `prod-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        id: productId,
         name: form.name.trim(),
         brand: form.brand || null,
         unit: form.unit || "قطعة",
         price: Number(form.price) || 0,
         old_price: form.old_price ? Number(form.old_price) : null,
+        cost_price: form.cost_price ? Number(form.cost_price) : null,
+        affiliate_commission_pct: Number(form.affiliate_commission_pct) || 0,
         image_url: form.image_url,
         image_path: form.image_path,
         rating: form.rating ? Number(form.rating) : null,
@@ -162,6 +231,24 @@ export function ProductEditor({
         : await supabase.from("products").update(payload).eq("id", form.id);
 
       if (error) throw error;
+
+      // Log override if applicable
+      if (requiresOverride && showOverride && marginInfo.kind === "ok" && marginInfo.discountInfo) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user!.id).single();
+        await supabase.from("discount_overrides" as never).insert({
+          product_id: productId,
+          product_name: form.name.trim(),
+          override_by: user!.id,
+          override_by_name: profile?.full_name ?? null,
+          cost_price: marginInfo.cost,
+          sale_price: Number(form.old_price) || marginInfo.sale,
+          attempted_discount: marginInfo.discountInfo.discount,
+          margin_amount: marginInfo.margin,
+          reason: overrideReason.trim(),
+        } as never);
+      }
+
       toast.success(isNew ? "تم إنشاء المنتج" : "تم الحفظ");
       await refetchProducts();
       onSaved();
@@ -240,13 +327,137 @@ export function ProductEditor({
             </Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="السعر *">
-              <input type="number" step="0.01" value={form.price as number} onChange={(e) => update("price", e.target.value)} className={inputCls + " num text-right"} />
+          {/* Pricing block with margin protection */}
+          <div className="rounded-2xl border border-border/60 bg-surface/50 p-4 space-y-3">
+            <div className="flex items-center gap-2 text-[13px] font-bold text-foreground">
+              <Shield className="h-4 w-4 text-primary" />
+              التسعير وحماية الهامش
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <Field label="سعر التكلفة">
+                <input
+                  type="number" step="0.01"
+                  value={(form.cost_price as number) ?? ""}
+                  onChange={(e) => update("cost_price", e.target.value || null)}
+                  placeholder="ج.م"
+                  className={inputCls + " num text-right"}
+                />
+              </Field>
+              <Field label="سعر البيع *">
+                <input
+                  type="number" step="0.01"
+                  value={form.price as number}
+                  onChange={(e) => update("price", e.target.value)}
+                  className={inputCls + " num text-right"}
+                />
+              </Field>
+              <Field label="السعر قبل الخصم">
+                <input
+                  type="number" step="0.01"
+                  value={(form.old_price as number) ?? ""}
+                  onChange={(e) => update("old_price", e.target.value || null)}
+                  className={inputCls + " num text-right"}
+                />
+              </Field>
+            </div>
+
+            <Field label="نسبة عمولة الأفلييت %">
+              <input
+                type="number" step="0.5" min="0" max="50"
+                value={(form.affiliate_commission_pct as number) ?? 0}
+                onChange={(e) => update("affiliate_commission_pct", e.target.value)}
+                className={inputCls + " num text-right"}
+              />
             </Field>
-            <Field label="السعر قبل الخصم">
-              <input type="number" step="0.01" value={(form.old_price as number) ?? ""} onChange={(e) => update("old_price", e.target.value || null)} className={inputCls + " num text-right"} />
-            </Field>
+
+            {/* Margin analysis */}
+            {marginInfo.kind === "no_cost" ? (
+              <div className="rounded-xl bg-warning/10 border border-warning/30 p-3 text-[12px] text-warning flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>أدخل سعر التكلفة لتفعيل حماية الهامش وحساب صافي الربح.</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <Stat label="هامش ربح" value={marginInfo.margin.toFixed(2)} sub={`${marginInfo.marginPct.toFixed(0)}%`} tone="primary" />
+                  <Stat label="عمولة شريك" value={marginInfo.affiliateAmount.toFixed(2)} sub={`${marginInfo.affiliate}%`} tone="info" />
+                  <Stat
+                    label="صافي الربح"
+                    value={marginInfo.netProfit.toFixed(2)}
+                    sub="ج.م"
+                    tone={marginInfo.netProfit < 0 ? "destructive" : marginInfo.netProfit < marginInfo.margin * 0.2 ? "warning" : "success"}
+                  />
+                </div>
+
+                {marginInfo.discountInfo && (
+                  <div className={`rounded-xl p-3 text-[12px] flex items-start gap-2 border ${
+                    marginInfo.discountStatus === "block" ? "bg-destructive/10 border-destructive/40 text-destructive" :
+                    marginInfo.discountStatus === "warn" ? "bg-warning/10 border-warning/30 text-warning" :
+                    "bg-success/10 border-success/30 text-success"
+                  }`}>
+                    <TrendingDown className="h-4 w-4 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      {marginInfo.discountStatus === "block" ? (
+                        <>
+                          <strong>عذراً، هذا الخصم يهدد استدامة الأرباح.</strong>
+                          <div className="mt-1">
+                            الخصم: <span className="num">{marginInfo.discountInfo.discount.toFixed(2)}</span> ج.م ({marginInfo.discountInfo.pct.toFixed(0)}%)
+                            • الحد الأقصى: <span className="num">{marginInfo.discountInfo.max.toFixed(2)}</span> ج.م (50% من الهامش)
+                          </div>
+                        </>
+                      ) : marginInfo.discountStatus === "warn" ? (
+                        <>الخصم قريب من الحد المسموح ({marginInfo.discountInfo.max.toFixed(2)} ج.م)</>
+                      ) : (
+                        <>الخصم آمن: {marginInfo.discountInfo.discount.toFixed(2)} ج.م من حد {marginInfo.discountInfo.max.toFixed(2)}</>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {marginInfo.affiliateStatus !== "ok" && (
+                  <div className={`rounded-xl p-3 text-[12px] flex items-start gap-2 border ${
+                    marginInfo.affiliateStatus === "block" ? "bg-destructive/10 border-destructive/40 text-destructive" :
+                    "bg-warning/10 border-warning/30 text-warning"
+                  }`}>
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span>
+                      {marginInfo.affiliateStatus === "block"
+                        ? "تحذير: مجموع الخصم وعمولة الشريك يتجاوز هامش الربح — خسارة!"
+                        : "تحذير ذكي: العمولة تستهلك أكثر من 80% من الهامش بعد الخصم."}
+                    </span>
+                  </div>
+                )}
+
+                {requiresOverride && canOverride && (
+                  <div className="rounded-xl bg-destructive/5 border border-destructive/30 p-3 space-y-2">
+                    <div className="flex items-center gap-2 text-[12.5px] font-bold text-destructive">
+                      <Shield className="h-4 w-4" /> تجاوز يدوي مطلوب (سيُسجل باسمك)
+                    </div>
+                    <textarea
+                      value={overrideReason}
+                      onChange={(e) => setOverrideReason(e.target.value)}
+                      rows={2}
+                      placeholder="اكتب سبب التجاوز (10 أحرف على الأقل) - سيُسجل في سجل الأرباح"
+                      className={inputCls + " resize-none py-2 h-auto"}
+                    />
+                    <button
+                      onClick={() => setShowOverride(true)}
+                      disabled={overrideReason.trim().length < 10}
+                      className="w-full h-10 rounded-xl bg-destructive text-destructive-foreground text-[12.5px] font-bold press disabled:opacity-40"
+                    >
+                      أوافق على التجاوز ومسؤولية القرار
+                    </button>
+                  </div>
+                )}
+                {requiresOverride && !canOverride && (
+                  <div className="rounded-xl bg-destructive/10 border border-destructive/30 p-3 text-[12px] text-destructive flex items-start gap-2">
+                    <Shield className="h-4 w-4 shrink-0 mt-0.5" />
+                    <span>صلاحية التجاوز اليدوي للمدير فقط. عدّل السعر أو راجع المسؤول.</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -321,8 +532,8 @@ export function ProductEditor({
           </button>
           <button
             onClick={handleSave}
-            disabled={saving}
-            className="flex-1 h-12 rounded-2xl bg-primary text-primary-foreground text-[14px] font-semibold press flex items-center justify-center gap-2 disabled:opacity-50"
+            disabled={saving || blocksSave}
+            className="flex-1 h-12 rounded-2xl bg-primary text-primary-foreground text-[14px] font-semibold press flex items-center justify-center gap-2 disabled:opacity-40"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {isNew ? "إنشاء" : "حفظ"}
@@ -369,5 +580,22 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
       </span>
       <span className="text-[13px] font-semibold">{label}</span>
     </button>
+  );
+}
+
+function Stat({ label, value, sub, tone }: { label: string; value: string; sub: string; tone: "primary" | "info" | "success" | "warning" | "destructive" }) {
+  const tones = {
+    primary: "bg-primary/10 text-primary",
+    info: "bg-info/10 text-info",
+    success: "bg-success/10 text-success",
+    warning: "bg-warning/10 text-warning",
+    destructive: "bg-destructive/10 text-destructive",
+  };
+  return (
+    <div className={`rounded-xl py-2 px-1 ${tones[tone]}`}>
+      <p className="text-[10px] font-semibold opacity-80">{label}</p>
+      <p className="font-display text-[15px] num leading-tight">{value}</p>
+      <p className="text-[9.5px] opacity-70 num">{sub}</p>
+    </div>
   );
 }
