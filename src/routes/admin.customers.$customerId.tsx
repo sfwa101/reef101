@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Placeholder from "@/pages/admin/Placeholder";
+import CustomerDetail from "@/pages/admin/CustomerDetail";
+
+function CustomerDetailRoute() {
+  const { customerId } = Route.useParams();
+  return <CustomerDetail customerId={customerId} />;
+}
+
 export const Route = createFileRoute("/admin/customers/$customerId")({
-  component: () => <Placeholder title="بطاقة العميل" description="قيد التطوير" />,
+  component: CustomerDetailRoute,
 });
