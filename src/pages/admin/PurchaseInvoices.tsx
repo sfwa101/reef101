@@ -141,20 +141,53 @@ export default function PurchaseInvoices() {
             <div className="border-t border-border/40 pt-2 space-y-2">
               <p className="text-[12px] font-medium">البنود</p>
               <select className="w-full bg-muted rounded-lg px-3 py-2 text-[13px]" value={newItem.product_id} onChange={(e) => {
-                const p = products.find((pp) => pp.id === e.target.value);
-                setNewItem({ ...newItem, product_id: e.target.value, product_name: p?.name || "" });
+                const pid = e.target.value;
+                const p = products.find((pp) => pp.id === pid);
+                const units = productUnits.filter((u) => u.product_id === pid);
+                const def = units.find((u) => u.is_default_buy) || units[0];
+                setNewItem({ ...newItem, product_id: pid, product_name: p?.name || "", unit_code: def?.unit_code || "" });
               }}>
                 <option value="">— اختر منتج —</option>
                 {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
+              {newItem.product_id && unitsForProduct(newItem.product_id).length > 0 && (
+                <select
+                  className="w-full bg-muted rounded-lg px-3 py-2 text-[13px]"
+                  value={newItem.unit_code}
+                  onChange={(e) => setNewItem({ ...newItem, unit_code: e.target.value })}
+                >
+                  <option value="">— الوحدة الأساسية (قطعة) —</option>
+                  {unitsForProduct(newItem.product_id).map((u) => (
+                    <option key={u.id} value={u.unit_code}>
+                      {u.unit_code} (×{u.conversion_factor} قطعة)
+                    </option>
+                  ))}
+                </select>
+              )}
               <div className="grid grid-cols-3 gap-2">
                 <input className="bg-muted rounded-lg px-3 py-2 text-[13px]" placeholder="كمية" value={newItem.quantity} onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })} />
                 <input className="bg-muted rounded-lg px-3 py-2 text-[13px]" placeholder="تكلفة الوحدة" value={newItem.unit_cost} onChange={(e) => setNewItem({ ...newItem, unit_cost: e.target.value })} />
                 <button onClick={addItem} className="bg-primary/10 text-primary rounded-lg text-[13px] font-medium">إضافة</button>
               </div>
+              {(() => {
+                const u = productUnits.find((x) => x.product_id === newItem.product_id && x.unit_code === newItem.unit_code);
+                const factor = u?.conversion_factor ?? 1;
+                const qty = parseFloat(newItem.quantity) || 0;
+                if (factor > 1 && qty > 0) {
+                  return <p className="text-[11px] text-primary">≈ {qty * factor} قطعة (×{factor})</p>;
+                }
+                return null;
+              })()}
               {items.map((it, i) => (
                 <div key={i} className="flex items-center gap-2 bg-muted/40 rounded-lg p-2 text-[12px]">
-                  <span className="flex-1">{it.product_name}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate">{it.product_name}</p>
+                    {it.unit_code && (
+                      <p className="text-[10px] text-foreground-tertiary">
+                        {it.quantity} {it.unit_code} = {it.base_quantity} قطعة
+                      </p>
+                    )}
+                  </div>
                   <span>{it.quantity} × {fmtMoney(it.unit_cost)}</span>
                   <button onClick={() => setItems(items.filter((_, idx) => idx !== i))}><Trash2 className="h-3.5 w-3.5 text-destructive" /></button>
                 </div>
