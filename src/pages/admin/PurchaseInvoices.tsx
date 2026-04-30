@@ -34,18 +34,22 @@ export default function PurchaseInvoices() {
 
   const load = async () => {
     setLoading(true);
-    const [s, p, i] = await Promise.all([
+    const [s, p, pu, i] = await Promise.all([
       (supabase as any).from("suppliers").select("id,name").eq("is_active", true).order("name"),
       (supabase as any).from("products").select("id,name,cost_price").eq("is_active", true).order("name").limit(500),
+      (supabase as any).from("product_units").select("id,product_id,unit_code,conversion_factor,is_default_buy").eq("is_active", true),
       (supabase as any).from("purchase_invoices").select("*, suppliers(name)").order("invoice_date", { ascending: false }).limit(50),
     ]);
     setSuppliers((s.data || []) as Supplier[]);
     setProducts((p.data || []) as Product[]);
+    setProductUnits((pu.data || []) as ProductUnit[]);
     setInvoices((i.data || []) as Invoice[]);
     setLoading(false);
   };
 
   useEffect(() => { if (allowed) load(); else setLoading(false); }, [allowed]);
+
+  const unitsForProduct = (pid: string) => productUnits.filter((u) => u.product_id === pid);
 
   const addItem = () => {
     if (!newItem.product_name && !newItem.product_id) return toast.error("اختر منتجاً");
@@ -53,13 +57,18 @@ export default function PurchaseInvoices() {
     const cost = parseFloat(newItem.unit_cost);
     if (!(qty > 0) || !(cost >= 0)) return toast.error("قيم غير صالحة");
     const product = products.find((p) => p.id === newItem.product_id);
+    const unit = productUnits.find((u) => u.product_id === newItem.product_id && u.unit_code === newItem.unit_code);
+    const factor = unit?.conversion_factor ?? 1;
     setItems([...items, {
       product_id: newItem.product_id || "",
       product_name: product?.name || newItem.product_name,
       quantity: qty,
       unit_cost: cost,
+      unit_code: newItem.unit_code || undefined,
+      conversion_factor: factor,
+      base_quantity: qty * factor,
     }]);
-    setNewItem({ product_id: "", product_name: "", quantity: "1", unit_cost: "0" });
+    setNewItem({ product_id: "", product_name: "", quantity: "1", unit_cost: "0", unit_code: "" });
   };
 
   const submit = async () => {
