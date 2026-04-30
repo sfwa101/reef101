@@ -857,59 +857,66 @@ const Cart = () => {
         sweetsRules.hasBooking ? `يُدفع الآن من الحجوزات: ${fmtMoney(aggregateDeposit)}` : null,
       ].filter(Boolean);
 
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          user_id: currentUser.id,
-          total: grand,
-          payment_method: payment,
-          address_id: selectedAddr?.id ?? null,
-          status: "pending",
-          whatsapp_sent: true,
-          notes: noteParts.length ? noteParts.join(" · ") : null,
-        })
-        .select("id")
-        .single();
-
-      if (error || !order) {
-        console.error(error);
-        toast.error("تعذّر حفظ الطلب، حاول مرة أخرى");
-        setSubmitting(false);
-        return;
-      }
-
-      const items = lines.map((l) => ({
-        order_id: order.id,
-        product_id: l.product.id,
-        product_name: l.product.name,
-        product_image: l.product.image,
-        price: l.product.price,
-        quantity: l.qty,
-      }));
-      const { error: itemsErr } = await supabase.from("order_items").insert(items);
-      if (itemsErr) {
-        console.error(itemsErr);
-        toast.error("تعذّر حفظ تفاصيل الطلب، حاول مرة أخرى");
-        setSubmitting(false);
-        return;
-      }
-
-      // Smart Allocation: split order across nearest warehouses + reserve stock
-      try {
-        const { data: allocResult, error: allocErr } = await supabase.rpc(
-          "allocate_order_inventory",
-          { _order_id: order.id, _zone: zone.id },
-        );
-        if (allocErr) {
-          console.warn("[allocation] failed", allocErr);
-        } else {
-          console.info("[allocation]", allocResult);
-        }
-      } catch (e) {
-        console.warn("[allocation] exception", e);
-      }
-
+      // Generate order number up-front (used for both guest WA and DB persistence)
       const orderNum = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
+      let savedOrderId: string | null = null;
+
+      // Persist order to DB only when the user is logged in.
+      // Guests bypass DB to avoid RLS errors and just send via WhatsApp.
+      if (!isGuest && currentUser) {
+        const { data: order, error } = await supabase
+          .from("orders")
+          .insert({
+            user_id: currentUser.id,
+            total: grand,
+            payment_method: payment,
+            address_id: selectedAddr?.id ?? null,
+            status: "pending",
+            whatsapp_sent: true,
+            notes: noteParts.length ? noteParts.join(" · ") : null,
+          })
+          .select("id")
+          .single();
+
+        if (error || !order) {
+          console.error(error);
+          toast.error("تعذّر حفظ الطلب، حاول مرة أخرى");
+          setSubmitting(false);
+          return;
+        }
+        savedOrderId = order.id;
+
+        const items = lines.map((l) => ({
+          order_id: order.id,
+          product_id: l.product.id,
+          product_name: l.product.name,
+          product_image: l.product.image,
+          price: l.product.price,
+          quantity: l.qty,
+        }));
+        const { error: itemsErr } = await supabase.from("order_items").insert(items);
+        if (itemsErr) {
+          console.error(itemsErr);
+          toast.error("تعذّر حفظ تفاصيل الطلب، حاول مرة أخرى");
+          setSubmitting(false);
+          return;
+        }
+
+        // Smart Allocation: split order across nearest warehouses + reserve stock
+        try {
+          const { data: allocResult, error: allocErr } = await supabase.rpc(
+            "allocate_order_inventory",
+            { _order_id: order.id, _zone: zone.id },
+          );
+          if (allocErr) {
+            console.warn("[allocation] failed", allocErr);
+          } else {
+            console.info("[allocation]", allocResult);
+          }
+        } catch (e) {
+          console.warn("[allocation] exception", e);
+        }
+      }
 
       /* ============ Wallet debit (when paying via wallet, including BNPL) ============ */
       if (isWalletPay && walletApplied > 0) {
