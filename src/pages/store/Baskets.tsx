@@ -22,8 +22,9 @@ const Baskets = () => {
   const theme = storeThemes.baskets;
   const [active, setActive] = useState("all");
   const [subs, setSubs] = useState<SubscriptionRecord[]>([]);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setSubs(loadSubs()); }, []);
+  useEffect(() => { setSubs(loadSubs()); setMounted(true); }, []);
 
   const list = useMemo(() => {
     const all = products.filter((p) => p.source === "baskets");
