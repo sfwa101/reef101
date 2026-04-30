@@ -39,7 +39,9 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/", replace: true });
+    if (!loading && user) {
+      resolveRedirectPath(user.id).then((to) => navigate({ to, replace: true }));
+    }
   }, [loading, navigate, user]);
 
   const submit = async (e: FormEvent) => {
@@ -51,7 +53,12 @@ const Auth = () => {
     try {
       const res = mode === "signin" ? await signInWithPhone(phone, password) : await signUpWithPhone(phone, password, fullName.trim());
       if (res.error) toast.error(res.error);
-      else { toast.success(mode === "signin" ? "أهلاً بعودتك" : "تم إنشاء حسابك بنجاح"); navigate({ to: "/", replace: true }); }
+      else {
+        toast.success(mode === "signin" ? "أهلاً بعودتك" : "تم إنشاء حسابك بنجاح");
+        const { data: { user: u } } = await supabase.auth.getUser();
+        const to = u ? await resolveRedirectPath(u.id) : "/";
+        navigate({ to, replace: true });
+      }
     } finally { setBusy(false); }
   };
 
