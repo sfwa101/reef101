@@ -1987,6 +1987,7 @@ export type Database = {
           image_path: string | null
           image_url: string | null
           is_active: boolean
+          metadata: Json
           name: string
           name_i18n: Json | null
           old_price: number | null
@@ -2023,6 +2024,7 @@ export type Database = {
           image_path?: string | null
           image_url?: string | null
           is_active?: boolean
+          metadata?: Json
           name: string
           name_i18n?: Json | null
           old_price?: number | null
@@ -2059,6 +2061,7 @@ export type Database = {
           image_path?: string | null
           image_url?: string | null
           is_active?: boolean
+          metadata?: Json
           name?: string
           name_i18n?: Json | null
           old_price?: number | null
