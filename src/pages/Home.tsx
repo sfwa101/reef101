@@ -186,7 +186,24 @@ const HomePage = () => {
   }, [zoneSafePool]);
 
   // Smart category ordering (and zone-aware availability)
-  const categoryRanks = useMemo(() => rankCategoriesForProfile(profile), [profile]);
+  const baseRanks = useMemo(() => rankCategoriesForProfile(profile), [profile]);
+  const [behaviorRanks, setBehaviorRanks] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (!user?.id) return;
+    void logBehavior({ event: "app_open", force: true });
+    fetchCategoryAffinity(user.id).then((cats) => {
+      const map: Record<string, number> = {};
+      cats.forEach((c, i) => { map[c] = (cats.length - i) * 5; });
+      setBehaviorRanks(map);
+    });
+  }, [user?.id]);
+  const categoryRanks = useMemo(() => {
+    const merged: Record<string, number> = { ...baseRanks };
+    Object.entries(behaviorRanks).forEach(([k, v]) => {
+      merged[k] = (merged[k] ?? 0) + v;
+    });
+    return merged;
+  }, [baseRanks, behaviorRanks]);
   const PERISHABLE_STORE_IDS = new Set(["produce", "dairy", "kitchen", "recipes"]);
   const sortedStores = useMemo(() => {
     return [...allStores]
