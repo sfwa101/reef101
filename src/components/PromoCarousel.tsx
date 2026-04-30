@@ -137,8 +137,10 @@ const Slide = memo(function Slide({ s }: { s: Slide }) {
 
 const PromoCarousel = () => {
   const [i, setI] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const t = setInterval(() => setI((x) => (x + 1) % SLIDES.length), 4800);
     return () => clearInterval(t);
   }, []);
@@ -150,7 +152,7 @@ const PromoCarousel = () => {
         style={{ contain: "layout paint" }}
       >
         <div
-          className="flex transition-transform duration-700 ease-apple"
+          className={mounted ? "flex transition-transform duration-700 ease-apple" : "flex"}
           style={{ transform: `translateX(${i * 100}%)`, willChange: "transform" }}
         >
           {SLIDES.map((s) => (

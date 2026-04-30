@@ -7,7 +7,7 @@ import { useAdminRoles } from "@/components/admin/RoleGuard";
 import {
   ChevronLeft, Warehouse, Store, ShieldCheck, Star, Wallet, Receipt, TrendingUp,
   Sparkles, Image, BellRing, Gift, Truck, MapPin, UserCog, MessagesSquare,
-  FileClock, BarChart3, Settings, LogOut, Moon, Printer,
+  FileClock, BarChart3, Settings, LogOut, Moon, Printer, Boxes, Scale, Ban, MessageCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,7 @@ export default function More() {
     { title: "العمليات", items: [
       { to: "/admin/print-jobs", icon: Printer, label: "طلبات الطباعة", color: "from-[hsl(var(--info))] to-[hsl(var(--indigo))]" },
       { to: "/admin/inventory", icon: Warehouse, label: "المخزون", color: "from-[hsl(var(--info))] to-[hsl(var(--indigo))]" },
+      { to: "/admin/product-units", icon: Boxes, label: "وحدات المنتجات", color: "from-[hsl(var(--teal))] to-[hsl(var(--info))]" },
       { to: "/admin/warehouses", icon: Warehouse, label: "المخازن المتعددة", color: "from-[hsl(var(--teal))] to-[hsl(var(--info))]" },
       { to: "/admin/allocation", icon: MapPin, label: "التوزيع الذكي", color: "from-[hsl(var(--info))] to-[hsl(var(--purple))]" },
       { to: "/admin/branches", icon: Sparkles, label: "الفروع الدولية", color: "from-[hsl(var(--purple))] to-[hsl(var(--info))]" },
@@ -44,6 +45,9 @@ export default function More() {
     ]},
     { title: "المالية", items: [
       { to: "/admin/hakim", icon: Sparkles, label: "المستشار حكيم AI", color: "from-[hsl(var(--purple))] to-[hsl(var(--info))]" },
+      { to: "/admin/hakim-chat", icon: MessageCircle, label: "محادثة حكيم", color: "from-[hsl(var(--info))] to-[hsl(var(--purple))]" },
+      { to: "/admin/zakat", icon: Scale, label: "حساب الزكاة", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
+      { to: "/admin/riba-audit", icon: Ban, label: "مراجعة الربا الشرعية", color: "from-destructive to-[hsl(var(--accent))]" },
       { to: "/admin/cfo", icon: TrendingUp, label: "الرؤية المالية CFO", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
       { to: "/admin/executive", icon: BarChart3, label: "اللوحة التنفيذية", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
       { to: "/admin/suppliers", icon: Truck, label: "الموردون", color: "from-[hsl(var(--info))] to-[hsl(var(--indigo))]" },

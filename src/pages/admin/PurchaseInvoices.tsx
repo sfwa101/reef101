@@ -8,7 +8,8 @@ import { toast } from "sonner";
 
 type Supplier = { id: string; name: string };
 type Product = { id: string; name: string; cost_price: number | null };
-type Item = { product_id: string; product_name: string; quantity: number; unit_cost: number };
+type ProductUnit = { id: string; product_id: string; unit_code: string; conversion_factor: number; is_default_buy: boolean };
+type Item = { product_id: string; product_name: string; quantity: number; unit_cost: number; unit_code?: string; conversion_factor?: number; base_quantity?: number };
 type Invoice = {
   id: string; invoice_number: string | null; invoice_date: string; due_date: string | null;
   total: number; paid_amount: number; remaining: number; status: string; supplier_id: string;
@@ -20,6 +21,7 @@ export default function PurchaseInvoices() {
   const allowed = hasRole("admin") || hasRole("finance") || hasRole("store_manager");
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [productUnits, setProductUnits] = useState<ProductUnit[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -28,22 +30,26 @@ export default function PurchaseInvoices() {
     due_date: "", paid_amount: "0", tax: "0", notes: "",
   });
   const [items, setItems] = useState<Item[]>([]);
-  const [newItem, setNewItem] = useState({ product_id: "", product_name: "", quantity: "1", unit_cost: "0" });
+  const [newItem, setNewItem] = useState({ product_id: "", product_name: "", quantity: "1", unit_cost: "0", unit_code: "" });
 
   const load = async () => {
     setLoading(true);
-    const [s, p, i] = await Promise.all([
+    const [s, p, pu, i] = await Promise.all([
       (supabase as any).from("suppliers").select("id,name").eq("is_active", true).order("name"),
       (supabase as any).from("products").select("id,name,cost_price").eq("is_active", true).order("name").limit(500),
+      (supabase as any).from("product_units").select("id,product_id,unit_code,conversion_factor,is_default_buy").eq("is_active", true),
       (supabase as any).from("purchase_invoices").select("*, suppliers(name)").order("invoice_date", { ascending: false }).limit(50),
     ]);
     setSuppliers((s.data || []) as Supplier[]);
     setProducts((p.data || []) as Product[]);
+    setProductUnits((pu.data || []) as ProductUnit[]);
     setInvoices((i.data || []) as Invoice[]);
     setLoading(false);
   };
 
   useEffect(() => { if (allowed) load(); else setLoading(false); }, [allowed]);
+
+  const unitsForProduct = (pid: string) => productUnits.filter((u) => u.product_id === pid);
 
   const addItem = () => {
     if (!newItem.product_name && !newItem.product_id) return toast.error("اختر منتجاً");
@@ -51,13 +57,18 @@ export default function PurchaseInvoices() {
     const cost = parseFloat(newItem.unit_cost);
     if (!(qty > 0) || !(cost >= 0)) return toast.error("قيم غير صالحة");
     const product = products.find((p) => p.id === newItem.product_id);
+    const unit = productUnits.find((u) => u.product_id === newItem.product_id && u.unit_code === newItem.unit_code);
+    const factor = unit?.conversion_factor ?? 1;
     setItems([...items, {
       product_id: newItem.product_id || "",
       product_name: product?.name || newItem.product_name,
       quantity: qty,
       unit_cost: cost,
+      unit_code: newItem.unit_code || undefined,
+      conversion_factor: factor,
+      base_quantity: qty * factor,
     }]);
-    setNewItem({ product_id: "", product_name: "", quantity: "1", unit_cost: "0" });
+    setNewItem({ product_id: "", product_name: "", quantity: "1", unit_cost: "0", unit_code: "" });
   };
 
   const submit = async () => {
@@ -87,6 +98,9 @@ export default function PurchaseInvoices() {
         product_name: it.product_name,
         quantity: it.quantity,
         unit_cost: it.unit_cost,
+        unit_code: it.unit_code || null,
+        conversion_factor: it.conversion_factor ?? 1,
+        base_quantity: it.base_quantity ?? it.quantity,
       }))
     );
     if (itErr) toast.error("خطأ بنود: " + itErr.message);
@@ -127,20 +141,53 @@ export default function PurchaseInvoices() {
             <div className="border-t border-border/40 pt-2 space-y-2">
               <p className="text-[12px] font-medium">البنود</p>
               <select className="w-full bg-muted rounded-lg px-3 py-2 text-[13px]" value={newItem.product_id} onChange={(e) => {
-                const p = products.find((pp) => pp.id === e.target.value);
-                setNewItem({ ...newItem, product_id: e.target.value, product_name: p?.name || "" });
+                const pid = e.target.value;
+                const p = products.find((pp) => pp.id === pid);
+                const units = productUnits.filter((u) => u.product_id === pid);
+                const def = units.find((u) => u.is_default_buy) || units[0];
+                setNewItem({ ...newItem, product_id: pid, product_name: p?.name || "", unit_code: def?.unit_code || "" });
               }}>
                 <option value="">— اختر منتج —</option>
                 {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
+              {newItem.product_id && unitsForProduct(newItem.product_id).length > 0 && (
+                <select
+                  className="w-full bg-muted rounded-lg px-3 py-2 text-[13px]"
+                  value={newItem.unit_code}
+                  onChange={(e) => setNewItem({ ...newItem, unit_code: e.target.value })}
+                >
+                  <option value="">— الوحدة الأساسية (قطعة) —</option>
+                  {unitsForProduct(newItem.product_id).map((u) => (
+                    <option key={u.id} value={u.unit_code}>
+                      {u.unit_code} (×{u.conversion_factor} قطعة)
+                    </option>
+                  ))}
+                </select>
+              )}
               <div className="grid grid-cols-3 gap-2">
                 <input className="bg-muted rounded-lg px-3 py-2 text-[13px]" placeholder="كمية" value={newItem.quantity} onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })} />
                 <input className="bg-muted rounded-lg px-3 py-2 text-[13px]" placeholder="تكلفة الوحدة" value={newItem.unit_cost} onChange={(e) => setNewItem({ ...newItem, unit_cost: e.target.value })} />
                 <button onClick={addItem} className="bg-primary/10 text-primary rounded-lg text-[13px] font-medium">إضافة</button>
               </div>
+              {(() => {
+                const u = productUnits.find((x) => x.product_id === newItem.product_id && x.unit_code === newItem.unit_code);
+                const factor = u?.conversion_factor ?? 1;
+                const qty = parseFloat(newItem.quantity) || 0;
+                if (factor > 1 && qty > 0) {
+                  return <p className="text-[11px] text-primary">≈ {qty * factor} قطعة (×{factor})</p>;
+                }
+                return null;
+              })()}
               {items.map((it, i) => (
                 <div key={i} className="flex items-center gap-2 bg-muted/40 rounded-lg p-2 text-[12px]">
-                  <span className="flex-1">{it.product_name}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate">{it.product_name}</p>
+                    {it.unit_code && (
+                      <p className="text-[10px] text-foreground-tertiary">
+                        {it.quantity} {it.unit_code} = {it.base_quantity} قطعة
+                      </p>
+                    )}
+                  </div>
                   <span>{it.quantity} × {fmtMoney(it.unit_cost)}</span>
                   <button onClick={() => setItems(items.filter((_, idx) => idx !== i))}><Trash2 className="h-3.5 w-3.5 text-destructive" /></button>
                 </div>

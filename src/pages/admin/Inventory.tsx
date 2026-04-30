@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Search, Save, Loader2, AlertTriangle } from "lucide-react";
+import { Search, Save, Loader2, AlertTriangle, Boxes } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTopbar } from "@/components/admin/MobileTopbar";
 import { IOSCard } from "@/components/ios/IOSCard";
@@ -25,6 +25,33 @@ export default function Inventory() {
   const [src, setSrc] = useState("all");
   const [edits, setEdits] = useState<Record<string, Edit>>({});
   const [saving, setSaving] = useState(false);
+  const [breakdowns, setBreakdowns] = useState<Record<string, string>>({});
+  const [loadingBreakdown, setLoadingBreakdown] = useState<Record<string, boolean>>({});
+
+  const formatBreakdown = (raw: any): string => {
+    if (!raw) return "";
+    // Expected shape: { breakdown: [{ unit, qty }, ...], total_pieces: N } OR array of pairs
+    const list = Array.isArray(raw) ? raw : raw.breakdown || raw.units || [];
+    if (!Array.isArray(list) || list.length === 0) return "";
+    return list
+      .filter((p: any) => p && (p.qty ?? p.quantity ?? 0) > 0)
+      .map((p: any) => `${p.qty ?? p.quantity} ${p.unit ?? p.unit_code ?? p.code}`)
+      .join("، ");
+  };
+
+  const loadBreakdown = async (productId: string) => {
+    if (breakdowns[productId] !== undefined) return;
+    setLoadingBreakdown((s) => ({ ...s, [productId]: true }));
+    try {
+      const { data, error } = await (supabase as any).rpc("nested_stock_breakdown", { _product_id: productId });
+      if (error) throw error;
+      setBreakdowns((s) => ({ ...s, [productId]: formatBreakdown(data) }));
+    } catch {
+      setBreakdowns((s) => ({ ...s, [productId]: "" }));
+    } finally {
+      setLoadingBreakdown((s) => ({ ...s, [productId]: false }));
+    }
+  };
 
   const load = useCallback(async () => {
     setRows(null);
@@ -110,10 +137,24 @@ export default function Inventory() {
                 const low = Number(stockVal) > 0 && Number(stockVal) < 20;
                 const out = Number(stockVal) <= 0;
                 return (
-                  <div key={r.id} className={cn("p-3 flex items-center gap-2", dirty && "bg-warning/5")}>
+                  <div key={r.id} className={cn("p-3 flex flex-wrap items-center gap-2", dirty && "bg-warning/5")}>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-semibold truncate">{r.name}</p>
                       <p className="text-[11px] text-foreground-tertiary">{r.unit} • {r.source}</p>
+                      {breakdowns[r.id] ? (
+                        <p className="text-[11px] text-primary font-medium mt-0.5 flex items-center gap-1">
+                          <Boxes className="h-3 w-3" /> {breakdowns[r.id]}
+                        </p>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => loadBreakdown(r.id)}
+                          className="text-[10px] text-primary/80 hover:text-primary mt-0.5 flex items-center gap-1"
+                        >
+                          <Boxes className="h-3 w-3" />
+                          {loadingBreakdown[r.id] ? "..." : "عرض الوحدات المتداخلة"}
+                        </button>
+                      )}
                     </div>
                     <div className="w-24">
                       <label className="block text-[10px] text-foreground-tertiary mb-0.5">السعر</label>
