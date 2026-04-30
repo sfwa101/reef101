@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { MobileTopbar } from "@/components/admin/MobileTopbar";
-import { StatTile } from "@/components/ios/StatTile";
-import { IOSList, IOSRow, IOSSection } from "@/components/ios/IOSCard";
-import { ShoppingBag, Wallet, Users, Receipt, Truck, ChevronLeft, Sparkles, TrendingUp, Package } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer } from "recharts";
-import { fmtMoney, fmtNum } from "@/lib/format";
+import { HakimSovereignCard } from "@/components/admin/HakimSovereignCard";
+import { BentoStats } from "@/components/admin/BentoStats";
+import { OrderSlideOver } from "@/components/admin/OrderSlideOver";
+import { ChevronLeft, Package, Users, Wallet, ShoppingBag } from "lucide-react";
+import { fmtMoney } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 
@@ -16,111 +16,79 @@ const greeting = () => {
   return "مساء النور";
 };
 
-const statusMap: Record<string, { label: string; tone: string }> = {
-  pending: { label: "بانتظار", tone: "bg-muted text-foreground-secondary" },
-  confirmed: { label: "مؤكد", tone: "bg-info/15 text-info" },
-  preparing: { label: "تجهيز", tone: "bg-warning/15 text-warning" },
-  out_for_delivery: { label: "في الطريق", tone: "bg-primary/15 text-primary" },
-  delivered: { label: "تم", tone: "bg-success/15 text-success" },
-  paid: { label: "مدفوع", tone: "bg-success/15 text-success" },
+const statusMeta: Record<string, { label: string; cls: string }> = {
+  pending:          { label: "بانتظار",     cls: "bg-muted text-foreground-secondary" },
+  confirmed:        { label: "مؤكد",        cls: "bg-info/15 text-info" },
+  preparing:        { label: "قيد التجهيز", cls: "bg-[hsl(var(--accent))]/15 text-[hsl(var(--accent))]" },
+  ready:            { label: "جاهز",        cls: "bg-warning/15 text-warning" },
+  out_for_delivery: { label: "مع المندوب",  cls: "bg-info/15 text-info" },
+  delivered:        { label: "تم التسليم",  cls: "bg-success/15 text-success" },
+  cancelled:        { label: "ملغي",        cls: "bg-destructive/10 text-destructive" },
+  paid:             { label: "مدفوع",       cls: "bg-success/15 text-success" },
 };
 
 export default function Dashboard() {
   const { profile } = useAuth();
-  const [stats, setStats] = useState({ todayOrders: 0, todayRevenue: 0, totalCustomers: 0, inDelivery: 0, avgOrder: 0 });
+  const [bento, setBento] = useState({
+    todayOrders: 0, todayRevenue: 0, inDelivery: 0,
+    totalCustomers: 0, lowStock: 0, partnersDue: 0,
+  });
   const [recent, setRecent] = useState<any[]>([]);
-  const [chart, setChart] = useState<{ day: number; revenue: number }[]>([]);
+  const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
-    const start14 = new Date(); start14.setDate(start14.getDate() - 13); start14.setHours(0, 0, 0, 0);
 
     Promise.all([
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("orders").select("id,total,status,created_at").gte("created_at", start14.toISOString()),
+      (supabase as any).from("orders").select("id,total,status,created_at,user_id, profiles:user_id(full_name)").order("created_at", { ascending: false }).limit(40),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase as any).from("profiles").select("id", { count: "exact", head: true }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("orders").select("id,total,status,created_at,user_id").order("created_at", { ascending: false }).limit(8),
-    ]).then(([ordersRes, profilesRes, recentRes]: any[]) => {
+      (supabase as any).from("products").select("id", { count: "exact", head: true }).lte("stock", 5),
+    ]).then(([ordersRes, profilesRes, lowRes]: any[]) => {
       const orders = ordersRes.data ?? [];
       const today = orders.filter((o: any) => new Date(o.created_at) >= startToday);
-      const inDelivery = orders.filter((o: any) => ["out_for_delivery", "preparing", "ready"].includes(o.status)).length;
+      const inDelivery = orders.filter((o: any) =>
+        ["out_for_delivery", "preparing", "ready", "confirmed"].includes(o.status)).length;
       const todayRev = today.reduce((s: number, o: any) => s + Number(o.total ?? 0), 0);
 
-      // 14-day chart
-      const buckets = new Map<string, number>();
-      for (let i = 0; i < 14; i++) {
-        const d = new Date(start14); d.setDate(d.getDate() + i);
-        buckets.set(d.toISOString().slice(0, 10), 0);
-      }
-      orders.forEach((o: any) => {
-        const k = o.created_at.slice(0, 10);
-        buckets.set(k, (buckets.get(k) ?? 0) + Number(o.total ?? 0));
-      });
-      setChart([...buckets.values()].map((revenue, i) => ({ day: i + 1, revenue: Math.round(revenue) })));
-
-      setStats({
+      setBento({
         todayOrders: today.length,
         todayRevenue: todayRev,
-        totalCustomers: profilesRes.count ?? 0,
         inDelivery,
-        avgOrder: today.length ? todayRev / today.length : 0,
+        totalCustomers: profilesRes.count ?? 0,
+        lowStock: lowRes.count ?? 0,
+        partnersDue: 0,
       });
-      setRecent(recentRes.data ?? []);
+      setRecent(orders.slice(0, 8));
     });
   }, []);
 
   return (
     <>
       <MobileTopbar title={greeting()} />
-      <div className="hidden lg:flex items-end justify-between px-6 pt-8 pb-2 max-w-[1400px] mx-auto">
+
+      {/* Desktop greeting */}
+      <div className="hidden lg:flex items-end justify-between px-6 pt-8 pb-3 max-w-[1400px] mx-auto">
         <div>
           <p className="text-sm text-foreground-secondary">{greeting()}, {profile?.full_name ?? "أهلاً"}</p>
-          <h1 className="font-display text-[34px] tracking-tight mt-0.5">اللوحة الرئيسية</h1>
+          <h1 className="font-display text-[34px] tracking-tight mt-0.5">مركز القيادة</h1>
         </div>
-        <div className="glass rounded-full px-3 py-1.5 text-xs flex items-center gap-2">
+        <div className="flex items-center gap-2 text-xs bg-surface rounded-full px-3 py-1.5 border border-border/50 shadow-sm">
           <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />متصل بالبيانات الحية
         </div>
       </div>
 
-      <div className="px-4 lg:px-6 pt-3 pb-6 max-w-[1400px] mx-auto space-y-6">
-        <div className="rounded-3xl bg-gradient-primary p-5 text-primary-foreground shadow-elegant relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-mesh opacity-30 mix-blend-overlay" />
-          <div className="relative">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-[13px] opacity-90">إيرادات اليوم</p>
-              <Sparkles className="h-4 w-4 opacity-80" />
-            </div>
-            <p className="font-display text-[40px] tracking-tight num leading-none mb-1">{fmtMoney(stats.todayRevenue)}</p>
-            <div className="flex items-center gap-1.5 text-[12px] opacity-90">
-              <TrendingUp className="h-3.5 w-3.5" />
-              <span>آخر 14 يوم</span>
-            </div>
-            <div className="h-16 mt-3 -mx-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chart}>
-                  <defs>
-                    <linearGradient id="hero-rev" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="white" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="white" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <Area type="monotone" dataKey="revenue" stroke="white" strokeWidth={2} fill="url(#hero-rev)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
+      <div className="px-4 lg:px-6 pt-3 pb-10 max-w-[1400px] mx-auto space-y-5 lg:space-y-6">
+        {/* 1. Hakim Sovereign card */}
+        <HakimSovereignCard />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatTile label="طلبات اليوم" value={fmtNum(stats.todayOrders)} icon={ShoppingBag} tone="primary" />
-          <StatTile label="إجمالي العملاء" value={fmtNum(stats.totalCustomers)} icon={Users} tone="info" />
-          <StatTile label="متوسط الطلب" value={fmtMoney(stats.avgOrder)} icon={Receipt} tone="accent" />
-          <StatTile label="قيد التوصيل" value={fmtNum(stats.inDelivery)} icon={Truck} tone="purple" />
-        </div>
+        {/* 2. Bento Grid */}
+        <BentoStats stats={bento} />
 
-        <IOSSection title="إجراءات سريعة" action={<Link to="/admin/more" className="text-sm text-primary press">المزيد</Link>}>
+        {/* 3. Quick actions (mobile-friendly) */}
+        <section className="lg:hidden">
           <div className="grid grid-cols-4 gap-3">
             {[
               { icon: ShoppingBag, label: "الطلبات", to: "/admin/orders", tone: "from-primary to-primary-glow" },
@@ -136,35 +104,58 @@ export default function Dashboard() {
               </Link>
             ))}
           </div>
-        </IOSSection>
+        </section>
 
-        <IOSSection title="آخر الطلبات" action={<Link to="/admin/orders" className="text-sm text-primary press">عرض الكل</Link>}>
-          <IOSList>
-            {recent.length === 0 ? (
-              <div className="px-4 py-6 text-center text-[13px] text-foreground-secondary">لا توجد طلبات بعد</div>
-            ) : recent.map((o) => {
-              const s = statusMap[o.status] ?? { label: o.status, tone: "bg-muted text-foreground-secondary" };
-              return (
-                <Link key={o.id} to="/admin/orders/$orderId" params={{ orderId: o.id }}>
-                  <IOSRow>
-                    <div className="h-10 w-10 rounded-full bg-primary-soft text-primary flex items-center justify-center shrink-0 font-mono text-[10px] font-semibold">
+        {/* 4. Live orders feed */}
+        <section className="bg-surface rounded-3xl border border-border/50 shadow-soft overflow-hidden">
+          <div className="px-4 lg:px-5 py-3 border-b border-border/40 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+              <h2 className="font-display text-[16px]">الطلبات المباشرة</h2>
+            </div>
+            <Link to="/admin/orders" className="text-[12px] text-primary hover:underline flex items-center gap-0.5">
+              عرض الكل <ChevronLeft className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {recent.length === 0 ? (
+            <div className="p-10 text-center text-[13px] text-foreground-tertiary">
+              <ShoppingBag className="h-10 w-10 mx-auto mb-2 opacity-40" />
+              لا توجد طلبات بعد
+            </div>
+          ) : (
+            <div className="divide-y divide-border/40">
+              {recent.map((o) => {
+                const meta = statusMeta[o.status] ?? { label: o.status, cls: "bg-muted text-foreground-secondary" };
+                return (
+                  <button
+                    key={o.id}
+                    onClick={() => setActiveOrderId(o.id)}
+                    className="w-full px-4 lg:px-5 py-3 flex items-center gap-3 hover:bg-surface-muted/50 transition text-right press"
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-primary-soft text-primary flex items-center justify-center font-mono text-[10px] font-semibold shrink-0">
                       {String(o.id).slice(0, 4).toUpperCase()}
                     </div>
-                    <div className="flex-1 min-w-0 text-right">
-                      <div className="flex items-center gap-2 justify-end">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${s.tone}`}>{s.label}</span>
-                        <p className="text-[12px] text-foreground-tertiary">{new Date(o.created_at).toLocaleString("ar-EG", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}</p>
-                      </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13.5px] font-medium truncate">{o.profiles?.full_name ?? "عميل"}</p>
+                      <p className="text-[11px] text-foreground-tertiary">
+                        {new Date(o.created_at).toLocaleString("ar-EG", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </p>
                     </div>
-                    <p className="text-[14px] font-display num shrink-0">{fmtMoney(o.total)}</p>
+                    <span className={`text-[10.5px] px-2 py-1 rounded-full font-semibold shrink-0 ${meta.cls}`}>
+                      {meta.label}
+                    </span>
+                    <p className="text-[14px] font-display num shrink-0 min-w-[80px] text-left">{fmtMoney(o.total)}</p>
                     <ChevronLeft className="h-4 w-4 text-foreground-tertiary shrink-0" />
-                  </IOSRow>
-                </Link>
-              );
-            })}
-          </IOSList>
-        </IOSSection>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </div>
+
+      <OrderSlideOver orderId={activeOrderId} onClose={() => setActiveOrderId(null)} />
     </>
   );
 }

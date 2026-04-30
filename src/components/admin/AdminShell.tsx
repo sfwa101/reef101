@@ -1,6 +1,7 @@
 import { Outlet } from "@tanstack/react-router";
 import { DesktopSidebar } from "./DesktopSidebar";
 import { BottomTabBar } from "./BottomTabBar";
+import { HakimFAB } from "./HakimFAB";
 
 export function AdminShell() {
   return (
@@ -10,6 +11,7 @@ export function AdminShell() {
         <Outlet />
       </main>
       <BottomTabBar />
+      <HakimFAB />
     </div>
   );
 }

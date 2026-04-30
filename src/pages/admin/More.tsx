@@ -5,12 +5,13 @@ import { IOSList, IOSRow, IOSSection } from "@/components/ios/IOSCard";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminRoles } from "@/components/admin/RoleGuard";
 import {
-  ChevronLeft, Warehouse, Store, ShieldCheck, Star, Wallet, Receipt, TrendingUp,
+  Warehouse, Store, ShieldCheck, Star, Wallet, Receipt, TrendingUp,
   Sparkles, Image, BellRing, Gift, Truck, MapPin, UserCog, MessagesSquare,
   FileClock, BarChart3, Settings, LogOut, Moon, Printer, Boxes, Scale, Ban, MessageCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 type Item = { to?: string; icon: any; label: string; color: string; onClick?: () => void };
 type Group = { title: string; items: Item[] };
@@ -105,25 +106,43 @@ export default function More() {
           </div>
         </div>
 
-        {groups.map(g => (
-          <IOSSection key={g.title} title={g.title}>
-            <IOSList>
-              {g.items.map(it => (
-                <IOSRow key={it.label}>
-                  <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${it.color} flex items-center justify-center text-white shadow-sm shrink-0`}>
-                    <it.icon className="h-[16px] w-[16px]" strokeWidth={2.5} />
-                  </div>
-                  {it.to ? (
-                    <Link to={it.to} className="flex-1 text-right text-[15px] font-medium">{it.label}</Link>
-                  ) : (
-                    <span className="flex-1 text-right text-[15px] font-medium">{it.label}</span>
-                  )}
-                  <ChevronLeft className="h-4 w-4 text-foreground-tertiary shrink-0" />
-                </IOSRow>
-              ))}
-            </IOSList>
-          </IOSSection>
-        ))}
+        <Accordion type="multiple" defaultValue={["العمليات"]} className="space-y-3">
+          {groups.map(g => (
+            <AccordionItem key={g.title} value={g.title} className="bg-surface rounded-2xl border border-border/40 shadow-soft px-4 overflow-hidden">
+              <AccordionTrigger className="py-3.5 hover:no-underline">
+                <div className="flex items-center gap-2.5 text-right">
+                  <span className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-[11px] font-bold shrink-0">
+                    {g.items.length}
+                  </span>
+                  <span className="font-display text-[15px]">{g.title}</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {g.items.map(it => (
+                    it.to ? (
+                      <Link key={it.label} to={it.to}
+                        className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-muted/60 hover:bg-primary/10 transition press">
+                        <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${it.color} flex items-center justify-center text-white shadow-sm shrink-0`}>
+                          <it.icon className="h-[15px] w-[15px]" strokeWidth={2.5} />
+                        </div>
+                        <span className="text-[12px] font-medium leading-tight">{it.label}</span>
+                      </Link>
+                    ) : (
+                      <button key={it.label} onClick={it.onClick}
+                        className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-muted/60 hover:bg-primary/10 transition press text-right">
+                        <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${it.color} flex items-center justify-center text-white shadow-sm shrink-0`}>
+                          <it.icon className="h-[15px] w-[15px]" strokeWidth={2.5} />
+                        </div>
+                        <span className="text-[12px] font-medium leading-tight">{it.label}</span>
+                      </button>
+                    )
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
 
         <IOSSection title="التفضيلات">
           <IOSList>
