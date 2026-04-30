@@ -195,22 +195,22 @@ export default function Products() {
         )}
       </div>
 
-      {(creating || editing) && (
-        <ProductEditor
-          product={editing}
-          categories={categories}
-          stores={stores}
-          onClose={() => {
-            setCreating(false);
-            setEditing(null);
-          }}
-          onSaved={() => {
-            setCreating(false);
-            setEditing(null);
-            load();
-          }}
-        />
-      )}
+      {/* Sheet rendered at root level — escapes any card overflow/z-index trap */}
+      <ProductEditor
+        open={creating || !!editing}
+        product={editing}
+        categories={categories}
+        stores={stores}
+        onClose={() => {
+          setCreating(false);
+          setEditing(null);
+        }}
+        onSaved={() => {
+          setCreating(false);
+          setEditing(null);
+          load();
+        }}
+      />
     </>
   );
 }
