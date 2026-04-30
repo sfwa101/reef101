@@ -10,6 +10,7 @@ import {
 } from "react";
 import type { Product } from "@/lib/products";
 import { trackBuyAgain } from "@/lib/buyAgain";
+import { logBehavior } from "@/lib/behavior";
 
 /**
  * Optional per-line meta. Used by the sweets section to attach a chosen
