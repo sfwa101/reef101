@@ -31,6 +31,9 @@ const ProductDetail = () => {
   const [variantId, setVariantId] = useState<string | null>(null);
   const [addonIds, setAddonIds] = useState<string[]>([]);
   const [reviewCount, setReviewCount] = useState<number | null>(null);
+  type PUnit = { id: string; unit_code: string; conversion_factor: number; selling_price: number | null; is_default_sell: boolean };
+  const [productUnits, setProductUnits] = useState<PUnit[]>([]);
+  const [unitId, setUnitId] = useState<string | null>(null);
 
   /* Gallery state */
   const [galleryIndex, setGalleryIndex] = useState(0);
