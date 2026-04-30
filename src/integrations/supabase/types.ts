@@ -171,6 +171,48 @@ export type Database = {
           },
         ]
       }
+      discount_overrides: {
+        Row: {
+          attempted_discount: number
+          cost_price: number | null
+          created_at: string
+          id: string
+          margin_amount: number
+          override_by: string
+          override_by_name: string | null
+          product_id: string
+          product_name: string
+          reason: string
+          sale_price: number
+        }
+        Insert: {
+          attempted_discount: number
+          cost_price?: number | null
+          created_at?: string
+          id?: string
+          margin_amount: number
+          override_by: string
+          override_by_name?: string | null
+          product_id: string
+          product_name: string
+          reason: string
+          sale_price: number
+        }
+        Update: {
+          attempted_discount?: number
+          cost_price?: number | null
+          created_at?: string
+          id?: string
+          margin_amount?: number
+          override_by?: string
+          override_by_name?: string | null
+          product_id?: string
+          product_name?: string
+          reason?: string
+          sale_price?: number
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -429,11 +471,13 @@ export type Database = {
       products: {
         Row: {
           addons: Json | null
+          affiliate_commission_pct: number
           badge: string | null
           brand: string | null
           category: string
           category_id: string | null
           compare_at_price: number | null
+          cost_price: number | null
           created_at: string
           description: string | null
           id: string
@@ -457,11 +501,13 @@ export type Database = {
         }
         Insert: {
           addons?: Json | null
+          affiliate_commission_pct?: number
           badge?: string | null
           brand?: string | null
           category?: string
           category_id?: string | null
           compare_at_price?: number | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           id: string
@@ -485,11 +531,13 @@ export type Database = {
         }
         Update: {
           addons?: Json | null
+          affiliate_commission_pct?: number
           badge?: string | null
           brand?: string | null
           category?: string
           category_id?: string | null
           compare_at_price?: number | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           id?: string
@@ -937,6 +985,45 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_topup_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string
+          note: string | null
+          performed_by: string
+          performed_by_name: string | null
+          status: string
+          transfer_reference: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method: string
+          note?: string | null
+          performed_by: string
+          performed_by_name?: string | null
+          status?: string
+          transfer_reference: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string
+          note?: string | null
+          performed_by?: string
+          performed_by_name?: string | null
+          status?: string
+          transfer_reference?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -972,6 +1059,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_topup_wallet: {
+        Args: {
+          _amount: number
+          _method: string
+          _note?: string
+          _transfer_reference: string
+          _user_id: string
+        }
+        Returns: Json
+      }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -984,6 +1081,10 @@ export type Database = {
       user_store_ids: { Args: { _user_id: string }; Returns: string[] }
       user_total_spent: { Args: { _user_id: string }; Returns: number }
       user_trust_limit: { Args: { _user_id: string }; Returns: number }
+      validate_discount: {
+        Args: { _cost_price: number; _new_price: number; _sale_price: number }
+        Returns: Json
+      }
       wallet_transfer: {
         Args: { _amount: number; _note?: string; _recipient_phone: string }
         Returns: Json
