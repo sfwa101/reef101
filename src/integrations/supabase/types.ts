@@ -348,6 +348,89 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_redemptions: {
+        Row: {
+          coupon_id: string
+          id: string
+          order_id: string | null
+          redeemed_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_redemptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          discount_amount: number | null
+          discount_pct: number
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          min_order_total: number | null
+          min_user_level: Database["public"]["Enums"]["app_user_level"]
+          per_user_limit: number
+          starts_at: string | null
+          uses_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          discount_amount?: number | null
+          discount_pct?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_total?: number | null
+          min_user_level?: Database["public"]["Enums"]["app_user_level"]
+          per_user_limit?: number
+          starts_at?: string | null
+          uses_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount_amount?: number | null
+          discount_pct?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_total?: number | null
+          min_user_level?: Database["public"]["Enums"]["app_user_level"]
+          per_user_limit?: number
+          starts_at?: string | null
+          uses_count?: number
+        }
+        Relationships: []
+      }
       cross_branch_transfers: {
         Row: {
           created_at: string
@@ -687,6 +770,54 @@ export type Database = {
         }
         Relationships: []
       }
+      discounts: {
+        Row: {
+          created_at: string
+          discount_amount: number | null
+          discount_pct: number
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          min_order_total: number | null
+          min_user_level: Database["public"]["Enums"]["app_user_level"]
+          name: string
+          scope: string
+          scope_value: string | null
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_amount?: number | null
+          discount_pct?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          min_order_total?: number | null
+          min_user_level?: Database["public"]["Enums"]["app_user_level"]
+          name: string
+          scope: string
+          scope_value?: string | null
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_amount?: number | null
+          discount_pct?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          min_order_total?: number | null
+          min_user_level?: Database["public"]["Enums"]["app_user_level"]
+          name?: string
+          scope?: string
+          scope_value?: string | null
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       driver_cash_settlements: {
         Row: {
           amount: number
@@ -897,6 +1028,80 @@ export type Database = {
         }
         Relationships: []
       }
+      flash_sale_products: {
+        Row: {
+          category: string | null
+          created_at: string
+          discount_pct: number
+          flash_sale_id: string
+          id: string
+          original_price: number
+          product_id: string
+          product_name: string | null
+          rank: number
+          reason: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          discount_pct: number
+          flash_sale_id: string
+          id?: string
+          original_price: number
+          product_id: string
+          product_name?: string | null
+          rank?: number
+          reason?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          discount_pct?: number
+          flash_sale_id?: string
+          id?: string
+          original_price?: number
+          product_id?: string
+          product_name?: string | null
+          rank?: number
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flash_sale_products_flash_sale_id_fkey"
+            columns: ["flash_sale_id"]
+            isOneToOne: false
+            referencedRelation: "flash_sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flash_sales: {
+        Row: {
+          created_at: string
+          cycle_label: string | null
+          ends_at: string
+          id: string
+          is_active: boolean
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_label?: string | null
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          starts_at?: string
+        }
+        Update: {
+          created_at?: string
+          cycle_label?: string | null
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          starts_at?: string
+        }
+        Relationships: []
+      }
       hakim_chat_messages: {
         Row: {
           content: string
@@ -1078,6 +1283,51 @@ export type Database = {
           submitted_at?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      mega_events: {
+        Row: {
+          active_date: string | null
+          banner_color_hex: string
+          banner_subtitle: string | null
+          banner_title: string
+          category_discounts: Json
+          created_at: string
+          global_discount_pct: number
+          id: string
+          is_active: boolean
+          name: string
+          trigger_kind: string
+          updated_at: string
+        }
+        Insert: {
+          active_date?: string | null
+          banner_color_hex?: string
+          banner_subtitle?: string | null
+          banner_title: string
+          category_discounts?: Json
+          created_at?: string
+          global_discount_pct?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          trigger_kind: string
+          updated_at?: string
+        }
+        Update: {
+          active_date?: string | null
+          banner_color_hex?: string
+          banner_subtitle?: string | null
+          banner_title?: string
+          category_discounts?: Json
+          created_at?: string
+          global_discount_pct?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          trigger_kind?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2239,6 +2489,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_behavior_logs: {
+        Row: {
+          category: string | null
+          created_at: string
+          dwell_ms: number | null
+          event_type: string
+          id: string
+          product_id: string | null
+          query: string | null
+          session_id: string | null
+          user_id: string | null
+          weight: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          dwell_ms?: number | null
+          event_type: string
+          id?: string
+          product_id?: string | null
+          query?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          weight?: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          dwell_ms?: number | null
+          event_type?: string
+          id?: string
+          product_id?: string | null
+          query?: string | null
+          session_id?: string | null
+          user_id?: string | null
+          weight?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           branch_id: string | null
@@ -2762,6 +3051,13 @@ export type Database = {
         }
         Returns: Json
       }
+      category_affinity: {
+        Args: { _user_id: string }
+        Returns: {
+          category: string
+          score: number
+        }[]
+      }
       cfo_dashboard_stats: { Args: never; Returns: Json }
       commit_sub_order_stock: { Args: { _sub_order_id: string }; Returns: Json }
       complete_delivery: {
@@ -2781,6 +3077,10 @@ export type Database = {
       compute_driver_commission: {
         Args: { _driver_id: string; _order_total: number }
         Returns: number
+      }
+      compute_user_level: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_user_level"]
       }
       compute_zakat_assessment: {
         Args: { _nisab_value?: number }
@@ -2838,6 +3138,16 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      log_behavior: {
+        Args: {
+          _category?: string
+          _dwell_ms?: number
+          _event: string
+          _product_id?: string
+          _query?: string
+        }
+        Returns: string
+      }
       low_stock_products: {
         Args: { _threshold?: number }
         Returns: {
@@ -2851,7 +3161,19 @@ export type Database = {
       }
       nested_stock_breakdown: { Args: { _product_id: string }; Returns: Json }
       payments_schedule: { Args: { _days_ahead?: number }; Returns: Json }
+      personalized_flash_picks: {
+        Args: { _limit?: number; _user_id: string }
+        Returns: {
+          category: string
+          original_price: number
+          product_id: string
+          product_name: string
+          reason: string
+          suggested_discount_pct: number
+        }[]
+      }
       process_commission_vesting: { Args: never; Returns: Json }
+      progress_to_next_level: { Args: { _user_id: string }; Returns: Json }
       recompute_wallet_balance: { Args: { _user: string }; Returns: number }
       reject_wallet_topup: {
         Args: { _reason: string; _topup_id: string }
@@ -2862,6 +3184,7 @@ export type Database = {
         Args: { _branch_id: string; _product_id: string; _zone?: string }
         Returns: Json
       }
+      rotate_flash_sale: { Args: never; Returns: string }
       scan_riba_suspicions: { Args: never; Returns: Json }
       settle_vendor_payout: {
         Args: {
@@ -2906,6 +3229,7 @@ export type Database = {
         | "delivery"
         | "finance"
         | "vendor"
+      app_user_level: "bronze" | "silver" | "gold" | "platinum"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3043,6 +3367,7 @@ export const Constants = {
         "finance",
         "vendor",
       ],
+      app_user_level: ["bronze", "silver", "gold", "platinum"],
     },
   },
 } as const

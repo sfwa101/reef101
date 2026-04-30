@@ -27,8 +27,13 @@ import TypewriterPlaceholder from "@/components/TypewriterPlaceholder";
 import ReefStories from "@/components/ReefStories";
 import PromoCarousel from "@/components/PromoCarousel";
 import MiniStoreGrid from "@/components/MiniStoreGrid";
+import FlashSalesRail from "@/components/FlashSalesRail";
+import MegaEventBanner from "@/components/MegaEventBanner";
+import LoyaltyProgress from "@/components/LoyaltyProgress";
+import InactivityNudger from "@/components/InactivityNudger";
 import { buyAgainProducts } from "@/lib/buyAgain";
 import { useLocation } from "@/context/LocationContext";
+import { logBehavior, fetchCategoryAffinity } from "@/lib/behavior";
 
 import tileSupermarket from "@/assets/tile-supermarket.jpg";
 import tileKitchen from "@/assets/tile-kitchen.jpg";
@@ -186,7 +191,24 @@ const HomePage = () => {
   }, [zoneSafePool]);
 
   // Smart category ordering (and zone-aware availability)
-  const categoryRanks = useMemo(() => rankCategoriesForProfile(profile), [profile]);
+  const baseRanks = useMemo(() => rankCategoriesForProfile(profile), [profile]);
+  const [behaviorRanks, setBehaviorRanks] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (!user?.id) return;
+    void logBehavior({ event: "app_open", force: true });
+    fetchCategoryAffinity(user.id).then((cats) => {
+      const map: Record<string, number> = {};
+      cats.forEach((c, i) => { map[c] = (cats.length - i) * 5; });
+      setBehaviorRanks(map);
+    });
+  }, [user?.id]);
+  const categoryRanks = useMemo(() => {
+    const merged: Record<string, number> = { ...baseRanks };
+    Object.entries(behaviorRanks).forEach(([k, v]) => {
+      merged[k] = (merged[k] ?? 0) + v;
+    });
+    return merged;
+  }, [baseRanks, behaviorRanks]);
   const PERISHABLE_STORE_IDS = new Set(["produce", "dairy", "kitchen", "recipes"]);
   const sortedStores = useMemo(() => {
     return [...allStores]
@@ -294,6 +316,11 @@ const HomePage = () => {
 
       {/* Hero Slider — pure CSS mesh gradients, zero images */}
       <PromoCarousel />
+
+      <InactivityNudger />
+      <MegaEventBanner />
+      <LoyaltyProgress />
+      <FlashSalesRail />
 
       {/* BUY IT AGAIN — only when we have history */}
       {mounted && buyAgain.length > 0 && (

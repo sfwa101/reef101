@@ -12,6 +12,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fmtMoney, toLatin } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
+import { logBehavior } from "@/lib/behavior";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   trustBadgesFor,
@@ -53,6 +54,11 @@ const ProductDetail = () => {
     setAddonIds([]);
     setQty(1);
     setGalleryIndex(0);
+  }, [product?.id]);
+
+  useEffect(() => {
+    if (!product) return;
+    void logBehavior({ event: "view_product", productId: product.id, category: product.category });
   }, [product?.id]);
 
   useEffect(() => {
