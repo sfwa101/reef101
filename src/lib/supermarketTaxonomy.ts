@@ -179,6 +179,39 @@ export const groupBySupermarketTaxonomy = (
     }
     if (subs.length) out.push({ group, subs });
   }
+
+  // Fallback bucket: any product the admin added with a custom category that
+  // doesn't match any matcher above still shows up here, grouped by its
+  // `category` string from the DB. This keeps newly-added products visible
+  // without requiring a code change to the taxonomy.
+  const leftovers = pool.filter((p) => !used.has(p.id) && filter(p));
+  if (leftovers.length) {
+    const byCat = new Map<string, Product[]>();
+    for (const p of leftovers) {
+      const key = (p.category && p.category.trim()) || "أخرى";
+      const arr = byCat.get(key) ?? [];
+      arr.push(p);
+      byCat.set(key, arr);
+    }
+    const subs: { sub: SupermarketSub; items: Product[] }[] = [];
+    for (const [name, items] of byCat) {
+      subs.push({
+        sub: { id: `misc-${name}`, name, match: () => false },
+        items,
+      });
+    }
+    out.push({
+      group: {
+        id: "more",
+        name: "منتجات أخرى",
+        emoji: "✨",
+        color: { tint: "210 30% 92%", hue: "210 40% 40%", ring: "210 30% 82%" },
+        subs: subs.map((s) => s.sub),
+      },
+      subs,
+    });
+  }
+
   return out;
 };
 
