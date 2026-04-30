@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { Search, ChevronLeft, Inbox, type LucideIcon } from "lucide-react";
 import { MobileTopbar } from "@/components/admin/MobileTopbar";
