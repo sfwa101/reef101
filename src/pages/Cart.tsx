@@ -737,20 +737,44 @@ const Cart = () => {
   const showFulfillmentSections =
     instantGroups.length > 0 && scheduledGroups.length > 0;
 
-  const applyPromo = () => {
+  const applyPromo = async () => {
     const code = promo.trim().toUpperCase();
     if (!code) return;
+    // Static legacy codes (kept for back-compat)
     if (code === "REEF10") {
       setAppliedPromo({ code, pct: 0.1 });
       toast.success("تم تطبيق كود الخصم 🎉");
       fireMiniConfetti();
-    } else if (code === "WELCOME25") {
+      return;
+    }
+    if (code === "WELCOME25") {
       setAppliedPromo({ code, pct: 0.25 });
       toast.success("خصم 25٪ تم تفعيله! 🎉");
       fireConfetti();
-    } else {
+      return;
+    }
+    // Dynamic DB-backed coupons with level gating
+    try {
+      const { data, error } = await (supabase as any).rpc("validate_coupon", {
+        _code: code,
+        _order_total: subtotal,
+      });
+      if (error) throw error;
+      const disc = Number(data?.discount ?? 0);
+      if (disc <= 0) throw new Error("invalid");
+      const pct = subtotal > 0 ? disc / subtotal : 0;
+      setAppliedPromo({ code, pct });
+      toast.success(`تم تطبيق ${code} — خصم ${Math.round(disc)} ج 🎉`);
+      fireMiniConfetti();
+    } catch (e: any) {
       setAppliedPromo(null);
-      toast.error("كود غير صالح");
+      const msg = String(e?.message ?? "");
+      if (msg.includes("level_too_low")) toast.error("هذا الكود حصري لمستويات أعلى");
+      else if (msg.includes("expired")) toast.error("الكود منتهي");
+      else if (msg.includes("exhausted")) toast.error("نفد رصيد الكود");
+      else if (msg.includes("per_user_limit")) toast.error("تم استخدام الكود من قبل");
+      else if (msg.includes("below_minimum")) toast.error("الطلب أقل من الحد الأدنى");
+      else toast.error("كود غير صالح");
     }
   };
 
