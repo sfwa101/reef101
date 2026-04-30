@@ -112,6 +112,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       add: (p, qty = 1, meta) => {
         trackBuyAgain(p.id);
+        void logBehavior({ event: "add_to_cart", productId: p.id, category: (p as any).category });
         setLines((prev) => {
           const i = prev.findIndex((l) => l.product.id === p.id);
           if (i >= 0) {
