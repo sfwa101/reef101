@@ -264,7 +264,7 @@ export default function AdminWallets() {
               </button>
 
               <p className="text-[11px] text-foreground-tertiary text-center">
-                ستُسجَّل العملية باسمك ولن تكون قابلة للتعديل أو الحذف.
+                الطلب يبقى <b>معلّقاً</b> حتى يعتمده الأدمن من شاشة "موافقات الشحن".
               </p>
             </div>
 
