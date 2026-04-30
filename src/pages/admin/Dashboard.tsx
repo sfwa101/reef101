@@ -45,16 +45,13 @@ export default function Dashboard() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase as any).from("profiles").select("id", { count: "exact", head: true }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("products").select("id", { count: "exact", head: true }).lte("stock_qty", 5),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("partner_commissions").select("amount").eq("status", "pending"),
-    ]).then(([ordersRes, profilesRes, lowRes, partnersRes]: any[]) => {
+      (supabase as any).from("products").select("id", { count: "exact", head: true }).lte("stock", 5),
+    ]).then(([ordersRes, profilesRes, lowRes]: any[]) => {
       const orders = ordersRes.data ?? [];
       const today = orders.filter((o: any) => new Date(o.created_at) >= startToday);
       const inDelivery = orders.filter((o: any) =>
         ["out_for_delivery", "preparing", "ready", "confirmed"].includes(o.status)).length;
       const todayRev = today.reduce((s: number, o: any) => s + Number(o.total ?? 0), 0);
-      const partnersDue = (partnersRes.data ?? []).reduce((s: number, p: any) => s + Number(p.amount ?? 0), 0);
 
       setBento({
         todayOrders: today.length,
@@ -62,7 +59,7 @@ export default function Dashboard() {
         inDelivery,
         totalCustomers: profilesRes.count ?? 0,
         lowStock: lowRes.count ?? 0,
-        partnersDue,
+        partnersDue: 0,
       });
       setRecent(orders.slice(0, 8));
     });
