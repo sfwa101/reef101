@@ -58,6 +58,7 @@ export default function More() {
       { to: "/admin/expenses", icon: Receipt, label: "المصروفات", color: "from-[hsl(var(--accent))] to-[hsl(20_100%_55%)]" },
       { to: "/admin/charity", icon: Gift, label: "حاسبة الصدقات", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
       { to: "/admin/topup-approvals", icon: ShieldCheck, label: "موافقات الشحن", color: "from-[hsl(var(--accent))] to-[hsl(20_100%_55%)]" },
+      { to: "/admin/advance-approvals", icon: ShieldCheck, label: "موافقات السلف والنثرية", color: "from-[hsl(var(--warning))] to-[hsl(var(--accent))]" },
       { to: "/admin/wallets", icon: Wallet, label: "شحن المحافظ (Maker)", color: "from-[hsl(var(--purple))] to-[hsl(var(--pink))]" },
       { to: "/admin/cost-bulk", icon: Receipt, label: "تعبئة التكاليف", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
       { to: "/admin/affiliate-settings", icon: Gift, label: "عمولات الأفلييت", color: "from-[hsl(var(--purple))] to-[hsl(var(--pink))]" },
