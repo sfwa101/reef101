@@ -42,6 +42,7 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCostBulkRouteImport } from './routes/admin.cost-bulk'
 import { Route as AdminCfoRouteImport } from './routes/admin.cfo'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
+import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminAllocationRouteImport } from './routes/admin.allocation'
@@ -255,6 +256,11 @@ const AdminCfoRoute = AdminCfoRouteImport.update({
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBranchesRoute = AdminBranchesRouteImport.update({
+  id: '/branches',
+  path: '/branches',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminAuditLogRoute = AdminAuditLogRouteImport.update({
@@ -526,6 +532,7 @@ export interface FileRoutesByFullPath {
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/branches': typeof AdminBranchesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cfo': typeof AdminCfoRoute
   '/admin/cost-bulk': typeof AdminCostBulkRoute
@@ -606,6 +613,7 @@ export interface FileRoutesByTo {
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/branches': typeof AdminBranchesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cfo': typeof AdminCfoRoute
   '/admin/cost-bulk': typeof AdminCostBulkRoute
@@ -692,6 +700,7 @@ export interface FileRoutesById {
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/branches': typeof AdminBranchesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cfo': typeof AdminCfoRoute
   '/admin/cost-bulk': typeof AdminCostBulkRoute
@@ -779,6 +788,7 @@ export interface FileRouteTypes {
     | '/admin/allocation'
     | '/admin/analytics'
     | '/admin/audit-log'
+    | '/admin/branches'
     | '/admin/categories'
     | '/admin/cfo'
     | '/admin/cost-bulk'
@@ -859,6 +869,7 @@ export interface FileRouteTypes {
     | '/admin/allocation'
     | '/admin/analytics'
     | '/admin/audit-log'
+    | '/admin/branches'
     | '/admin/categories'
     | '/admin/cfo'
     | '/admin/cost-bulk'
@@ -944,6 +955,7 @@ export interface FileRouteTypes {
     | '/admin/allocation'
     | '/admin/analytics'
     | '/admin/audit-log'
+    | '/admin/branches'
     | '/admin/categories'
     | '/admin/cfo'
     | '/admin/cost-bulk'
@@ -1252,6 +1264,13 @@ declare module '@tanstack/react-router' {
       path: '/categories'
       fullPath: '/admin/categories'
       preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/branches': {
+      id: '/admin/branches'
+      path: '/branches'
+      fullPath: '/admin/branches'
+      preLoaderRoute: typeof AdminBranchesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/audit-log': {
@@ -1732,6 +1751,7 @@ interface AdminRouteChildren {
   AdminAllocationRoute: typeof AdminAllocationRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditLogRoute: typeof AdminAuditLogRoute
+  AdminBranchesRoute: typeof AdminBranchesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCfoRoute: typeof AdminCfoRoute
   AdminCostBulkRoute: typeof AdminCostBulkRoute
@@ -1770,6 +1790,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAllocationRoute: AdminAllocationRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditLogRoute: AdminAuditLogRoute,
+  AdminBranchesRoute: AdminBranchesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCfoRoute: AdminCfoRoute,
   AdminCostBulkRoute: AdminCostBulkRoute,
