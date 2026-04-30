@@ -39,6 +39,7 @@ const useDailyCountdown = () => {
 };
 
 const Offers = () => {
+  const _pv = useProductsVersion();
   const [tab, setTab] = useState<typeof tabs[number]["id"]>("all");
   const countdown = useDailyCountdown();
 
