@@ -453,6 +453,22 @@ const Cart = () => {
   const [secondaryPayment, setSecondaryPayment] = useState<string>("cash");
   const [saveChange, setSaveChange] = useState<boolean>(true);
   const [customerName, setCustomerName] = useState<string>("");
+  const [minOrderTotal, setMinOrderTotal] = useState<number>(0);
+
+  // Fetch finance settings (min order total) once on mount
+  useEffect(() => {
+    (async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any)
+        .from("app_settings")
+        .select("value")
+        .eq("key", "finance")
+        .maybeSingle();
+      const raw = (data?.value as { min_order_total?: number | string } | null)?.min_order_total;
+      const n = Number(raw);
+      if (Number.isFinite(n) && n > 0) setMinOrderTotal(n);
+    })();
+  }, []);
 
   useEffect(() => {
     if (!user) { setAddresses([]); setAddrId(""); setWalletBalance(0); return; }
