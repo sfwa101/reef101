@@ -33,7 +33,7 @@ export type BentoMetric = {
 
 export type Column<T = any> = {
   key: string;
-  label: string;
+  label?: string;
   render?: (row: T) => ReactNode;
   className?: string;
   hideOnMobile?: boolean;
