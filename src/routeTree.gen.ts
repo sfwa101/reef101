@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VendorRouteImport } from './routes/vendor'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AppRouteImport } from './routes/_app'
@@ -88,6 +89,11 @@ import { Route as AppAccountHelpRouteImport } from './routes/_app/account.help'
 import { Route as AppAccountFavoritesRouteImport } from './routes/_app/account.favorites'
 import { Route as AppAccountAddressesRouteImport } from './routes/_app/account.addresses'
 
+const VendorRoute = VendorRouteImport.update({
+  id: '/vendor',
+  path: '/vendor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -484,6 +490,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/vendor': typeof VendorRoute
   '/account': typeof AppAccountRouteWithChildren
   '/cart': typeof AppCartRoute
   '/offers': typeof AppOffersRoute
@@ -561,6 +568,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/vendor': typeof VendorRoute
   '/cart': typeof AppCartRoute
   '/offers': typeof AppOffersRoute
   '/order-success': typeof AppOrderSuccessRoute
@@ -641,6 +649,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/vendor': typeof VendorRoute
   '/_app/account': typeof AppAccountRouteWithChildren
   '/_app/cart': typeof AppCartRoute
   '/_app/offers': typeof AppOffersRoute
@@ -723,6 +732,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/vendor'
     | '/account'
     | '/cart'
     | '/offers'
@@ -800,6 +810,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/vendor'
     | '/cart'
     | '/offers'
     | '/order-success'
@@ -879,6 +890,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/admin'
     | '/auth'
+    | '/vendor'
     | '/_app/account'
     | '/_app/cart'
     | '/_app/offers'
@@ -960,10 +972,18 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  VendorRoute: typeof VendorRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vendor': {
+      id: '/vendor'
+      path: '/vendor'
+      fullPath: '/vendor'
+      preLoaderRoute: typeof VendorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -1713,6 +1733,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  VendorRoute: VendorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
