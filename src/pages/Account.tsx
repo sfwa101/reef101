@@ -124,7 +124,7 @@ const groups = [
 
 const Account = () => {
   const { resolvedMode } = useTheme();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, isInitializing } = useAuth();
   const nav = useNavigate();
   const [points, setPoints] = useState(0);
   const [balance, setBalance] = useState(0);
@@ -167,6 +167,14 @@ const Account = () => {
     const raw = profile?.phone || meta.phone || "";
     return formatPhone(raw);
   }, [profile, user]);
+
+  if (isInitializing) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <p className="text-sm text-muted-foreground animate-pulse">جاري تحميل بيانات الحساب...</p>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
