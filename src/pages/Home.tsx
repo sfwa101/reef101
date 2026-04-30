@@ -352,7 +352,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Time-of-day smart section */}
+      {/* Time-of-day smart section — client-only to avoid SSR slot mismatch */}
+      {mounted && (
       <section className="animate-float-up">
         <div
           className="relative overflow-hidden rounded-[1.5rem] p-4 shadow-soft"
