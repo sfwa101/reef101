@@ -140,6 +140,17 @@ function startRealtime() {
 if (typeof window !== "undefined") {
   ensureProductsLoaded();
   startRealtime();
+
+  // Refetch when the tab becomes visible again (covers cases where realtime
+  // socket was paused while backgrounded) and when network is restored.
+  const refresh = () => {
+    fetchAll().catch((e) => console.error("[products] visibility refetch failed", e));
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") refresh();
+  });
+  window.addEventListener("focus", refresh);
+  window.addEventListener("online", refresh);
 }
 
 /** Synchronous snapshot — empty until hydration completes. */
