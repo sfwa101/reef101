@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, TrendingUp, TrendingDown, ArrowLeft, Wallet, Coins } from "lucide-react";
+import { Sparkles, TrendingUp, ArrowLeft, Wallet, Coins } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtMoney } from "@/lib/format";
 import { Sheet, SheetContent } from "@/components/ui/sheet";

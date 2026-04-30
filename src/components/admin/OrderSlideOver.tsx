@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtMoney } from "@/lib/format";
-import { Loader2, ExternalLink, Truck, Phone, MapPin, Receipt } from "lucide-react";
+import { Loader2, ExternalLink, Truck, Phone, Receipt } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 type Props = { orderId: string | null; onClose: () => void };
