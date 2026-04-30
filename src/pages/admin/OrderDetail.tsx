@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useRouter } from "@tanstack/react-router";
-import { ChevronRight, MapPin, FileText, CreditCard, Package, User } from "lucide-react";
+import { useParams, useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { ChevronRight, MapPin, Package, User, Truck, X, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { IOSCard, IOSList, IOSRow, IOSSection } from "@/components/ios/IOSCard";
 import { fmtMoney, fmtDate } from "@/lib/format";
@@ -27,14 +28,27 @@ const statusBadge: Record<string, string> = {
   paid: "bg-success/12 text-success",
 };
 
+/**
+ * Invalidate every cache slice the dashboard reads so KPIs refresh
+ * the instant a manager flips an order status. Called after every mutation.
+ */
+function invalidateOrderCaches(qc: ReturnType<typeof useQueryClient>) {
+  ["orders", "admin-orders", "dashboard", "dashboard-stats", "finance", "finance-metrics", "delivery-tasks", "hakim-pulse"].forEach((k) =>
+    qc.invalidateQueries({ queryKey: [k] }),
+  );
+}
+
 export default function OrderDetail() {
   const { orderId } = useParams({ strict: false }) as { orderId: string };
   const router = useRouter();
+  const qc = useQueryClient();
   const [order, setOrder] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [customer, setCustomer] = useState<any>(null);
   const [address, setAddress] = useState<any>(null);
   const [updating, setUpdating] = useState(false);
+  const [showAssign, setShowAssign] = useState(false);
+  const [drivers, setDrivers] = useState<any[]>([]);
 
   useEffect(() => {
     if (!orderId) return;
@@ -65,7 +79,33 @@ export default function OrderDetail() {
     setUpdating(false);
     if (error) return toast.error("تعذّر تحديث الحالة");
     setOrder({ ...order, status: next });
+    invalidateOrderCaches(qc);
     toast.success("تم تحديث حالة الطلب");
+  }
+
+  async function openAssignDriver() {
+    setShowAssign(true);
+    if (drivers.length === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any).from("drivers").select("*").eq("is_active", true).order("full_name");
+      setDrivers(data ?? []);
+    }
+  }
+
+  async function confirmAndAssign(driverId: string, driverName: string) {
+    if (!order) return;
+    setUpdating(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+      .from("orders")
+      .update({ status: "out_for_delivery", assigned_driver_id: driverId })
+      .eq("id", order.id);
+    setUpdating(false);
+    if (error) return toast.error("تعذّر تعيين المندوب");
+    setOrder({ ...order, status: "out_for_delivery", assigned_driver_id: driverId });
+    setShowAssign(false);
+    invalidateOrderCaches(qc);
+    toast.success(`تم التعيين إلى ${driverName}`);
   }
 
   if (!order) {
@@ -82,6 +122,7 @@ export default function OrderDetail() {
 
   const idx = FLOW.findIndex(s => s.value === order.status);
   const next = idx >= 0 && idx < FLOW.length - 1 ? FLOW[idx + 1] : null;
+  const canAssignDriver = ["pending", "confirmed", "preparing", "ready"].includes(order.status);
 
   return (
     <>
@@ -105,18 +146,28 @@ export default function OrderDetail() {
               {FLOW.find(s => s.value === order.status)?.label ?? order.status}
             </span>
           </div>
-          {next && (
-            <button disabled={updating} onClick={() => setStatus(next.value)}
-              className="w-full h-11 rounded-full bg-primary text-primary-foreground font-semibold text-[14px] press disabled:opacity-50">
-              تحويل إلى: {next.label}
-            </button>
-          )}
-          {!["cancelled", "delivered"].includes(order.status) && (
-            <button disabled={updating} onClick={() => setStatus("cancelled")}
-              className="w-full h-11 rounded-full bg-destructive/10 text-destructive font-semibold text-[14px] mt-2 press">
-              إلغاء الطلب
-            </button>
-          )}
+
+          {/* Action stack — sequential, contextual */}
+          <div className="space-y-2">
+            {canAssignDriver && (
+              <button disabled={updating} onClick={openAssignDriver}
+                className="w-full h-11 rounded-full bg-gradient-to-r from-primary to-primary-glow text-primary-foreground font-semibold text-[14px] press disabled:opacity-50 flex items-center justify-center gap-2">
+                <Truck className="h-4 w-4" /> تأكيد وتعيين مندوب
+              </button>
+            )}
+            {next && (
+              <button disabled={updating} onClick={() => setStatus(next.value)}
+                className="w-full h-11 rounded-full bg-surface-muted text-foreground font-semibold text-[14px] press disabled:opacity-50 flex items-center justify-center gap-2">
+                <CheckCircle2 className="h-4 w-4" /> تحويل إلى: {next.label}
+              </button>
+            )}
+            {!["cancelled", "delivered"].includes(order.status) && (
+              <button disabled={updating} onClick={() => setStatus("cancelled")}
+                className="w-full h-11 rounded-full bg-destructive/10 text-destructive font-semibold text-[14px] press">
+                إلغاء الطلب
+              </button>
+            )}
+          </div>
         </IOSCard>
 
         {customer && (
@@ -175,6 +226,43 @@ export default function OrderDetail() {
           </IOSSection>
         )}
       </div>
+
+      {/* ============ Driver Assignment Sheet ============ */}
+      {showAssign && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setShowAssign(false)}>
+          <div className="w-full sm:max-w-md rounded-t-[24px] sm:rounded-[24px] bg-card p-5 shadow-float ring-1 ring-border/40" onClick={(e) => e.stopPropagation()} dir="rtl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-lg font-extrabold">اختر مندوب التوصيل</h2>
+              <button onClick={() => setShowAssign(false)} className="h-9 w-9 rounded-[10px] bg-foreground/5 flex items-center justify-center"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="text-[12px] text-foreground-tertiary mb-3">سيتم تأكيد الطلب وتحويل حالته إلى "قيد التوصيل" تلقائياً</p>
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+              {drivers.length === 0 && (
+                <p className="text-center text-[13px] text-foreground-tertiary py-8">لا يوجد مناديب متاحون حالياً</p>
+              )}
+              {drivers.map((d) => (
+                <button
+                  key={d.id}
+                  disabled={updating}
+                  onClick={() => confirmAndAssign(d.id, d.full_name ?? "مندوب")}
+                  className="w-full text-right p-3 rounded-2xl bg-surface-muted hover:bg-primary/10 transition flex items-center justify-between disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-9 w-9 rounded-full bg-primary/12 text-primary flex items-center justify-center">
+                      <Truck className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13.5px] font-semibold truncate">{d.full_name ?? "مندوب"}</p>
+                      {d.phone && <p className="text-[11.5px] text-foreground-tertiary num" dir="ltr">{d.phone}</p>}
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-foreground-tertiary rotate-180" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
