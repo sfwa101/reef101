@@ -819,7 +819,11 @@ const Cart = () => {
   const selectedAddr = addresses.find((a) => a.id === addrId);
 
   const checkoutWA = async () => {
-    if (!user) {
+    // Hard check to bypass stale React state on slow/older devices
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUser = (user ?? session?.user) || null;
+
+    if (!currentUser) {
       toast.error("سجّل الدخول أولًا لإتمام الطلب");
       navigate({ to: "/auth" });
       return;
@@ -845,7 +849,7 @@ const Cart = () => {
       const { data: order, error } = await supabase
         .from("orders")
         .insert({
-          user_id: user.id,
+          user_id: currentUser.id,
           total: grand,
           payment_method: payment,
           address_id: selectedAddr?.id ?? null,
@@ -902,15 +906,15 @@ const Cart = () => {
           const { data: bal } = await supabase
             .from("wallet_balances")
             .select("balance")
-            .eq("user_id", user.id)
+            .eq("user_id", currentUser.id)
             .maybeSingle();
           const newBalance = Number(bal?.balance ?? 0) - walletApplied;
           await supabase
             .from("wallet_balances")
             .update({ balance: newBalance })
-            .eq("user_id", user.id);
+            .eq("user_id", currentUser.id);
           await supabase.from("wallet_transactions").insert({
-            user_id: user.id,
+            user_id: currentUser.id,
             kind: "debit",
             amount: walletApplied,
             label: trustUsed > 0
@@ -929,16 +933,16 @@ const Cart = () => {
           const { data: jarRow } = await supabase
             .from("savings_jar")
             .select("balance,auto_save_enabled,round_to,goal,goal_label")
-            .eq("user_id", user.id)
+            .eq("user_id", currentUser.id)
             .maybeSingle();
           const newBalance = Number(jarRow?.balance ?? 0) + changeRemainder;
           if (jarRow) {
-            await supabase.from("savings_jar").update({ balance: newBalance }).eq("user_id", user.id);
+            await supabase.from("savings_jar").update({ balance: newBalance }).eq("user_id", currentUser.id);
           } else {
-            await supabase.from("savings_jar").insert({ user_id: user.id, balance: newBalance });
+            await supabase.from("savings_jar").insert({ user_id: currentUser.id, balance: newBalance });
           }
           await supabase.from("savings_transactions").insert({
-            user_id: user.id,
+            user_id: currentUser.id,
             amount: changeRemainder,
             kind: "deposit",
             label: `ادخار فكة طلب ${orderNum}`,
@@ -954,7 +958,7 @@ const Cart = () => {
           const { data: bal } = await supabase
             .from("wallet_balances")
             .select("balance,cashback")
-            .eq("user_id", user.id)
+            .eq("user_id", currentUser.id)
             .maybeSingle();
           const newBalance = Number(bal?.balance ?? 0) + totalCashback;
           const newCashback = Number(bal?.cashback ?? 0) + totalCashback;
@@ -962,14 +966,14 @@ const Cart = () => {
             await supabase
               .from("wallet_balances")
               .update({ balance: newBalance, cashback: newCashback })
-              .eq("user_id", user.id);
+              .eq("user_id", currentUser.id);
           } else {
             await supabase
               .from("wallet_balances")
-              .insert({ user_id: user.id, balance: newBalance, cashback: newCashback });
+              .insert({ user_id: currentUser.id, balance: newBalance, cashback: newCashback });
           }
           await supabase.from("wallet_transactions").insert({
-            user_id: user.id,
+            user_id: currentUser.id,
             kind: "credit",
             amount: totalCashback,
             label: `كاش باك المطاعم — طلب ${orderNum}`,
@@ -1007,7 +1011,7 @@ const Cart = () => {
       const etaLine = bookingItems.length > 0 && instantItems.length === 0
         ? "مجدول"
         : `خلال ${zone.etaLabel}`;
-      const customerLabel = customerName || (user.email ?? "عميل").split("@")[0];
+      const customerLabel = customerName || (currentUser.email ?? "عميل").split("@")[0];
       // Map payment id → friendly Arabic label
       const payShort =
         payment === "wallet"
