@@ -33,7 +33,10 @@ export default function More() {
     { title: "العمليات", items: [
       { to: "/admin/print-jobs", icon: Printer, label: "طلبات الطباعة", color: "from-[hsl(var(--info))] to-[hsl(var(--indigo))]" },
       { to: "/admin/inventory", icon: Warehouse, label: "المخزون", color: "from-[hsl(var(--info))] to-[hsl(var(--indigo))]" },
+      { to: "/admin/warehouses", icon: Warehouse, label: "المخازن المتعددة", color: "from-[hsl(var(--teal))] to-[hsl(var(--info))]" },
       { to: "/admin/stores", icon: Store, label: "المتاجر", color: "from-primary to-primary-glow" },
+      { to: "/admin/vendors", icon: Truck, label: "التجار والموردون", color: "from-[hsl(var(--purple))] to-[hsl(var(--pink))]" },
+      { to: "/admin/vendor-settlements", icon: Receipt, label: "تسويات التجار", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
       { to: "/admin/kyc", icon: ShieldCheck, label: "التحقق KYC", color: "from-[hsl(var(--teal))] to-[hsl(var(--info))]" },
       { to: "/admin/reviews", icon: Star, label: "التقييمات", color: "from-[hsl(var(--accent))] to-[hsl(20_100%_55%)]" },
     ]},

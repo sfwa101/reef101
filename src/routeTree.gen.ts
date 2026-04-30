@@ -9,12 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VendorRouteImport } from './routes/vendor'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as VendorIndexRouteImport } from './routes/vendor.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as VendorWalletRouteImport } from './routes/vendor.wallet'
+import { Route as VendorProductsRouteImport } from './routes/vendor.products'
+import { Route as AdminWarehousesRouteImport } from './routes/admin.warehouses'
 import { Route as AdminWalletsRouteImport } from './routes/admin.wallets'
+import { Route as AdminVendorsRouteImport } from './routes/admin.vendors'
+import { Route as AdminVendorSettlementsRouteImport } from './routes/admin.vendor-settlements'
 import { Route as AdminTopupApprovalsRouteImport } from './routes/admin.topup-approvals'
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminStoresRouteImport } from './routes/admin.stores'
@@ -85,6 +92,11 @@ import { Route as AppAccountHelpRouteImport } from './routes/_app/account.help'
 import { Route as AppAccountFavoritesRouteImport } from './routes/_app/account.favorites'
 import { Route as AppAccountAddressesRouteImport } from './routes/_app/account.addresses'
 
+const VendorRoute = VendorRouteImport.update({
+  id: '/vendor',
+  path: '/vendor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -99,6 +111,11 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VendorIndexRoute = VendorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VendorRoute,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -109,9 +126,34 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const VendorWalletRoute = VendorWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => VendorRoute,
+} as any)
+const VendorProductsRoute = VendorProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => VendorRoute,
+} as any)
+const AdminWarehousesRoute = AdminWarehousesRouteImport.update({
+  id: '/warehouses',
+  path: '/warehouses',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminWalletsRoute = AdminWalletsRouteImport.update({
   id: '/wallets',
   path: '/wallets',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminVendorsRoute = AdminVendorsRouteImport.update({
+  id: '/vendors',
+  path: '/vendors',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminVendorSettlementsRoute = AdminVendorSettlementsRouteImport.update({
+  id: '/vendor-settlements',
+  path: '/vendor-settlements',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminTopupApprovalsRoute = AdminTopupApprovalsRouteImport.update({
@@ -466,6 +508,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/vendor': typeof VendorRouteWithChildren
   '/account': typeof AppAccountRouteWithChildren
   '/cart': typeof AppCartRoute
   '/offers': typeof AppOffersRoute
@@ -496,8 +539,14 @@ export interface FileRoutesByFullPath {
   '/admin/stores': typeof AdminStoresRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/topup-approvals': typeof AdminTopupApprovalsRoute
+  '/admin/vendor-settlements': typeof AdminVendorSettlementsRoute
+  '/admin/vendors': typeof AdminVendorsRoute
   '/admin/wallets': typeof AdminWalletsRoute
+  '/admin/warehouses': typeof AdminWarehousesRoute
+  '/vendor/products': typeof VendorProductsRoute
+  '/vendor/wallet': typeof VendorWalletRoute
   '/admin/': typeof AdminIndexRoute
+  '/vendor/': typeof VendorIndexRoute
   '/account/addresses': typeof AppAccountAddressesRoute
   '/account/favorites': typeof AppAccountFavoritesRoute
   '/account/help': typeof AppAccountHelpRoute
@@ -569,9 +618,15 @@ export interface FileRoutesByTo {
   '/admin/stores': typeof AdminStoresRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/topup-approvals': typeof AdminTopupApprovalsRoute
+  '/admin/vendor-settlements': typeof AdminVendorSettlementsRoute
+  '/admin/vendors': typeof AdminVendorsRoute
   '/admin/wallets': typeof AdminWalletsRoute
+  '/admin/warehouses': typeof AdminWarehousesRoute
+  '/vendor/products': typeof VendorProductsRoute
+  '/vendor/wallet': typeof VendorWalletRoute
   '/': typeof AppIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/vendor': typeof VendorIndexRoute
   '/account/addresses': typeof AppAccountAddressesRoute
   '/account/favorites': typeof AppAccountFavoritesRoute
   '/account/help': typeof AppAccountHelpRoute
@@ -617,6 +672,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/vendor': typeof VendorRouteWithChildren
   '/_app/account': typeof AppAccountRouteWithChildren
   '/_app/cart': typeof AppCartRoute
   '/_app/offers': typeof AppOffersRoute
@@ -647,9 +703,15 @@ export interface FileRoutesById {
   '/admin/stores': typeof AdminStoresRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/topup-approvals': typeof AdminTopupApprovalsRoute
+  '/admin/vendor-settlements': typeof AdminVendorSettlementsRoute
+  '/admin/vendors': typeof AdminVendorsRoute
   '/admin/wallets': typeof AdminWalletsRoute
+  '/admin/warehouses': typeof AdminWarehousesRoute
+  '/vendor/products': typeof VendorProductsRoute
+  '/vendor/wallet': typeof VendorWalletRoute
   '/_app/': typeof AppIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/vendor/': typeof VendorIndexRoute
   '/_app/account/addresses': typeof AppAccountAddressesRoute
   '/_app/account/favorites': typeof AppAccountFavoritesRoute
   '/_app/account/help': typeof AppAccountHelpRoute
@@ -696,6 +758,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/vendor'
     | '/account'
     | '/cart'
     | '/offers'
@@ -726,8 +789,14 @@ export interface FileRouteTypes {
     | '/admin/stores'
     | '/admin/support'
     | '/admin/topup-approvals'
+    | '/admin/vendor-settlements'
+    | '/admin/vendors'
     | '/admin/wallets'
+    | '/admin/warehouses'
+    | '/vendor/products'
+    | '/vendor/wallet'
     | '/admin/'
+    | '/vendor/'
     | '/account/addresses'
     | '/account/favorites'
     | '/account/help'
@@ -799,9 +868,15 @@ export interface FileRouteTypes {
     | '/admin/stores'
     | '/admin/support'
     | '/admin/topup-approvals'
+    | '/admin/vendor-settlements'
+    | '/admin/vendors'
     | '/admin/wallets'
+    | '/admin/warehouses'
+    | '/vendor/products'
+    | '/vendor/wallet'
     | '/'
     | '/admin'
+    | '/vendor'
     | '/account/addresses'
     | '/account/favorites'
     | '/account/help'
@@ -846,6 +921,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/admin'
     | '/auth'
+    | '/vendor'
     | '/_app/account'
     | '/_app/cart'
     | '/_app/offers'
@@ -876,9 +952,15 @@ export interface FileRouteTypes {
     | '/admin/stores'
     | '/admin/support'
     | '/admin/topup-approvals'
+    | '/admin/vendor-settlements'
+    | '/admin/vendors'
     | '/admin/wallets'
+    | '/admin/warehouses'
+    | '/vendor/products'
+    | '/vendor/wallet'
     | '/_app/'
     | '/admin/'
+    | '/vendor/'
     | '/_app/account/addresses'
     | '/_app/account/favorites'
     | '/_app/account/help'
@@ -924,10 +1006,18 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  VendorRoute: typeof VendorRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vendor': {
+      id: '/vendor'
+      path: '/vendor'
+      fullPath: '/vendor'
+      preLoaderRoute: typeof VendorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -949,6 +1039,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vendor/': {
+      id: '/vendor/'
+      path: '/'
+      fullPath: '/vendor/'
+      preLoaderRoute: typeof VendorIndexRouteImport
+      parentRoute: typeof VendorRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -963,11 +1060,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/vendor/wallet': {
+      id: '/vendor/wallet'
+      path: '/wallet'
+      fullPath: '/vendor/wallet'
+      preLoaderRoute: typeof VendorWalletRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/vendor/products': {
+      id: '/vendor/products'
+      path: '/products'
+      fullPath: '/vendor/products'
+      preLoaderRoute: typeof VendorProductsRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/admin/warehouses': {
+      id: '/admin/warehouses'
+      path: '/warehouses'
+      fullPath: '/admin/warehouses'
+      preLoaderRoute: typeof AdminWarehousesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/wallets': {
       id: '/admin/wallets'
       path: '/wallets'
       fullPath: '/admin/wallets'
       preLoaderRoute: typeof AdminWalletsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/vendors': {
+      id: '/admin/vendors'
+      path: '/vendors'
+      fullPath: '/admin/vendors'
+      preLoaderRoute: typeof AdminVendorsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/vendor-settlements': {
+      id: '/admin/vendor-settlements'
+      path: '/vendor-settlements'
+      fullPath: '/admin/vendor-settlements'
+      preLoaderRoute: typeof AdminVendorSettlementsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/topup-approvals': {
@@ -1600,7 +1732,10 @@ interface AdminRouteChildren {
   AdminStoresRoute: typeof AdminStoresRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminTopupApprovalsRoute: typeof AdminTopupApprovalsRoute
+  AdminVendorSettlementsRoute: typeof AdminVendorSettlementsRoute
+  AdminVendorsRoute: typeof AdminVendorsRoute
   AdminWalletsRoute: typeof AdminWalletsRoute
+  AdminWarehousesRoute: typeof AdminWarehousesRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminMarketingBannersRoute: typeof AdminMarketingBannersRoute
   AdminMarketingNotificationsRoute: typeof AdminMarketingNotificationsRoute
@@ -1634,7 +1769,10 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminStoresRoute: AdminStoresRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminTopupApprovalsRoute: AdminTopupApprovalsRoute,
+  AdminVendorSettlementsRoute: AdminVendorSettlementsRoute,
+  AdminVendorsRoute: AdminVendorsRoute,
   AdminWalletsRoute: AdminWalletsRoute,
+  AdminWarehousesRoute: AdminWarehousesRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminMarketingBannersRoute: AdminMarketingBannersRoute,
   AdminMarketingNotificationsRoute: AdminMarketingNotificationsRoute,
@@ -1646,10 +1784,26 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface VendorRouteChildren {
+  VendorProductsRoute: typeof VendorProductsRoute
+  VendorWalletRoute: typeof VendorWalletRoute
+  VendorIndexRoute: typeof VendorIndexRoute
+}
+
+const VendorRouteChildren: VendorRouteChildren = {
+  VendorProductsRoute: VendorProductsRoute,
+  VendorWalletRoute: VendorWalletRoute,
+  VendorIndexRoute: VendorIndexRoute,
+}
+
+const VendorRouteWithChildren =
+  VendorRoute._addFileChildren(VendorRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  VendorRoute: VendorRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -324,6 +324,50 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_locations: {
+        Row: {
+          created_at: string
+          id: string
+          last_restocked_at: string | null
+          product_id: string
+          reorder_point: number | null
+          reserved: number
+          stock: number
+          updated_at: string
+          warehouse_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_restocked_at?: string | null
+          product_id: string
+          reorder_point?: number | null
+          reserved?: number
+          stock?: number
+          updated_at?: string
+          warehouse_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_restocked_at?: string | null
+          product_id?: string
+          reorder_point?: number | null
+          reserved?: number
+          stock?: number
+          updated_at?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_locations_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kyc_verifications: {
         Row: {
           back_image_path: string | null
@@ -570,6 +614,7 @@ export type Database = {
           cost_price: number | null
           created_at: string
           description: string | null
+          fulfillment_type: string
           id: string
           image: string | null
           image_path: string | null
@@ -590,6 +635,7 @@ export type Database = {
           unit: string
           updated_at: string
           variants: Json | null
+          vendor_id: string | null
         }
         Insert: {
           addons?: Json | null
@@ -602,6 +648,7 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           description?: string | null
+          fulfillment_type?: string
           id: string
           image?: string | null
           image_path?: string | null
@@ -622,6 +669,7 @@ export type Database = {
           unit?: string
           updated_at?: string
           variants?: Json | null
+          vendor_id?: string | null
         }
         Update: {
           addons?: Json | null
@@ -634,6 +682,7 @@ export type Database = {
           cost_price?: number | null
           created_at?: string
           description?: string | null
+          fulfillment_type?: string
           id?: string
           image?: string | null
           image_path?: string | null
@@ -654,6 +703,7 @@ export type Database = {
           unit?: string
           updated_at?: string
           variants?: Json | null
+          vendor_id?: string | null
         }
         Relationships: [
           {
@@ -668,6 +718,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]
@@ -1054,6 +1111,145 @@ export type Database = {
           },
         ]
       }
+      vendor_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string
+          notes: string | null
+          performed_by: string
+          performed_by_name: string | null
+          period_end: string | null
+          period_start: string | null
+          reference: string | null
+          status: string
+          vendor_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method?: string
+          notes?: string | null
+          performed_by: string
+          performed_by_name?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          reference?: string | null
+          status?: string
+          vendor_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string
+          notes?: string | null
+          performed_by?: string
+          performed_by_name?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          reference?: string | null
+          status?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_payouts_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_wallets: {
+        Row: {
+          available_balance: number
+          lifetime_earned: number
+          lifetime_paid_out: number
+          pending_balance: number
+          updated_at: string
+          vendor_id: string
+        }
+        Insert: {
+          available_balance?: number
+          lifetime_earned?: number
+          lifetime_paid_out?: number
+          pending_balance?: number
+          updated_at?: string
+          vendor_id: string
+        }
+        Update: {
+          available_balance?: number
+          lifetime_earned?: number
+          lifetime_paid_out?: number
+          pending_balance?: number
+          updated_at?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_wallets_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: true
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          address: string | null
+          commission_pct: number
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          owner_user_id: string | null
+          payout_details: Json | null
+          payout_method: string | null
+          slug: string
+          updated_at: string
+          vendor_type: string
+        }
+        Insert: {
+          address?: string | null
+          commission_pct?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          owner_user_id?: string | null
+          payout_details?: Json | null
+          payout_method?: string | null
+          slug: string
+          updated_at?: string
+          vendor_type?: string
+        }
+        Update: {
+          address?: string | null
+          commission_pct?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          owner_user_id?: string | null
+          payout_details?: Json | null
+          payout_method?: string | null
+          slug?: string
+          updated_at?: string
+          vendor_type?: string
+        }
+        Relationships: []
+      }
       wallet_balances: {
         Row: {
           balance: number
@@ -1177,6 +1373,65 @@ export type Database = {
         }
         Relationships: []
       }
+      warehouses: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string
+          created_at: string
+          district: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          priority: number
+          served_zones: string[]
+          updated_at: string
+          vendor_id: string | null
+          warehouse_type: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code: string
+          created_at?: string
+          district?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          priority?: number
+          served_zones?: string[]
+          updated_at?: string
+          vendor_id?: string | null
+          warehouse_type?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string
+          created_at?: string
+          district?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          priority?: number
+          served_zones?: string[]
+          updated_at?: string
+          vendor_id?: string | null
+          warehouse_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouses_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1221,13 +1476,25 @@ export type Database = {
         Args: { _reason: string; _topup_id: string }
         Returns: Json
       }
+      settle_vendor_payout: {
+        Args: {
+          _amount: number
+          _method: string
+          _notes?: string
+          _reference: string
+          _vendor_id: string
+        }
+        Returns: Json
+      }
       user_store_ids: { Args: { _user_id: string }; Returns: string[] }
       user_total_spent: { Args: { _user_id: string }; Returns: number }
       user_trust_limit: { Args: { _user_id: string }; Returns: number }
+      user_vendor_ids: { Args: { _user_id: string }; Returns: string[] }
       validate_discount: {
         Args: { _cost_price: number; _new_price: number; _sale_price: number }
         Returns: Json
       }
+      vendor_portal_stats: { Args: never; Returns: Json }
       wallet_transfer: {
         Args: { _amount: number; _note?: string; _recipient_phone: string }
         Returns: Json
@@ -1242,6 +1509,7 @@ export type Database = {
         | "collector"
         | "delivery"
         | "finance"
+        | "vendor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1377,6 +1645,7 @@ export const Constants = {
         "collector",
         "delivery",
         "finance",
+        "vendor",
       ],
     },
   },
