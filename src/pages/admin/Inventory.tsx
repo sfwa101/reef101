@@ -25,6 +25,33 @@ export default function Inventory() {
   const [src, setSrc] = useState("all");
   const [edits, setEdits] = useState<Record<string, Edit>>({});
   const [saving, setSaving] = useState(false);
+  const [breakdowns, setBreakdowns] = useState<Record<string, string>>({});
+  const [loadingBreakdown, setLoadingBreakdown] = useState<Record<string, boolean>>({});
+
+  const formatBreakdown = (raw: any): string => {
+    if (!raw) return "";
+    // Expected shape: { breakdown: [{ unit, qty }, ...], total_pieces: N } OR array of pairs
+    const list = Array.isArray(raw) ? raw : raw.breakdown || raw.units || [];
+    if (!Array.isArray(list) || list.length === 0) return "";
+    return list
+      .filter((p: any) => p && (p.qty ?? p.quantity ?? 0) > 0)
+      .map((p: any) => `${p.qty ?? p.quantity} ${p.unit ?? p.unit_code ?? p.code}`)
+      .join("، ");
+  };
+
+  const loadBreakdown = async (productId: string) => {
+    if (breakdowns[productId] !== undefined) return;
+    setLoadingBreakdown((s) => ({ ...s, [productId]: true }));
+    try {
+      const { data, error } = await (supabase as any).rpc("nested_stock_breakdown", { _product_id: productId });
+      if (error) throw error;
+      setBreakdowns((s) => ({ ...s, [productId]: formatBreakdown(data) }));
+    } catch {
+      setBreakdowns((s) => ({ ...s, [productId]: "" }));
+    } finally {
+      setLoadingBreakdown((s) => ({ ...s, [productId]: false }));
+    }
+  };
 
   const load = useCallback(async () => {
     setRows(null);
