@@ -13,6 +13,7 @@ import RestaurantItemSheet from "@/components/restaurants/RestaurantItemSheet";
 const RestaurantDetail = () => {
   const { id } = useParams({ from: "/_app/restaurant/$id" });
   const navigate = useNavigate();
+  const _pv = useProductsVersion();
   const r = getRestaurant(id);
   const tabsRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
