@@ -114,8 +114,32 @@ export function ensureProductsLoaded(): Promise<Product[]> {
 }
 
 // Kick off hydration eagerly on first import (browser only).
+// Also subscribe to realtime changes so any insert/update/delete from the
+// admin panel is reflected instantly across all connected clients.
+let realtimeStarted = false;
+function startRealtime() {
+  if (realtimeStarted || typeof window === "undefined") return;
+  realtimeStarted = true;
+  try {
+    supabase
+      .channel("products-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        () => {
+          // Refetch on any change; cheap enough for a catalog of this size.
+          fetchAll().catch((e) => console.error("[products] realtime refetch failed", e));
+        },
+      )
+      .subscribe();
+  } catch (e) {
+    console.error("[products] realtime subscribe failed", e);
+  }
+}
+
 if (typeof window !== "undefined") {
   ensureProductsLoaded();
+  startRealtime();
 }
 
 /** Synchronous snapshot — empty until hydration completes. */
