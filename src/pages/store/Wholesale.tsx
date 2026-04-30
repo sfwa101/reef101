@@ -1,32 +1,37 @@
 import SinglePageStore, { type StoreCategory } from "@/components/SinglePageStore";
-import { products, registerProducts } from "@/lib/products";
+import { products, registerProducts, useProductsVersion } from "@/lib/products";
 import { storeThemes } from "@/lib/storeThemes";
 import { Crown, Boxes, Truck, BadgePercent } from "lucide-react";
+import { useMemo } from "react";
 
 // Simulate bulk packs from regular products (5-6× quantity, ~13% off)
-const bulkProducts = products.map((p) => ({
-  ...p,
-  id: `bulk-${p.id}`,
-  name: `عبوة وفر · ${p.name}`,
-  unit: `حزمة 6× ${p.unit}`,
-  price: Math.round(p.price * 5.2),
-  oldPrice: Math.round(p.price * 6),
-  source: "wholesale" as const,
-}));
-
-// Register so the product detail page can resolve them by id.
-registerProducts(bulkProducts);
+function buildBulk() {
+  const bulk = products.map((p) => ({
+    ...p,
+    id: `bulk-${p.id}`,
+    name: `عبوة وفر · ${p.name}`,
+    unit: `حزمة 6× ${p.unit}`,
+    price: Math.round(p.price * 5.2),
+    oldPrice: Math.round(p.price * 6),
+    source: "wholesale" as const,
+  }));
+  registerProducts(bulk);
+  return bulk;
+}
 
 const cats: StoreCategory[] = [
   { id: "top", name: "الأكثر توفيرًا", match: (p) => p.source === "wholesale" && (p.oldPrice ?? 0) - p.price > 30 },
   { id: "food", name: "غذائيات", match: (p) => p.source === "wholesale" && ["البقالة الجافة", "الألبان والبيض", "اللحوم والدواجن", "الخضار والفواكه", "المخبوزات"].includes(p.category) },
   { id: "drinks", name: "مشروبات", match: (p) => p.source === "wholesale" && p.category === "المشروبات" },
   { id: "clean", name: "تنظيف وعناية", match: (p) => p.source === "wholesale" && (p.category === "العناية الشخصية" || p.category === "أدوات منزلية") },
-  { id: "baby", name: "أطفال", match: (p) => p.source === "wholesale" && p.category === "أطعمة الأطفال" },
+  { id: "baby", name: "أطفال", match: (p) => p.source === "wholesale" && p.category === "أطفال" },
   { id: "pets", name: "حيوانات", match: (p) => p.source === "wholesale" && p.category === "أغذية الحيوانات" },
 ];
 
-const Wholesale = () => (
+const Wholesale = () => {
+  const v = useProductsVersion();
+  const bulkProducts = useMemo(() => buildBulk(), [v]);
+  return (
   <SinglePageStore
     themeKey="wholesale"
     title="ريف الجملة"
