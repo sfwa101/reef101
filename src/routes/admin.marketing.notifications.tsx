@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Placeholder from "@/pages/admin/Placeholder";
+import NotificationsPage from "@/pages/admin/Notifications";
+
 export const Route = createFileRoute("/admin/marketing/notifications")({
-  component: () => <Placeholder title="الإشعارات" description="قيد التطوير" />,
+  component: NotificationsPage,
 });
