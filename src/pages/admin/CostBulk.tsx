@@ -97,7 +97,7 @@ export default function CostBulk() {
 
       // batch updates
       for (const u of updates) {
-        const { error } = await supabase.from("products").update(u.patch).eq("id", u.id);
+        const { error } = await supabase.from("products").update(u.patch as never).eq("id", u.id);
         if (error) throw error;
       }
       toast.success(`تم حفظ ${updates.length} منتج`);
