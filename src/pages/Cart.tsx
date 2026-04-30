@@ -815,6 +815,21 @@ const Cart = () => {
         return;
       }
 
+      // Smart Allocation: split order across nearest warehouses + reserve stock
+      try {
+        const { data: allocResult, error: allocErr } = await supabase.rpc(
+          "allocate_order_inventory",
+          { _order_id: order.id, _zone: zone.id },
+        );
+        if (allocErr) {
+          console.warn("[allocation] failed", allocErr);
+        } else {
+          console.info("[allocation]", allocResult);
+        }
+      } catch (e) {
+        console.warn("[allocation] exception", e);
+      }
+
       const orderNum = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
 
       /* ============ Wallet debit (when paying via wallet, including BNPL) ============ */

@@ -1447,10 +1447,26 @@ export type Database = {
         }
         Returns: Json
       }
+      allocate_order_inventory: {
+        Args: { _order_id: string; _zone?: string }
+        Returns: Json
+      }
+      allocation_overview: { Args: { _order_id: string }; Returns: Json }
       approve_wallet_topup: { Args: { _topup_id: string }; Returns: Json }
       cfo_dashboard_stats: { Args: never; Returns: Json }
+      commit_sub_order_stock: { Args: { _sub_order_id: string }; Returns: Json }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
       executive_dashboard_stats: { Args: { _days?: number }; Returns: Json }
+      find_allocation_warehouse: {
+        Args: { _product_id: string; _qty: number; _zone: string }
+        Returns: {
+          available_stock: number
+          priority: number
+          vendor_id: string
+          warehouse_id: string
+          warehouse_type: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1476,6 +1492,7 @@ export type Database = {
         Args: { _reason: string; _topup_id: string }
         Returns: Json
       }
+      release_order_reservation: { Args: { _order_id: string }; Returns: Json }
       settle_vendor_payout: {
         Args: {
           _amount: number

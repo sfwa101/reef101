@@ -44,6 +44,7 @@ import { Route as AdminCfoRouteImport } from './routes/admin.cfo'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
+import { Route as AdminAllocationRouteImport } from './routes/admin.allocation'
 import { Route as AdminAffiliateSettingsRouteImport } from './routes/admin.affiliate-settings'
 import { Route as AppWalletRouteImport } from './routes/_app/wallet'
 import { Route as AppSectionsRouteImport } from './routes/_app/sections'
@@ -264,6 +265,11 @@ const AdminAuditLogRoute = AdminAuditLogRouteImport.update({
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAllocationRoute = AdminAllocationRouteImport.update({
+  id: '/allocation',
+  path: '/allocation',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminAffiliateSettingsRoute = AdminAffiliateSettingsRouteImport.update({
@@ -517,6 +523,7 @@ export interface FileRoutesByFullPath {
   '/sections': typeof AppSectionsRoute
   '/wallet': typeof AppWalletRoute
   '/admin/affiliate-settings': typeof AdminAffiliateSettingsRoute
+  '/admin/allocation': typeof AdminAllocationRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -596,6 +603,7 @@ export interface FileRoutesByTo {
   '/sections': typeof AppSectionsRoute
   '/wallet': typeof AppWalletRoute
   '/admin/affiliate-settings': typeof AdminAffiliateSettingsRoute
+  '/admin/allocation': typeof AdminAllocationRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -681,6 +689,7 @@ export interface FileRoutesById {
   '/_app/sections': typeof AppSectionsRoute
   '/_app/wallet': typeof AppWalletRoute
   '/admin/affiliate-settings': typeof AdminAffiliateSettingsRoute
+  '/admin/allocation': typeof AdminAllocationRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -767,6 +776,7 @@ export interface FileRouteTypes {
     | '/sections'
     | '/wallet'
     | '/admin/affiliate-settings'
+    | '/admin/allocation'
     | '/admin/analytics'
     | '/admin/audit-log'
     | '/admin/categories'
@@ -846,6 +856,7 @@ export interface FileRouteTypes {
     | '/sections'
     | '/wallet'
     | '/admin/affiliate-settings'
+    | '/admin/allocation'
     | '/admin/analytics'
     | '/admin/audit-log'
     | '/admin/categories'
@@ -930,6 +941,7 @@ export interface FileRouteTypes {
     | '/_app/sections'
     | '/_app/wallet'
     | '/admin/affiliate-settings'
+    | '/admin/allocation'
     | '/admin/analytics'
     | '/admin/audit-log'
     | '/admin/categories'
@@ -1254,6 +1266,13 @@ declare module '@tanstack/react-router' {
       path: '/analytics'
       fullPath: '/admin/analytics'
       preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/allocation': {
+      id: '/admin/allocation'
+      path: '/allocation'
+      fullPath: '/admin/allocation'
+      preLoaderRoute: typeof AdminAllocationRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/affiliate-settings': {
@@ -1710,6 +1729,7 @@ const AdminDeliveryRouteWithChildren = AdminDeliveryRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminAffiliateSettingsRoute: typeof AdminAffiliateSettingsRoute
+  AdminAllocationRoute: typeof AdminAllocationRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditLogRoute: typeof AdminAuditLogRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
@@ -1747,6 +1767,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAffiliateSettingsRoute: AdminAffiliateSettingsRoute,
+  AdminAllocationRoute: AdminAllocationRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditLogRoute: AdminAuditLogRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
