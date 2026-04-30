@@ -256,45 +256,156 @@ export type Database = {
         }
         Relationships: []
       }
-      delivery_tasks: {
+      delivery_events: {
         Row: {
           created_at: string
+          driver_id: string | null
+          event_type: string
+          id: string
+          lat: number | null
+          lng: number | null
+          notes: string | null
+          proof_data: string | null
+          proof_type: string | null
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          driver_id?: string | null
+          event_type: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          proof_data?: string | null
+          proof_type?: string | null
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          driver_id?: string | null
+          event_type?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          proof_data?: string | null
+          proof_type?: string | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_events_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_settings: {
+        Row: {
+          disable_barcode_for_express: boolean
+          disable_barcode_zones: string[]
+          gps_proof_required_when_disabled: boolean
+          id: string
+          require_barcode_default: boolean
+          updated_at: string
+        }
+        Insert: {
+          disable_barcode_for_express?: boolean
+          disable_barcode_zones?: string[]
+          gps_proof_required_when_disabled?: boolean
+          id?: string
+          require_barcode_default?: boolean
+          updated_at?: string
+        }
+        Update: {
+          disable_barcode_for_express?: boolean
+          disable_barcode_zones?: string[]
+          gps_proof_required_when_disabled?: boolean
+          id?: string
+          require_barcode_default?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      delivery_tasks: {
+        Row: {
+          cod_amount: number
+          cod_collected: boolean
+          commission_amount: number
+          commission_paid: boolean
+          created_at: string
+          customer_barcode: string | null
           delivered_at: string | null
           delivery_photo_url: string | null
+          delivery_zone: string | null
           driver_id: string | null
           driver_lat: number | null
           driver_lng: number | null
           estimated_minutes: number | null
           id: string
           order_id: string
+          proof_lat: number | null
+          proof_lng: number | null
+          proof_type: string | null
+          service_type: string
           started_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          cod_amount?: number
+          cod_collected?: boolean
+          commission_amount?: number
+          commission_paid?: boolean
           created_at?: string
+          customer_barcode?: string | null
           delivered_at?: string | null
           delivery_photo_url?: string | null
+          delivery_zone?: string | null
           driver_id?: string | null
           driver_lat?: number | null
           driver_lng?: number | null
           estimated_minutes?: number | null
           id?: string
           order_id: string
+          proof_lat?: number | null
+          proof_lng?: number | null
+          proof_type?: string | null
+          service_type?: string
           started_at?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          cod_amount?: number
+          cod_collected?: boolean
+          commission_amount?: number
+          commission_paid?: boolean
           created_at?: string
+          customer_barcode?: string | null
           delivered_at?: string | null
           delivery_photo_url?: string | null
+          delivery_zone?: string | null
           driver_id?: string | null
           driver_lat?: number | null
           driver_lng?: number | null
           estimated_minutes?: number | null
           id?: string
           order_id?: string
+          proof_lat?: number | null
+          proof_lng?: number | null
+          proof_type?: string | null
+          service_type?: string
           started_at?: string | null
           status?: string
           updated_at?: string
@@ -350,6 +461,195 @@ export type Database = {
           sale_price?: number
         }
         Relationships: []
+      }
+      driver_cash_settlements: {
+        Row: {
+          amount: number
+          bank_reference: string | null
+          created_at: string
+          driver_id: string
+          id: string
+          kind: string
+          notes: string | null
+          received_by: string
+          received_by_name: string | null
+        }
+        Insert: {
+          amount: number
+          bank_reference?: string | null
+          created_at?: string
+          driver_id: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          received_by: string
+          received_by_name?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_reference?: string | null
+          created_at?: string
+          driver_id?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          received_by?: string
+          received_by_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_cash_settlements_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_commission_rules: {
+        Row: {
+          commission_flat: number
+          commission_pct: number
+          driver_type: string
+          id: string
+          max_per_order: number | null
+          min_per_order: number
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          commission_flat?: number
+          commission_pct?: number
+          driver_type: string
+          id?: string
+          max_per_order?: number | null
+          min_per_order?: number
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          commission_flat?: number
+          commission_pct?: number
+          driver_type?: string
+          id?: string
+          max_per_order?: number | null
+          min_per_order?: number
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      driver_wallets: {
+        Row: {
+          cash_in_hand: number
+          driver_id: string
+          earned_balance: number
+          lifetime_earned: number
+          lifetime_settled: number
+          updated_at: string
+        }
+        Insert: {
+          cash_in_hand?: number
+          driver_id: string
+          earned_balance?: number
+          lifetime_earned?: number
+          lifetime_settled?: number
+          updated_at?: string
+        }
+        Update: {
+          cash_in_hand?: number
+          driver_id?: string
+          earned_balance?: number
+          lifetime_earned?: number
+          lifetime_settled?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_wallets_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: true
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          base_salary: number
+          branch_id: string | null
+          commission_flat: number | null
+          commission_pct: number | null
+          created_at: string
+          current_lat: number | null
+          current_lng: number | null
+          current_zone: string | null
+          driver_type: string
+          full_name: string
+          id: string
+          is_active: boolean
+          last_seen_at: string | null
+          national_id: string | null
+          phone: string
+          third_party_company: string | null
+          updated_at: string
+          user_id: string | null
+          vehicle_plate: string | null
+          vehicle_type: string | null
+        }
+        Insert: {
+          base_salary?: number
+          branch_id?: string | null
+          commission_flat?: number | null
+          commission_pct?: number | null
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          current_zone?: string | null
+          driver_type?: string
+          full_name: string
+          id?: string
+          is_active?: boolean
+          last_seen_at?: string | null
+          national_id?: string | null
+          phone: string
+          third_party_company?: string | null
+          updated_at?: string
+          user_id?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string | null
+        }
+        Update: {
+          base_salary?: number
+          branch_id?: string | null
+          commission_flat?: number | null
+          commission_pct?: number | null
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          current_zone?: string | null
+          driver_type?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          last_seen_at?: string | null
+          national_id?: string | null
+          phone?: string
+          third_party_company?: string | null
+          updated_at?: string
+          user_id?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       favorites: {
         Row: {
@@ -553,9 +853,11 @@ export type Database = {
         Row: {
           address_id: string | null
           created_at: string
+          delivery_zone: string | null
           id: string
           notes: string | null
           payment_method: string | null
+          service_type: string
           status: string
           total: number
           updated_at: string
@@ -565,9 +867,11 @@ export type Database = {
         Insert: {
           address_id?: string | null
           created_at?: string
+          delivery_zone?: string | null
           id?: string
           notes?: string | null
           payment_method?: string | null
+          service_type?: string
           status?: string
           total?: number
           updated_at?: string
@@ -577,9 +881,11 @@ export type Database = {
         Update: {
           address_id?: string | null
           created_at?: string
+          delivery_zone?: string | null
           id?: string
           notes?: string | null
           payment_method?: string | null
+          service_type?: string
           status?: string
           total?: number
           updated_at?: string
@@ -1617,6 +1923,35 @@ export type Database = {
       approve_wallet_topup: { Args: { _topup_id: string }; Returns: Json }
       cfo_dashboard_stats: { Args: never; Returns: Json }
       commit_sub_order_stock: { Args: { _sub_order_id: string }; Returns: Json }
+      complete_delivery: {
+        Args: {
+          _cod_collected?: boolean
+          _lat?: number
+          _lng?: number
+          _scanned_barcode?: string
+          _task_id: string
+        }
+        Returns: Json
+      }
+      compute_driver_commission: {
+        Args: { _driver_id: string; _order_total: number }
+        Returns: number
+      }
+      driver_log_event: {
+        Args: { _event: string; _lat?: number; _lng?: number; _task_id: string }
+        Returns: Json
+      }
+      driver_portal_stats: { Args: never; Returns: Json }
+      driver_settle_cash: {
+        Args: {
+          _amount: number
+          _bank_reference?: string
+          _driver_id: string
+          _kind?: string
+          _notes?: string
+        }
+        Returns: Json
+      }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
       executive_dashboard_stats: { Args: { _days?: number }; Returns: Json }
       find_allocation_warehouse: {
