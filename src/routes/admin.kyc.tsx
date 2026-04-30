@@ -1,5 +1,3 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Placeholder from "@/pages/admin/Placeholder";
-export const Route = createFileRoute("/admin/kyc")({
-  component: () => <Placeholder title="التحقق KYC" description="قيد التطوير" />,
-});
+import Kyc from "@/pages/admin/Kyc";
+export const Route = createFileRoute("/admin/kyc")({ component: Kyc });
