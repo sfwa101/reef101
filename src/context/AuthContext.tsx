@@ -23,6 +23,7 @@ type AuthCtx = {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  isInitializing: boolean;
   signUpWithPhone: (phone: string, password: string, fullName: string) => Promise<{ error?: string }>;
   signInWithPhone: (phone: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -91,9 +92,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let active = true;
 
-    // Order: subscribe first, then read existing session.
-    // Silent recovery: only clear local state on explicit SIGNED_OUT.
-    // Token refreshes / tab focus events should NOT log the user out.
+    // Subscribe first, then read existing session. Critically, we DO NOT
+    // flip `loading` to false until supabase.auth.getSession() has resolved,
+    // because on slow devices INITIAL_SESSION can fire with a null session
+    // before the persisted token is restored from localStorage. Flipping
+    // early causes ProtectedRoutes to redirect to /auth (race condition).
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       if (!active) return;
 
@@ -101,23 +104,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(null);
         setUser(null);
         setProfile(null);
-        setLoading(false);
         return;
       }
 
       // For SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED, INITIAL_SESSION:
-      // keep whatever session Supabase hands us (it pulled from localStorage).
+      // sync state but do NOT touch `loading` — only getSession() decides that.
       if (s) {
         setSession(s);
         setUser(s.user ?? null);
         setTimeout(() => fetchProfile(s.user.id), 0);
       }
-      setLoading(false);
     });
-
-    const failSafe = window.setTimeout(() => {
-      if (active) setLoading(false);
-    }, 2500);
 
     supabase.auth.getSession()
       .then(({ data: { session: s } }) => {
@@ -127,21 +124,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(s.user ?? null);
           fetchProfile(s.user.id);
         }
-        // If no session, leave state as-is (null) — onAuthStateChange will
-        // also fire INITIAL_SESSION and keep things consistent.
       })
       .catch(() => {
         // Network blip on cold start — DO NOT wipe local session.
-        // The persisted token in localStorage will recover on next call.
       })
       .finally(() => {
         if (active) setLoading(false);
-        window.clearTimeout(failSafe);
       });
 
     return () => {
       active = false;
-      window.clearTimeout(failSafe);
       sub.subscription.unsubscribe();
     };
   }, [fetchProfile]);
@@ -179,7 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <Ctx.Provider value={{ session, user, profile, loading, signUpWithPhone, signInWithPhone, signOut, refreshProfile }}>
+    <Ctx.Provider value={{ session, user, profile, loading, isInitializing: loading, signUpWithPhone, signInWithPhone, signOut, refreshProfile }}>
       {children}
     </Ctx.Provider>
   );
