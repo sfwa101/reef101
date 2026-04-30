@@ -380,6 +380,7 @@ const HomePage = () => {
           ))}
         </div>
       </section>
+      )}
 
       {/* Wrap below-fold rails in content-visibility:auto so the browser
           skips painting offscreen sections — keeps scroll at 60fps. */}
