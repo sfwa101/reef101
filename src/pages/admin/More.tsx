@@ -48,6 +48,7 @@ export default function More() {
       { to: "/admin/hakim-chat", icon: MessageCircle, label: "محادثة حكيم", color: "from-[hsl(var(--info))] to-[hsl(var(--purple))]" },
       { to: "/admin/zakat", icon: Scale, label: "حساب الزكاة", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
       { to: "/admin/riba-audit", icon: Ban, label: "مراجعة الربا الشرعية", color: "from-destructive to-[hsl(var(--accent))]" },
+      { to: "/admin/offers", icon: Gift, label: "العروض والكوبونات والأحداث", color: "from-[hsl(var(--accent))] to-[hsl(var(--warning))]" },
       { to: "/admin/cfo", icon: TrendingUp, label: "الرؤية المالية CFO", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
       { to: "/admin/executive", icon: BarChart3, label: "اللوحة التنفيذية", color: "from-[hsl(var(--success))] to-[hsl(var(--teal))]" },
       { to: "/admin/suppliers", icon: Truck, label: "الموردون", color: "from-[hsl(var(--info))] to-[hsl(var(--indigo))]" },
