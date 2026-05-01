@@ -50,7 +50,7 @@ const groups = [
 export function DesktopSidebar() {
   const { pathname } = useLocation();
   return (
-    <aside className="hidden lg:flex flex-col w-64 shrink-0 border-l bg-sidebar h-screen sticky top-0">
+    <aside className="hidden lg:flex flex-col w-64 shrink-0 border-l border-border/50 glass-strong shadow-float h-screen sticky top-0 z-30">
       <div className="h-16 flex items-center gap-2.5 px-5 border-b border-sidebar-border">
         <div className="h-9 w-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
           <span className="text-primary-foreground font-display text-sm">ر</span>
