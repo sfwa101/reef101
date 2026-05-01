@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { useCart } from "@/context/CartContext";
+import { useCart, type CartLineMeta } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useSharedCartSync } from "./useSharedCartSync";
 import { useLocation } from "@/context/LocationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtMoney, toLatin } from "@/lib/format";
@@ -49,8 +50,72 @@ export const paymentOptions = [
  * checkout pipeline. Pure refactor of the previous in-page logic — no
  * behavior changes.
  */
-export const useCartOrchestrator = () => {
-  const { lines, total, count, setQty, remove, add, clear, updateMeta } = useCart();
+export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => {
+  const sharedCartId = opts?.sharedCartId ?? null;
+  const local = useCart();
+  const shared = useSharedCartSync(sharedCartId);
+  const isSharedMode = !!sharedCartId;
+
+  // Adapt shared items into local-shaped lines so all downstream derivations
+  // (vendor groups, sweets buckets, totals, cross-sell) keep working unchanged.
+  const sharedLines = useMemo(() => {
+    if (!isSharedMode) return [] as { product: Product; qty: number; meta?: CartLineMeta }[];
+    const out: { product: Product; qty: number; meta?: CartLineMeta }[] = [];
+    for (const it of shared.items) {
+      const product = allProducts.find((p) => p.id === it.product_id);
+      if (!product) continue;
+      out.push({ product, qty: it.quantity, meta: it.meta as CartLineMeta | undefined });
+    }
+    return out;
+  }, [isSharedMode, shared.items]);
+
+  const lines = isSharedMode ? sharedLines : local.lines;
+  const count = isSharedMode ? sharedLines.reduce((s, l) => s + l.qty, 0) : local.count;
+  const total = isSharedMode
+    ? sharedLines.reduce((s, l) => s + l.product.price * l.qty, 0)
+    : local.total;
+
+  const setQty: typeof local.setQty = isSharedMode
+    ? async (productId, qty) => {
+        const it = shared.items.find((i) => i.product_id === productId);
+        if (it) await shared.updateItemQty(it.id, qty);
+      }
+    : local.setQty;
+
+  const remove: typeof local.remove = isSharedMode
+    ? async (productId) => {
+        const it = shared.items.find((i) => i.product_id === productId);
+        if (it) await shared.removeItem(it.id);
+      }
+    : local.remove;
+
+  const add: typeof local.add = isSharedMode
+    ? async (product, qty = 1, meta) => {
+        const existing = shared.items.find((i) => i.product_id === product.id);
+        if (existing) await shared.updateItemQty(existing.id, existing.quantity + qty);
+        else
+          await shared.addItem({
+            product_id: product.id,
+            product_name: product.name,
+            unit_price: product.price,
+            quantity: qty,
+            meta: (meta ?? {}) as Record<string, unknown>,
+          });
+      }
+    : local.add;
+
+  const clear: typeof local.clear = isSharedMode
+    ? async () => {
+        await Promise.all(shared.items.map((i) => shared.removeItem(i.id)));
+      }
+    : local.clear;
+
+  const updateMeta: typeof local.updateMeta = isSharedMode
+    ? () => {
+        // Itemized meta updates in shared mode are deferred to a follow-up phase.
+      }
+    : local.updateMeta;
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const { zone, setFromAddress } = useLocation();
@@ -863,6 +928,20 @@ export const useCartOrchestrator = () => {
     // checkout
     submitting,
     checkoutWA,
+    // shared cart (Phase 6)
+    isSharedMode,
+    sharedCartId,
+    sharedCart: shared.cart,
+    sharedParticipants: shared.participants,
+    sharedItems: shared.items,
+    sharedIsOwner: shared.isOwner,
+    sharedMyParticipant: shared.myParticipant,
+    sharedRequestApprovals: shared.requestApprovals,
+    sharedReopenForEdits: shared.reopenForEdits,
+    sharedApprove: shared.approve,
+    sharedReject: shared.reject,
+    sharedCancel: shared.cancelCart,
+    sharedMarkCompleted: shared.markCompleted,
   };
 };
 

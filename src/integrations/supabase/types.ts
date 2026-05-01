@@ -2603,6 +2603,152 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_cart_items: {
+        Row: {
+          added_by: string
+          cart_id: string
+          created_at: string
+          id: string
+          meta: Json
+          product_id: string
+          product_name: string
+          quantity: number
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          added_by: string
+          cart_id: string
+          created_at?: string
+          id?: string
+          meta?: Json
+          product_id: string
+          product_name: string
+          quantity?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          added_by?: string
+          cart_id?: string
+          created_at?: string
+          id?: string
+          meta?: Json
+          product_id?: string
+          product_name?: string
+          quantity?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_cart_items_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "shared_carts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_cart_participants: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["shared_cart_approval"]
+          approved_at: string | null
+          cart_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["shared_cart_role"]
+          split_type: Database["public"]["Enums"]["shared_cart_split_type"]
+          split_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["shared_cart_approval"]
+          approved_at?: string | null
+          cart_id: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["shared_cart_role"]
+          split_type?: Database["public"]["Enums"]["shared_cart_split_type"]
+          split_value?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approval_status?: Database["public"]["Enums"]["shared_cart_approval"]
+          approved_at?: string | null
+          cart_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["shared_cart_role"]
+          split_type?: Database["public"]["Enums"]["shared_cart_split_type"]
+          split_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_cart_participants_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "shared_carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shared_cart_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_carts: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          status: Database["public"]["Enums"]["shared_cart_status"]
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          status?: Database["public"]["Enums"]["shared_cart_status"]
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          status?: Database["public"]["Enums"]["shared_cart_status"]
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_carts_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_advance_requests: {
         Row: {
           amount: number
@@ -3772,6 +3918,14 @@ export type Database = {
         Args: { _product_id: string; _zone_id: string }
         Returns: boolean
       }
+      is_shared_cart_owner: {
+        Args: { _cart_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_shared_cart_participant: {
+        Args: { _cart_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       log_behavior: {
         Args: {
@@ -3882,6 +4036,15 @@ export type Database = {
         | "branch_manager"
         | "inventory_clerk"
       app_user_level: "bronze" | "silver" | "gold" | "platinum"
+      shared_cart_approval: "pending" | "approved" | "rejected"
+      shared_cart_role: "owner" | "contributor"
+      shared_cart_split_type: "percentage" | "fixed" | "itemized"
+      shared_cart_status:
+        | "active"
+        | "pending_approvals"
+        | "frozen"
+        | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4022,6 +4185,16 @@ export const Constants = {
         "inventory_clerk",
       ],
       app_user_level: ["bronze", "silver", "gold", "platinum"],
+      shared_cart_approval: ["pending", "approved", "rejected"],
+      shared_cart_role: ["owner", "contributor"],
+      shared_cart_split_type: ["percentage", "fixed", "itemized"],
+      shared_cart_status: [
+        "active",
+        "pending_approvals",
+        "frozen",
+        "completed",
+        "cancelled",
+      ],
     },
   },
 } as const
