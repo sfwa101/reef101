@@ -4655,6 +4655,7 @@ export type Database = {
         Args: { _fallback: string; _i18n: Json; _locale?: string }
         Returns: string
       }
+      is_driver: { Args: { _user_id: string }; Returns: boolean }
       is_product_available_in_zone: {
         Args: { _product_id: string; _zone_id: string }
         Returns: boolean
