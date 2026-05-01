@@ -2214,6 +2214,68 @@ export type Database = {
         }
         Relationships: []
       }
+      pos_shifts: {
+        Row: {
+          branch_id: string | null
+          cashier_id: string
+          closed_at: string | null
+          closing_balance: number | null
+          created_at: string
+          discrepancy: number | null
+          expected_balance: number | null
+          id: string
+          notes: string | null
+          opened_at: string
+          opening_balance: number
+          status: string
+          total_orders: number
+          total_sales: number
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          cashier_id: string
+          closed_at?: string | null
+          closing_balance?: number | null
+          created_at?: string
+          discrepancy?: number | null
+          expected_balance?: number | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opening_balance?: number
+          status?: string
+          total_orders?: number
+          total_sales?: number
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          cashier_id?: string
+          closed_at?: string | null
+          closing_balance?: number | null
+          created_at?: string
+          discrepancy?: number | null
+          expected_balance?: number | null
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opening_balance?: number
+          status?: string
+          total_orders?: number
+          total_sales?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_shifts_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       print_jobs: {
         Row: {
           binding: string
@@ -2430,6 +2492,7 @@ export type Database = {
           addons: Json | null
           affiliate_commission_pct: number
           badge: string | null
+          barcode: string | null
           brand: string | null
           category: string
           category_id: string | null
@@ -2467,6 +2530,7 @@ export type Database = {
           addons?: Json | null
           affiliate_commission_pct?: number
           badge?: string | null
+          barcode?: string | null
           brand?: string | null
           category?: string
           category_id?: string | null
@@ -2504,6 +2568,7 @@ export type Database = {
           addons?: Json | null
           affiliate_commission_pct?: number
           badge?: string | null
+          barcode?: string | null
           brand?: string | null
           category?: string
           category_id?: string | null
@@ -4347,6 +4412,32 @@ export type Database = {
         }[]
       }
       cfo_dashboard_stats: { Args: never; Returns: Json }
+      close_pos_shift: {
+        Args: { _actual_balance: number; _shift_id: string }
+        Returns: {
+          branch_id: string | null
+          cashier_id: string
+          closed_at: string | null
+          closing_balance: number | null
+          created_at: string
+          discrepancy: number | null
+          expected_balance: number | null
+          id: string
+          notes: string | null
+          opened_at: string
+          opening_balance: number
+          status: string
+          total_orders: number
+          total_sales: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pos_shifts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       commit_sub_order_stock: { Args: { _sub_order_id: string }; Returns: Json }
       complete_delivery: {
         Args: {
