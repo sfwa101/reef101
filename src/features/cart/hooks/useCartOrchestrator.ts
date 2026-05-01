@@ -825,12 +825,25 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
           preOpened: !!preOpened,
           onMobile,
         });
+        try {
+          sessionStorage.setItem(
+            "reef:checkout:wa-fallback",
+            JSON.stringify({ phone: mainPhone, text: mainMessage, orderId, total: orderTotal }),
+          );
+        } catch (e) {
+          console.warn("[checkout] failed to persist WhatsApp fallback", e);
+        }
         setWaFallback({ phone: mainPhone, text: mainMessage });
         toast.message("اضغط على فتح واتساب لإكمال الطلب", {
           description: "منع المتصفح الفتح التلقائي",
         });
       } else {
         console.info("[checkout] WhatsApp opened", { source, method: openResult.method });
+        try {
+          sessionStorage.removeItem("reef:checkout:wa-fallback");
+        } catch {
+          /* noop */
+        }
       }
 
       // NOTE: Multiple sequential `window.open` calls (vendors, producers)
