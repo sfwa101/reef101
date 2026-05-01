@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, Package, Search } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTopbar } from "@/components/admin/MobileTopbar";
 import { IOSCard } from "@/components/ios/IOSCard";
 import { fmtMoney, fmtRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+const PAGE_SIZE = 50;
 
 type Order = {
   id: string;
@@ -43,6 +46,9 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [tab, setTab] = useState<typeof TABS[number]["key"]>("all");
   const [q, setQ] = useState("");
+  const [visible, setVisible] = useState(PAGE_SIZE);
+  const seenIds = useRef<Set<string>>(new Set());
+  const firstLoad = useRef(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -52,19 +58,46 @@ export default function Orders() {
         .from("orders")
         .select("id,status,total,payment_method,notes,whatsapp_sent,user_id,created_at")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(500);
       if (cancelled) return;
-      setOrders(Array.isArray(data) ? (data as Order[]) : []);
+      const rows = Array.isArray(data) ? (data as Order[]) : [];
+      setOrders(rows);
+      if (firstLoad.current) {
+        rows.forEach((o) => seenIds.current.add(o.id));
+        firstLoad.current = false;
+      }
     };
     load();
 
-    // Live order updates with cleanup on unmount.
+    // Live order updates with cleanup on unmount + new-order toast.
     const channel = supabase
       .channel("admin-orders-list")
       .on(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         "postgres_changes" as any,
-        { event: "*", schema: "public", table: "orders" },
+        { event: "INSERT", schema: "public", table: "orders" },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (payload: any) => {
+          const newId = payload?.new?.id as string | undefined;
+          if (newId && !seenIds.current.has(newId)) {
+            seenIds.current.add(newId);
+            toast.success("طلب جديد وصل 🎉", {
+              description: `#${String(newId).slice(0, 8).toUpperCase()}`,
+            });
+          }
+          if (!cancelled) load();
+        },
+      )
+      .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "postgres_changes" as any,
+        { event: "UPDATE", schema: "public", table: "orders" },
+        () => { if (!cancelled) load(); },
+      )
+      .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "postgres_changes" as any,
+        { event: "DELETE", schema: "public", table: "orders" },
         () => { if (!cancelled) load(); },
       )
       .subscribe();
@@ -88,6 +121,12 @@ export default function Orders() {
     }
     return r;
   }, [orders, tab, q]);
+
+  // Reset pagination when filter/search changes.
+  useEffect(() => { setVisible(PAGE_SIZE); }, [tab, q]);
+
+  const pageItems = useMemo(() => filtered?.slice(0, visible) ?? null, [filtered, visible]);
+  const hasMore = !!filtered && filtered.length > visible;
 
   const counts = useMemo(() => ({
     all: orders?.length ?? 0,
@@ -139,7 +178,7 @@ export default function Orders() {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {filtered.map(o => {
+            {pageItems!.map(o => {
               const s = statusMap[o.status] ?? { label: o.status, tone: "bg-muted text-foreground-secondary", dot: "bg-muted-foreground" };
               return (
                 <Link key={o.id} to="/admin/orders/$orderId" params={{ orderId: o.id }}>
@@ -168,6 +207,14 @@ export default function Orders() {
                 </Link>
               );
             })}
+            {hasMore && (
+              <button
+                onClick={() => setVisible(v => v + PAGE_SIZE)}
+                className="w-full h-11 rounded-2xl bg-surface border border-border/40 text-[13px] font-semibold text-primary press"
+              >
+                تحميل المزيد ({filtered!.length - visible})
+              </button>
+            )}
           </div>
         )}
       </div>
