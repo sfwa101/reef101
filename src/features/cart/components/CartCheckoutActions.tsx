@@ -50,7 +50,7 @@ export const CartCheckoutActions = ({
               {blocked
                 ? `الحد الأدنى ${toLatin(minOrderTotal)} ج.م`
                 : submitting
-                  ? "جارٍ تجهيز الفاتورة ⏳"
+                  ? "جاري إرسال طلبك..."
                   : "إتمام عبر واتساب"}
             </span>
           </span>
