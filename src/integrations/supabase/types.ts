@@ -4035,6 +4035,7 @@ export type Database = {
         | "vendor"
         | "branch_manager"
         | "inventory_clerk"
+        | "charity_auditor"
       app_user_level: "bronze" | "silver" | "gold" | "platinum"
       shared_cart_approval: "pending" | "approved" | "rejected"
       shared_cart_role: "owner" | "contributor"
@@ -4183,6 +4184,7 @@ export const Constants = {
         "vendor",
         "branch_manager",
         "inventory_clerk",
+        "charity_auditor",
       ],
       app_user_level: ["bronze", "silver", "gold", "platinum"],
       shared_cart_approval: ["pending", "approved", "rejected"],
