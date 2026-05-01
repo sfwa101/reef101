@@ -1,6 +1,7 @@
 // Mega catalog seeder — generates 500+ realistic Egyptian products.
 // Local Egyptian brands only (boycott of Western brands supporting the entity).
 import { supabase } from "@/integrations/supabase/client";
+import { resolveProductImage } from "@/lib/productImages";
 
 type SeedRow = {
   id: string;
