@@ -113,22 +113,25 @@ function makeProduct(args: {
   const price = round(args.basePrice * (0.9 + Math.random() * 0.3));
   const hasDiscount = Math.random() < 0.35;
   const old_price = hasDiscount ? round(price * (1.1 + Math.random() * 0.25)) : null;
+  const img = pickImage(args.category);
+  // Keep DB-safe unit code (matches units_of_measure). Original verbose unit kept in metadata + name.
+  const safeUnit = "قطعة";
   return {
     id: mkId(args.source),
     name: args.name,
     brand: args.brand ?? null,
-    unit: args.unit,
+    unit: safeUnit,
     price,
     old_price,
-    image: placeholder(args.name),
-    image_url: placeholder(args.name),
+    image: img,
+    image_url: img,
     category: args.category,
     sub_category: args.sub,
     source: args.source,
     stock: rand(5, 250),
     is_active: true,
     fulfillment_type: args.fulfillment ?? "internal_stock",
-    metadata: args.metadata ?? {},
+    metadata: { ...(args.metadata ?? {}), display_unit: args.unit },
     description: `${args.name} — منتج محلي عالي الجودة 🇪🇬`,
   };
 }
