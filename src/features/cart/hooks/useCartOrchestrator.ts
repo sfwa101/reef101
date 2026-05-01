@@ -978,6 +978,9 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
     // checkout
     submitting,
     checkoutWA,
+    // WhatsApp fallback dialog
+    waFallback,
+    dismissWaFallback,
     // shared cart (Phase 6)
     isSharedMode,
     sharedCartId,
