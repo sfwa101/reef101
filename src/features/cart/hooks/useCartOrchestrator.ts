@@ -853,16 +853,23 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
 
       await minLoading;
 
-      // Open the main customer→admin WhatsApp message.
-      // - Desktop: redirect the pre-opened tab (gesture-safe).
-      // - Mobile: navigate the current tab via location.href.
-      // - If everything fails (popup blocked, no JS handler), surface a
-      //   fallback dialog with copy-to-clipboard + a manual link.
+      // Order of operations (per checkout spec):
+      //   1. mainMessage already built above (uses `lines` data)
+      //   2. RPC place_order_atomic already executed above
+      //   3. clear() — empty the cart now, BEFORE opening WhatsApp
+      //   4. Open WhatsApp with the prebuilt mainMessage
+      //   5. Navigate to success page (only if WA actually opened)
       const mainPhone = WA_NUMBER;
       const orderId = savedOrderId ?? orderNum;
       const orderTotal = grand;
       const waUrl = buildWaUrl({ phone: mainPhone, text: mainMessage });
       console.log("[checkout] attempting WhatsApp checkout URL", { source, url: waUrl });
+
+      // Step 3 — clear the cart and celebrate before navigation/redirect.
+      clear();
+      fireConfetti();
+
+      // Step 4 — open WhatsApp.
       const openResult: OpenResult = onMobile
         ? ((): OpenResult => {
             try {
@@ -907,12 +914,9 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
         }
       }
 
-      // NOTE: Multiple sequential `window.open` calls (vendors, producers)
-      // cannot survive popup blockers and were previously silently dropped
-      // on most browsers. Vendor + producer notifications are already sent
-      // through the database (vendor_notifications / admin notifications
-      // via `place_order_atomic`), so there is no functional regression.
-      // We log the intended messages for debugging only.
+      // Vendor + producer notifications are delivered via DB (place_order_atomic
+      // → vendor_notifications / admin notifications). Browsers cannot reliably
+      // fire multiple sequential window.open calls, so we just log here.
       const restaurantGroups = vendorGroups.filter((g) => g.vendor.kind === "restaurant");
       if (restaurantGroups.length > 0) {
         console.info(
@@ -926,8 +930,7 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
         console.info("[checkout] producer booking present (DB-routed)");
       }
 
-      clear();
-      fireConfetti();
+      // Step 5 — navigate to success page only if WhatsApp actually opened.
       if (openResult.ok) {
         toast.success("تم إرسال طلبك إلى واتساب 🎉");
         navigate({ to: "/order-success", search: { id: orderId, total: orderTotal } });
