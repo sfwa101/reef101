@@ -1296,6 +1296,69 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_zones: {
+        Row: {
+          accent: string | null
+          accepts_perishables: boolean
+          cod_allowed: boolean
+          created_at: string
+          delivery_fee: number
+          districts: string[]
+          eta_label: string
+          eta_minutes: number | null
+          free_delivery_threshold: number | null
+          id: string
+          is_active: boolean
+          min_order_total: number
+          name: string
+          polygon: Json | null
+          short_name: string
+          sort_order: number
+          updated_at: string
+          zone_code: string
+        }
+        Insert: {
+          accent?: string | null
+          accepts_perishables?: boolean
+          cod_allowed?: boolean
+          created_at?: string
+          delivery_fee?: number
+          districts?: string[]
+          eta_label?: string
+          eta_minutes?: number | null
+          free_delivery_threshold?: number | null
+          id?: string
+          is_active?: boolean
+          min_order_total?: number
+          name: string
+          polygon?: Json | null
+          short_name: string
+          sort_order?: number
+          updated_at?: string
+          zone_code: string
+        }
+        Update: {
+          accent?: string | null
+          accepts_perishables?: boolean
+          cod_allowed?: boolean
+          created_at?: string
+          delivery_fee?: number
+          districts?: string[]
+          eta_label?: string
+          eta_minutes?: number | null
+          free_delivery_threshold?: number | null
+          id?: string
+          is_active?: boolean
+          min_order_total?: number
+          name?: string
+          polygon?: Json | null
+          short_name?: string
+          sort_order?: number
+          updated_at?: string
+          zone_code?: string
+        }
+        Relationships: []
+      }
       hakim_chat_messages: {
         Row: {
           content: string
@@ -1756,6 +1819,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      permissions: {
+        Row: {
+          created_at: string
+          description: string | null
+          group_name: string
+          id: string
+          key: string
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          group_name: string
+          id?: string
+          key: string
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          group_name?: string
+          id?: string
+          key?: string
+          label?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       print_jobs: {
         Row: {
@@ -2414,6 +2507,35 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          permission_key: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permission_key: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permission_key?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_key_fkey"
+            columns: ["permission_key"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       savings_jar: {
         Row: {
@@ -3571,6 +3693,10 @@ export type Database = {
       hakim_deep_report: {
         Args: { _from?: string; _to?: string }
         Returns: Json
+      }
+      has_permission: {
+        Args: { _permission_key: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
