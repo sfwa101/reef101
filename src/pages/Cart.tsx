@@ -54,6 +54,11 @@ const Cart = () => {
             تصفّح الأقسام
           </Link>
         </div>
+        <WhatsAppFallbackDialog
+          open={!!o.waFallback}
+          payload={o.waFallback}
+          onClose={o.dismissWaFallback}
+        />
       </div>
     );
   }
