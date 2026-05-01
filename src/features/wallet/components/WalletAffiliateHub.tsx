@@ -8,6 +8,7 @@ import type { ReferralRow } from "@/features/wallet/types/wallet.types";
 import { useAffiliateEngine } from "@/features/wallet/hooks/useAffiliateEngine";
 import { WithdrawDialog } from "@/features/wallet/components/WithdrawDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { openWhatsApp } from "@/lib/whatsapp";
 
 // shopping bag icon (lucide doesn't expose ShoppingBagIcon by that name in older imports)
 function ShoppingBagIcon(props: any) {
@@ -107,7 +108,11 @@ export const WalletAffiliateHub = ({
         return;
       } catch {}
     }
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+    const result = openWhatsApp(
+      { phone: "", text },
+      { source: "WalletAffiliateHub:share" },
+    );
+    if (!result.ok) toast.error("تعذر فتح واتساب — انسخ الكود وشاركه يدويًا");
   };
 
   return (

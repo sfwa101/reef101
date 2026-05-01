@@ -136,8 +136,6 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
   const [submitting, setSubmitting] = useState(false);
   // Double-submit guard — synchronous flag that beats React batching
   const submittingRef = useRef(false);
-  // Pending order-success navigation when fallback dialog is open
-  const pendingNavRef = useRef<{ id: string; total: number } | null>(null);
   // WhatsApp fallback dialog (shown when popup is blocked)
   const [waFallback, setWaFallback] = useState<WaFallbackPayload | null>(null);
   const [walletBalance, setWalletBalance] = useState<number>(0);
@@ -513,36 +511,46 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       return;
     }
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const currentUser = (user ?? session?.user) || null;
-    const isGuest = !currentUser;
-
-    if (isGuest) {
-      const n = guestName.trim();
-      const p = guestPhone.trim();
-      const a = guestAddress.trim();
-      if (!n || !p || !a) {
-        toast.error("من فضلك اكتب الاسم ورقم الهاتف وعنوان التوصيل");
-        return;
-      }
-    }
-
-    if (minOrderTotal > 0 && grand < minOrderTotal) {
-      toast.error(`الحد الأدنى للطلب هو ${toLatin(minOrderTotal)} ج.م`);
-      return;
-    }
+    const source = "CartCheckoutActions:onCheckout→useCartOrchestrator.checkoutWA";
+    const onMobile = isMobileWaContext();
+    const preOpened: Window | null = onMobile ? null : preOpenWindow(source);
+    console.info("[checkout] WhatsApp checkout invoked", {
+      source,
+      mode: onMobile ? "mobile-location" : "desktop-preopen",
+      preOpened: !!preOpened,
+      cartLines: lines.length,
+    });
     submittingRef.current = true;
     setSubmitting(true);
-    // CRITICAL: pre-open the WhatsApp tab inside the current user gesture.
-    // After awaits below, the gesture is gone and `window.open` would be
-    // blocked by every modern browser. We redirect this handle later.
-    // On mobile, `location.href` is more reliable than a popup, so skip pre-open.
-    const onMobile = isMobileWaContext();
-    const preOpened: Window | null = onMobile ? null : preOpenWindow();
     const minLoading = new Promise<void>((r) => setTimeout(r, 1000));
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const currentUser = (user ?? session?.user) || null;
+      const isGuest = !currentUser;
+
+      if (isGuest) {
+        const n = guestName.trim();
+        const p = guestPhone.trim();
+        const a = guestAddress.trim();
+        if (!n || !p || !a) {
+          toast.error("من فضلك اكتب الاسم ورقم الهاتف وعنوان التوصيل");
+          setSubmitting(false);
+          submittingRef.current = false;
+          try { preOpened?.close(); } catch { /* noop */ }
+          return;
+        }
+      }
+
+      if (minOrderTotal > 0 && grand < minOrderTotal) {
+        toast.error(`الحد الأدنى للطلب هو ${toLatin(minOrderTotal)} ج.م`);
+        setSubmitting(false);
+        submittingRef.current = false;
+        try { preOpened?.close(); } catch { /* noop */ }
+        return;
+      }
+
       const noteParts = [
         appliedPromo ? `كود: ${appliedPromo.code}` : null,
         tip > 0 ? `إكرامية: ${tip}` : null,
@@ -815,19 +823,39 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       // - If everything fails (popup blocked, no JS handler), surface a
       //   fallback dialog with copy-to-clipboard + a manual link.
       const mainPhone = WA_NUMBER;
+      const orderId = savedOrderId ?? orderNum;
+      const orderTotal = grand;
       const openResult = openWhatsApp(
         { phone: mainPhone, text: mainMessage },
-        { preOpened, preferLocation: onMobile },
+        { preOpened, preferLocation: onMobile, source, allowWindowOpen: false },
       );
 
       if (!openResult.ok) {
-        console.warn("[checkout] WhatsApp open blocked, showing fallback");
+        console.warn("[checkout] WhatsApp open blocked, success fallback armed", {
+          source,
+          reason: openResult.reason,
+          preOpened: !!preOpened,
+          onMobile,
+        });
+        try {
+          sessionStorage.setItem(
+            "reef:checkout:wa-fallback",
+            JSON.stringify({ phone: mainPhone, text: mainMessage, orderId, total: orderTotal }),
+          );
+        } catch (e) {
+          console.warn("[checkout] failed to persist WhatsApp fallback", e);
+        }
         setWaFallback({ phone: mainPhone, text: mainMessage });
         toast.message("اضغط على فتح واتساب لإكمال الطلب", {
           description: "منع المتصفح الفتح التلقائي",
         });
       } else {
-        console.info("[checkout] WhatsApp opened via", openResult.method);
+        console.info("[checkout] WhatsApp opened", { source, method: openResult.method });
+        try {
+          sessionStorage.removeItem("reef:checkout:wa-fallback");
+        } catch {
+          /* noop */
+        }
       }
 
       // NOTE: Multiple sequential `window.open` calls (vendors, producers)
@@ -849,8 +877,6 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
         console.info("[checkout] producer booking present (DB-routed)");
       }
 
-      const orderId = savedOrderId ?? orderNum;
-      const orderTotal = grand;
       clear();
       fireConfetti();
       if (openResult.ok) {
@@ -858,16 +884,7 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       }
       setSubmitting(false);
       submittingRef.current = false;
-      // Don't auto-redirect when fallback dialog is open — user needs to
-      // act on it first. We'll navigate after they close it (handled in
-      // the Cart page via the dismissWaFallback callback).
-      if (openResult.ok) {
-        navigate({ to: "/order-success", search: { id: orderId, total: orderTotal } });
-      } else {
-        // Stash navigation target so the Cart page can redirect after the
-        // fallback dialog is dismissed.
-        pendingNavRef.current = { id: orderId, total: orderTotal };
-      }
+      navigate({ to: "/order-success", search: { id: orderId, total: orderTotal } });
     } catch (err) {
       console.error("[checkout] unexpected error:", err);
       toast.error("حدث خطأ غير متوقّع");
@@ -880,11 +897,6 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
   /** Called by the Cart page when the WhatsApp fallback dialog closes. */
   const dismissWaFallback = () => {
     setWaFallback(null);
-    const pending = pendingNavRef.current;
-    pendingNavRef.current = null;
-    if (pending) {
-      navigate({ to: "/order-success", search: { id: pending.id, total: pending.total } });
-    }
   };
 
   return {

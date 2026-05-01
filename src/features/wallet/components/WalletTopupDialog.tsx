@@ -9,6 +9,7 @@ import {
   type PaymentMethod,
 } from "@/features/wallet/types/wallet.types";
 import { bonusFor } from "@/features/wallet/lib/walletAdvisor";
+import { isMobileWaContext, openWhatsApp } from "@/lib/whatsapp";
 
 const paymentMethods: PaymentMethod[] = [
   { id: "instapay", label: "إنستا باي", icon: Banknote, sub: "تحويل بنكي فوري" },
@@ -48,8 +49,11 @@ export const WalletTopupDialog = ({
     const text = `🌿 *ريف المدينة - شحن محفظة*\n\n• كود العميل: ${customerCode}\n• المبلغ: ${finalAmount} ج.م${
       bonus ? `\n• المكافأة: ${bonus.label}` : ""
     }\n• وسيلة الدفع: ${m.label}\n\nسأقوم بإرسال إثبات الدفع الآن.`;
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    const result = openWhatsApp(
+      { phone, text },
+      { preferLocation: isMobileWaContext(), source: "WalletTopupDialog:submit" },
+    );
+    if (!result.ok) toast.error("تعذر فتح واتساب — جرّب مرة أخرى");
     fireConfetti();
     toast.success("تم إرسال طلب الشحن بنجاح! 🎉", {
       description: bonus ? `ستحصل على: ${bonus.label}` : undefined,

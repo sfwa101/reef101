@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { fmtMoney, toLatin } from "@/lib/format";
 import { fireConfetti } from "@/lib/confetti";
 import { WA_NUMBER } from "../types/cart.types";
+import { isMobileWaContext, openWhatsApp } from "@/lib/whatsapp";
 
 const rechargePresets = [200, 500, 1000, 2000];
 
@@ -33,7 +34,11 @@ export const RechargeDialog = ({ onClose, userId, currentBalance, shortfall }: P
     }
     const code = userId.slice(0, 8).toUpperCase();
     const text = `🌿 *ريف المدينة - شحن محفظة*\n\n• كود العميل: ${code}\n• المبلغ: ${finalAmount} ج.م\n• وسيلة الدفع: ${method}\n\nسأرسل إثبات الدفع الآن.`;
-    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`, "_blank");
+    const result = openWhatsApp(
+      { phone: WA_NUMBER, text },
+      { preferLocation: isMobileWaContext(), source: "RechargeDialog:submit" },
+    );
+    if (!result.ok) toast.error("تعذر فتح واتساب — جرّب مرة أخرى");
     fireConfetti();
     toast.success("تم إرسال طلب الشحن 🎉");
     onClose();

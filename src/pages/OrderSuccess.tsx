@@ -1,10 +1,43 @@
 import { Link, useSearch } from "@tanstack/react-router";
-import { Check, Package, Clock, Home } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Package, Clock, Home, Copy, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { fmtMoney, toLatin } from "@/lib/format";
+import { buildWaUrl, copyTextToClipboard, normalizeWaPhone } from "@/lib/whatsapp";
+
+type StoredWaFallback = {
+  phone: string;
+  text: string;
+  orderId?: string;
+  total?: number;
+};
 
 const OrderSuccess = () => {
   const { id, total } = useSearch({ from: "/_app/order-success" });
   const shortId = (id || "").slice(0, 8).toUpperCase() || "RF000000";
+  const [waFallback, setWaFallback] = useState<StoredWaFallback | null>(null);
+  const waUrl = useMemo(
+    () => (waFallback ? buildWaUrl(waFallback) : ""),
+    [waFallback],
+  );
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("reef:checkout:wa-fallback");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as StoredWaFallback;
+      if (parsed?.text) setWaFallback(parsed);
+    } catch (e) {
+      console.warn("[checkout] failed to read WhatsApp fallback", e);
+    }
+  }, []);
+
+  const copySummary = async () => {
+    if (!waFallback?.text) return;
+    const ok = await copyTextToClipboard(waFallback.text);
+    if (ok) toast.success("تم نسخ ملخص الطلب");
+    else toast.error("تعذر النسخ — انسخ النص يدويًا");
+  };
 
   return (
     <div className="flex flex-col items-center gap-5 py-8 text-center">
@@ -17,7 +50,9 @@ const OrderSuccess = () => {
 
       <div className="space-y-1">
         <h1 className="font-display text-3xl font-extrabold">تم استلام طلبك!</h1>
-        <p className="text-sm text-muted-foreground">تواصلنا معك على واتساب لتأكيد التفاصيل</p>
+        <p className="text-sm text-muted-foreground">
+          {waFallback ? "إذا لم يفتح واتساب تلقائيًا، أرسل الملخص من هنا" : "تواصلنا معك على واتساب لتأكيد التفاصيل"}
+        </p>
       </div>
 
       <div className="glass-strong w-full max-w-sm space-y-3 rounded-2xl p-5 shadow-soft">
@@ -36,6 +71,30 @@ const OrderSuccess = () => {
           </div>
         )}
       </div>
+
+      {waFallback && (
+        <div className="w-full max-w-sm space-y-3 rounded-2xl border border-border bg-card p-4 text-start shadow-soft">
+          <div>
+            <p className="text-sm font-extrabold">إكمال الإرسال عبر واتساب</p>
+            {waFallback.phone && (
+              <p className="text-xs text-muted-foreground" dir="ltr">
+                +{normalizeWaPhone(waFallback.phone)}
+              </p>
+            )}
+          </div>
+          <pre className="max-h-44 overflow-auto whitespace-pre-wrap rounded-xl bg-foreground/5 p-3 text-[11px] leading-relaxed" dir="rtl">
+            {waFallback.text}
+          </pre>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={copySummary} className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 py-3 text-xs font-bold">
+              <Copy className="h-4 w-4" /> نسخ الملخص
+            </button>
+            <a href={waUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-3 text-xs font-extrabold text-primary-foreground">
+              <ExternalLink className="h-4 w-4" /> فتح واتساب
+            </a>
+          </div>
+        </div>
+      )}
 
       <div className="flex w-full max-w-sm flex-col gap-2">
         <Link to="/account/orders" className="flex items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-pill">
