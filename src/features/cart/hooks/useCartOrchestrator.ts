@@ -901,11 +901,7 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
 
   /** Called by the Cart page when the WhatsApp fallback dialog closes. */
   const dismissWaFallback = () => {
-    const pending = waFallback;
     setWaFallback(null);
-    if (pending?.orderId) {
-      navigate({ to: "/order-success", search: { id: pending.orderId, total: pending.total ?? grand } });
-    }
   };
 
   return {
