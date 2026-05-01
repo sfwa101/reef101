@@ -266,7 +266,8 @@ export default function Products() {
 
       const idBase = `sm-${Date.now()}`;
       const rows = items.map((it, idx) => {
-        const uniqueUrl = `https://loremflickr.com/600/600/groceries,packaging?lock=${idx + 1}`;
+        // Minimalist isolated product photo from curated Unsplash mapping.
+        const img = pickImageFor(it.name, "supermarket", idx);
         return {
           id: `${idBase}-${idx}`,
           name: it.name,
@@ -274,8 +275,8 @@ export default function Products() {
           unit: "قطعة",
           price: it.price,
           old_price: it.old ?? null,
-          image: uniqueUrl,
-          image_url: uniqueUrl,
+          image: img,
+          image_url: img,
           category: "السوبر ماركت",
           sub_category: it.sub,
           source: "supermarket",
