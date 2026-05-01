@@ -28,6 +28,7 @@ import TypewriterPlaceholder from "@/components/TypewriterPlaceholder";
 import ReefStories from "@/components/ReefStories";
 import PromoCarousel from "@/components/PromoCarousel";
 import MiniStoreGrid from "@/components/MiniStoreGrid";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import FlashSalesRail from "@/components/FlashSalesRail";
 import MegaEventBanner from "@/components/MegaEventBanner";
 import LoyaltyProgress from "@/components/LoyaltyProgress";
