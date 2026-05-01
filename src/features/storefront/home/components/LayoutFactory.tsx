@@ -27,8 +27,15 @@ import type { SectionConfig, SectionKey } from "../types/sdui.types";
 import type { HomeOrchestrator } from "../hooks/useHomeOrchestrator";
 import type { CatId } from "../types";
 
+// Phase 26 — Main Hub stem cells (orchestrator-free, self-contained)
+import { MainSearchHeader } from "@/features/main-hub/components/MainSearchHeader";
+import { StoryCircles } from "@/features/main-hub/components/StoryCircles";
+import { PromotionSlider } from "@/features/main-hub/components/PromotionSlider";
+import { DepartmentGrid } from "@/features/main-hub/components/DepartmentGrid";
+
 type FactoryContext = {
-  orchestrator: HomeOrchestrator;
+  /** Orchestrator is optional — Main Hub sections don't need it. */
+  orchestrator: HomeOrchestrator | null;
   theme: { hue: string; ink: string; soft: string; gradient: string };
   showRails: boolean;
 };
@@ -37,56 +44,65 @@ type SectionRenderer = (ctx: FactoryContext, cfg: SectionConfig) => ReactElement
 
 const REGISTRY: Partial<Record<SectionKey, SectionRenderer>> = {
   HeroBanner: ({ theme }) => <HeroBanner theme={theme} />,
-  SearchAndFilters: ({ orchestrator: o, theme }) => (
-    <SearchAndFilters
-      q={o.q}
-      setQ={o.setQ}
-      filtersActive={o.filtersActive}
-      onOpenFilters={() => o.setFiltersOpen(true)}
-      fulFilter={o.fulFilter}
-      setFulFilter={o.setFulFilter}
-      sort={o.sort}
-      setSort={o.setSort}
-      hue={theme.hue}
-    />
-  ),
-  CategoriesGrid: ({ orchestrator: o, theme }) => (
-    <CategoriesGrid cat={o.cat} setCat={o.setCat} hue={theme.hue} />
-  ),
+  SearchAndFilters: ({ orchestrator: o, theme }) =>
+    o ? (
+      <SearchAndFilters
+        q={o.q}
+        setQ={o.setQ}
+        filtersActive={o.filtersActive}
+        onOpenFilters={() => o.setFiltersOpen(true)}
+        fulFilter={o.fulFilter}
+        setFulFilter={o.setFulFilter}
+        sort={o.sort}
+        setSort={o.setSort}
+        hue={theme.hue}
+      />
+    ) : null,
+  CategoriesGrid: ({ orchestrator: o, theme }) =>
+    o ? <CategoriesGrid cat={o.cat} setCat={o.setCat} hue={theme.hue} /> : null,
   BundlesRail: ({ theme, showRails }) =>
     showRails ? <BundlesRail hue={theme.hue} /> : null,
   BestSellersRail: ({ orchestrator: o, theme, showRails }) =>
-    showRails ? (
+    showRails && o ? (
       <BestSellersRail
         items={o.bestSellers}
         hue={theme.hue}
         onOpen={(id) => o.setOpenId(id)}
       />
     ) : null,
-  ProductsGrid: ({ orchestrator: o, theme }) => (
-    <ProductsGrid
-      cat={o.cat as CatId}
-      filtered={o.filtered}
-      hue={theme.hue}
-      onOpen={(id) => o.setOpenId(id)}
-      onResetAll={o.resetAll}
-    />
-  ),
+  ProductsGrid: ({ orchestrator: o, theme }) =>
+    o ? (
+      <ProductsGrid
+        cat={o.cat as CatId}
+        filtered={o.filtered}
+        hue={theme.hue}
+        onOpen={(id) => o.setOpenId(id)}
+        onResetAll={o.resetAll}
+      />
+    ) : null,
+
+  // Phase 26 — Main Hub (no orchestrator dependency)
+  MainSearchHeader: () => <MainSearchHeader />,
+  StoryCircles: () => <StoryCircles />,
+  PromotionSlider: () => <PromotionSlider />,
+  DepartmentGrid: () => <DepartmentGrid />,
 };
 
 export const LayoutFactory = ({
   pageKey,
-  orchestrator,
+  orchestrator = null,
   theme,
 }: {
   pageKey: string;
-  orchestrator: HomeOrchestrator;
+  orchestrator?: HomeOrchestrator | null;
   theme: { hue: string; ink: string; soft: string; gradient: string };
 }) => {
   const { layout } = useUiLayout(pageKey);
   if (!layout) return null;
 
-  const showRails = orchestrator.cat === "all" && !orchestrator.q;
+  const showRails = orchestrator
+    ? orchestrator.cat === "all" && !orchestrator.q
+    : true;
   const ctx: FactoryContext = { orchestrator, theme, showRails };
 
   return (

@@ -14,7 +14,12 @@ export type SectionKey =
   | "BestSellersRail"
   | "BundlesRail"
   | "ProductsGrid"
-  | "SearchAndFilters";
+  | "SearchAndFilters"
+  // Phase 26 — Main Hub stem cells
+  | "MainSearchHeader"
+  | "StoryCircles"
+  | "PromotionSlider"
+  | "DepartmentGrid";
 
 export type SectionConfig = {
   /** when false, the section is hidden even if listed in `section_order` */
