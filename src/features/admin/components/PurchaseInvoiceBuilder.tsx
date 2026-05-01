@@ -151,11 +151,11 @@ export function PurchaseInvoiceBuilder({ onCreated }: { onCreated?: () => void }
           unit_cost: l.unit_cost,
         })),
         _total_amount: total,
-        _invoice_number: form.invoice_number || null,
+        _invoice_number: form.invoice_number || undefined,
         _invoice_date: form.invoice_date,
         _paid_amount: paid,
         _tax: tax,
-        _notes: form.notes || null,
+        _notes: form.notes || undefined,
       });
       if (error) throw error;
       toast.success("تم حفظ الفاتورة + تحديث المخزون والتكلفة (MAC)", {
