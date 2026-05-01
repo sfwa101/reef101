@@ -817,17 +817,22 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       const mainPhone = WA_NUMBER;
       const openResult = openWhatsApp(
         { phone: mainPhone, text: mainMessage },
-        { preOpened, preferLocation: onMobile },
+        { preOpened, preferLocation: onMobile, source },
       );
 
       if (!openResult.ok) {
-        console.warn("[checkout] WhatsApp open blocked, showing fallback");
+        console.warn("[checkout] WhatsApp open blocked, success fallback armed", {
+          source,
+          reason: openResult.reason,
+          preOpened: !!preOpened,
+          onMobile,
+        });
         setWaFallback({ phone: mainPhone, text: mainMessage });
         toast.message("اضغط على فتح واتساب لإكمال الطلب", {
           description: "منع المتصفح الفتح التلقائي",
         });
       } else {
-        console.info("[checkout] WhatsApp opened via", openResult.method);
+        console.info("[checkout] WhatsApp opened", { source, method: openResult.method });
       }
 
       // NOTE: Multiple sequential `window.open` calls (vendors, producers)
@@ -858,16 +863,8 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       }
       setSubmitting(false);
       submittingRef.current = false;
-      // Don't auto-redirect when fallback dialog is open — user needs to
-      // act on it first. We'll navigate after they close it (handled in
-      // the Cart page via the dismissWaFallback callback).
-      if (openResult.ok) {
-        navigate({ to: "/order-success", search: { id: orderId, total: orderTotal } });
-      } else {
-        // Stash navigation target so the Cart page can redirect after the
-        // fallback dialog is dismissed.
-        pendingNavRef.current = { id: orderId, total: orderTotal };
-      }
+      pendingNavRef.current = null;
+      navigate({ to: "/order-success", search: { id: orderId, total: orderTotal } });
     } catch (err) {
       console.error("[checkout] unexpected error:", err);
       toast.error("حدث خطأ غير متوقّع");
