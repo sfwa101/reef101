@@ -40,6 +40,8 @@ import {
   preOpenWindow,
   openWhatsApp,
   isMobileWaContext,
+  buildWaUrl,
+  type OpenResult,
 } from "@/lib/whatsapp";
 import type { WaFallbackPayload } from "../components/WhatsAppFallbackDialog";
 
@@ -825,10 +827,23 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       const mainPhone = WA_NUMBER;
       const orderId = savedOrderId ?? orderNum;
       const orderTotal = grand;
-      const openResult = openWhatsApp(
-        { phone: mainPhone, text: mainMessage },
-        { preOpened, preferLocation: onMobile, source, allowWindowOpen: false },
-      );
+      const waUrl = buildWaUrl({ phone: mainPhone, text: mainMessage });
+      console.log("[checkout] attempting WhatsApp checkout URL", { source, url: waUrl });
+      const openResult: OpenResult = onMobile
+        ? ((): OpenResult => {
+            try {
+              console.log("[checkout] mobile window.location.href", { source, url: waUrl });
+              window.location.href = waUrl;
+              return { ok: true, method: "location" };
+            } catch (e) {
+              console.warn("[checkout] mobile location.href failed", { source, error: e });
+              return { ok: false, url: waUrl, text: mainMessage, reason: "location_failed" };
+            }
+          })()
+        : openWhatsApp(
+            { phone: mainPhone, text: mainMessage },
+            { preOpened, preferLocation: false, source },
+          );
 
       if (!openResult.ok) {
         console.warn("[checkout] WhatsApp open blocked, success fallback armed", {
@@ -845,7 +860,7 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
         } catch (e) {
           console.warn("[checkout] failed to persist WhatsApp fallback", e);
         }
-        setWaFallback({ phone: mainPhone, text: mainMessage });
+        setWaFallback({ phone: mainPhone, text: mainMessage, orderId, total: orderTotal });
         toast.message("اضغط على فتح واتساب لإكمال الطلب", {
           description: "منع المتصفح الفتح التلقائي",
         });
@@ -881,10 +896,10 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       fireConfetti();
       if (openResult.ok) {
         toast.success("تم إرسال طلبك إلى واتساب 🎉");
+        navigate({ to: "/order-success", search: { id: orderId, total: orderTotal } });
       }
       setSubmitting(false);
       submittingRef.current = false;
-      navigate({ to: "/order-success", search: { id: orderId, total: orderTotal } });
     } catch (err) {
       console.error("[checkout] unexpected error:", err);
       toast.error("حدث خطأ غير متوقّع");
