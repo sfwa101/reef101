@@ -4745,6 +4745,19 @@ export type Database = {
         }
         Returns: Json
       }
+      submit_purchase_invoice: {
+        Args: {
+          _invoice_date?: string
+          _invoice_number?: string
+          _items: Json
+          _notes?: string
+          _paid_amount?: number
+          _supplier_id: string
+          _tax?: number
+          _total_amount: number
+        }
+        Returns: Json
+      }
       user_branch_ids: { Args: { _user_id: string }; Returns: string[] }
       user_store_ids: { Args: { _user_id: string }; Returns: string[] }
       user_total_spent: { Args: { _user_id: string }; Returns: number }
