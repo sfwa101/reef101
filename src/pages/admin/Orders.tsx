@@ -46,6 +46,9 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [tab, setTab] = useState<typeof TABS[number]["key"]>("all");
   const [q, setQ] = useState("");
+  const [visible, setVisible] = useState(PAGE_SIZE);
+  const seenIds = useRef<Set<string>>(new Set());
+  const firstLoad = useRef(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,19 +58,46 @@ export default function Orders() {
         .from("orders")
         .select("id,status,total,payment_method,notes,whatsapp_sent,user_id,created_at")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(500);
       if (cancelled) return;
-      setOrders(Array.isArray(data) ? (data as Order[]) : []);
+      const rows = Array.isArray(data) ? (data as Order[]) : [];
+      setOrders(rows);
+      if (firstLoad.current) {
+        rows.forEach((o) => seenIds.current.add(o.id));
+        firstLoad.current = false;
+      }
     };
     load();
 
-    // Live order updates with cleanup on unmount.
+    // Live order updates with cleanup on unmount + new-order toast.
     const channel = supabase
       .channel("admin-orders-list")
       .on(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         "postgres_changes" as any,
-        { event: "*", schema: "public", table: "orders" },
+        { event: "INSERT", schema: "public", table: "orders" },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (payload: any) => {
+          const newId = payload?.new?.id as string | undefined;
+          if (newId && !seenIds.current.has(newId)) {
+            seenIds.current.add(newId);
+            toast.success("طلب جديد وصل 🎉", {
+              description: `#${String(newId).slice(0, 8).toUpperCase()}`,
+            });
+          }
+          if (!cancelled) load();
+        },
+      )
+      .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "postgres_changes" as any,
+        { event: "UPDATE", schema: "public", table: "orders" },
+        () => { if (!cancelled) load(); },
+      )
+      .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "postgres_changes" as any,
+        { event: "DELETE", schema: "public", table: "orders" },
         () => { if (!cancelled) load(); },
       )
       .subscribe();
