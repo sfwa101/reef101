@@ -71,7 +71,21 @@ export type PaymentMethod = {
   sub: string;
 };
 
-export type WalletTab = "balance" | "budgets" | "affiliate";
+export type WalletTab = "balance" | "budgets" | "affiliate" | "charity";
+
+export type CharityCampaign = {
+  id: string;
+  auditor_id: string;
+  title: string;
+  description: string | null;
+  cover_url: string | null;
+  target_amount: number;
+  current_amount: number;
+  restricted_categories: string[];
+  is_active: boolean;
+  ends_at: string | null;
+  created_at: string;
+};
 
 /* ============== Domain constants ============== */
 
