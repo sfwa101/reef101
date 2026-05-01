@@ -3,6 +3,7 @@ import TopBar from "@/components/TopBar";
 import TabBar from "@/components/TabBar";
 import SectionsPanel from "@/components/desktop/SectionsPanel";
 import CartPanel from "@/components/desktop/CartPanel";
+import GlobalApprovalBanner from "@/components/GlobalApprovalBanner";
 
 // Routes where the bottom TabBar should be HIDDEN to make room for a sticky CTA.
 const HIDE_TABBAR_ROUTES = [
