@@ -113,10 +113,25 @@ async function fetchAll(): Promise<Product[]> {
     .order("sort_order", { ascending: true })
     .limit(2000);
   if (error) {
-    console.error("[products] fetch failed:", error);
-    return [];
+    console.error("[products] fetch failed, using static fallback:", error);
+    const { FALLBACK_PRODUCTS } = await import("./products.fallback");
+    cache.length = 0;
+    cache.push(...FALLBACK_PRODUCTS);
+    hydrated = true;
+    notify();
+    return cache;
   }
-  const list = ((data ?? []) as DbRow[]).map(rowToProduct);
+  const rows = (data ?? []) as DbRow[];
+  // Empty DB also degrades gracefully (e.g. cold seed, RLS blocks read).
+  if (rows.length === 0) {
+    const { FALLBACK_PRODUCTS } = await import("./products.fallback");
+    cache.length = 0;
+    cache.push(...FALLBACK_PRODUCTS);
+    hydrated = true;
+    notify();
+    return cache;
+  }
+  const list = rows.map(rowToProduct);
   cache.length = 0;
   cache.push(...list);
   hydrated = true;
