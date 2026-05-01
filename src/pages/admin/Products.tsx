@@ -129,34 +129,56 @@ export default function Products() {
   };
 
   const handleFixImages = async () => {
-    if (!confirm("سيتم توليد صورة AI فريدة لكل منتج (قد يستغرق دقائق). متابعة؟")) return;
+    if (!confirm("سيتم توليد صورة فريدة لكل منتج. متابعة؟")) return;
     setFixingImages(true);
-    const t = toast.loading("جاري توليد صور AI فريدة…");
+    const t = toast.loading("جاري إصلاح الصور…");
     try {
-      const { data, error } = await supabase.from("products").select("id").limit(5000);
+      const KEYWORDS: Record<string, string> = {
+        supermarket: "groceries,snacks",
+        produce: "vegetables,fruits",
+        meat: "raw,meat,chicken",
+        dairy: "dairy,milk,cheese",
+        sweets: "desserts,pastry",
+        pharmacy: "pills,pharmacy",
+        library: "stationery,books",
+        restaurants: "cooked,meals",
+        recipes: "food,recipe",
+        baskets: "basket,harvest",
+        wholesale: "boxes,warehouse",
+      };
+
+      const { data, error } = await supabase.from("products").select("id, source").limit(5000);
       if (error) throw error;
-      const ids = (data ?? []).map((r: { id: string }) => r.id);
-      const total = ids.length;
-      let done = 0;
-      let failed = 0;
-      const BATCH = 8;
-      for (let i = 0; i < ids.length; i += BATCH) {
-        const chunk = ids.slice(i, i + BATCH);
-        toast.loading(`جاري توليد الصور… ${done}/${total}`, { id: t });
-        const { data: res, error: fnErr } = await supabase.functions.invoke("generate-product-image", {
-          body: { ids: chunk },
-        });
-        if (fnErr) {
-          failed += chunk.length;
-        } else {
-          const results = (res?.results ?? []) as { ok: boolean }[];
-          done += results.filter((r) => r.ok).length;
-          failed += results.filter((r) => !r.ok).length;
-        }
+      const allProducts = data ?? [];
+      const total = allProducts.length;
+      let updated = 0;
+      const errors: string[] = [];
+
+      for (let i = 0; i < allProducts.length; i += 50) {
+        const chunk = allProducts.slice(i, i + 50);
+        toast.loading(`جاري إصلاح الصور… ${updated}/${total}`, { id: t });
+
+        await Promise.all(
+          chunk.map(async (product, idx) => {
+            const globalIdx = i + idx;
+            const sourceKey = (product.source || "").toLowerCase();
+            const keyword = KEYWORDS[sourceKey] || "product";
+            const uniqueUrl = `https://loremflickr.com/600/600/${keyword}?lock=${globalIdx}`;
+
+            const { error: upErr } = await supabase
+              .from("products")
+              .update({ image_url: uniqueUrl, image: uniqueUrl })
+              .eq("id", product.id);
+
+            if (upErr) errors.push(upErr.message);
+            else updated++;
+          })
+        );
       }
+
       toast.dismiss(t);
-      if (failed > 0) toast.error(`تم: ${done} • فشل: ${failed}`);
-      else toast.success(`✨ تم توليد ${done} صورة فريدة بنجاح`);
+      if (errors.length > 0) toast.error(`تم: ${updated} • فشل: ${errors.length}`);
+      else toast.success(`✨ تم إصلاح ${updated} صورة فريدة بنجاح`);
       await load();
     } catch (e) {
       toast.dismiss(t);
