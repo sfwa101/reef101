@@ -124,6 +124,15 @@ export default function Products() {
             <Plus className="h-4 w-4" />
             <span>جديد</span>
           </button>
+          <button
+            onClick={handleSeed}
+            disabled={seeding}
+            className="h-11 px-3 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center gap-1.5 press shadow-sm font-semibold text-[12px] disabled:opacity-60"
+            title="حقن أكثر من 500 منتج محلي"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>{seeding ? "جاري…" : "حقن 500+"}</span>
+          </button>
         </div>
 
         <div className="grid grid-cols-3 gap-2 mb-4">
