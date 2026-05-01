@@ -11,6 +11,13 @@ import {
 import type { Product } from "@/lib/products";
 import { trackBuyAgain } from "@/lib/buyAgain";
 import { logBehavior } from "@/lib/behavior";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchRemoteCart,
+  pushRemoteCart,
+  mergeCarts,
+  type LocalLine,
+} from "@/lib/cartSync";
 
 /**
  * Optional per-line meta. Used by the sweets section to attach a chosen
@@ -78,6 +85,25 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     listenersRef.current.forEach((l) => l());
   }, []);
 
+  // Track auth + remote-sync state
+  const userIdRef = useRef<string | null | undefined>(undefined);
+  const skipNextPushRef = useRef(false);
+  const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const schedulePush = useCallback(() => {
+    if (skipNextPushRef.current) {
+      skipNextPushRef.current = false;
+      return;
+    }
+    const uid = userIdRef.current;
+    if (!uid) return; // guest → localStorage only
+    if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
+    pushTimerRef.current = setTimeout(() => {
+      const snapshot = linesRef.current.slice();
+      void pushRemoteCart(uid, snapshot);
+    }, 600);
+  }, []);
+
   const setLines = useCallback(
     (updater: (prev: CartLine[]) => CartLine[]) => {
       linesRef.current = updater(linesRef.current);
@@ -87,8 +113,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       } catch {
         /* ignore quota errors */
       }
+      schedulePush();
     },
-    [emit],
+    [emit, schedulePush],
   );
 
   // Hydrate from localStorage on mount (client-only — SSR-safe)
@@ -106,6 +133,58 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     } catch {
       /* ignore */
     }
+  }, [emit]);
+
+  // Auth-driven remote sync: pull on login, merge guest cart, push back.
+  useEffect(() => {
+    let cancelled = false;
+
+    const handleUser = async (uid: string | null) => {
+      if (cancelled) return;
+      const prevUid = userIdRef.current;
+      userIdRef.current = uid;
+
+      if (!uid) return; // guest stays on localStorage
+
+      try {
+        const remote = await fetchRemoteCart(uid);
+        const guest: LocalLine[] = linesRef.current.slice();
+        const merged = mergeCarts(guest, remote);
+
+        // Apply merged locally without re-triggering a push.
+        skipNextPushRef.current = true;
+        linesRef.current = merged;
+        emit();
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        } catch {
+          /* ignore */
+        }
+
+        // Only push back if the merge actually changed remote (i.e. guest
+        // contributed lines) or this is the first sync of the session.
+        const isFirstSync = prevUid === undefined || prevUid === null;
+        if (guest.length > 0 || isFirstSync) {
+          await pushRemoteCart(uid, merged);
+        }
+      } catch (err) {
+        console.warn("[cart] sync on login failed:", err);
+      }
+    };
+
+    void supabase.auth.getUser().then(({ data }) => {
+      void handleUser(data.user?.id ?? null);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      void handleUser(session?.user?.id ?? null);
+    });
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+      if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
+    };
   }, [emit]);
 
   const actions = useMemo<CartActions>(
