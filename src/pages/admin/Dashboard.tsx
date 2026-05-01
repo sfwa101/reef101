@@ -139,15 +139,7 @@ export default function Dashboard() {
             .slice(0, 5),
         );
 
-        // Stash week data on a non-state ref via closure on `weekRes`
-        // (we recompute series below from `weekRes` directly).
-        if (Array.isArray(weekRes?.data)) {
-          weekData = weekRes.data;
-        } else {
-          weekData = [];
-        }
-        // bump series counter so memo recomputes
-        setWeekTick((n) => n + 1);
+        setWeek(Array.isArray(weekRes?.data) ? weekRes.data : []);
       } catch {
         if (!cancelled) setOrders([]);
       }
