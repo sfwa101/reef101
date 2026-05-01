@@ -86,6 +86,42 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_tiers: {
+        Row: {
+          badge_emoji: string | null
+          commission_fixed: number
+          created_at: string
+          id: string
+          min_successful_invites: number
+          name: string
+          rank: number
+          unlocks_wholesale: boolean
+          updated_at: string
+        }
+        Insert: {
+          badge_emoji?: string | null
+          commission_fixed?: number
+          created_at?: string
+          id?: string
+          min_successful_invites?: number
+          name: string
+          rank: number
+          unlocks_wholesale?: boolean
+          updated_at?: string
+        }
+        Update: {
+          badge_emoji?: string | null
+          commission_fixed?: number
+          created_at?: string
+          id?: string
+          min_successful_invites?: number
+          name?: string
+          rank?: number
+          unlocks_wholesale?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -3435,6 +3471,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_affiliate_state: {
+        Row: {
+          current_tier_id: string | null
+          successful_invites: number
+          total_commission_earned: number
+          unlocks_wholesale: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_tier_id?: string | null
+          successful_invites?: number
+          total_commission_earned?: number
+          unlocks_wholesale?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_tier_id?: string | null
+          successful_invites?: number
+          total_commission_earned?: number
+          unlocks_wholesale?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_affiliate_state_current_tier_id_fkey"
+            columns: ["current_tier_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_behavior_logs: {
         Row: {
           category: string | null
@@ -4154,7 +4225,7 @@ export type Database = {
         }
         Returns: Json
       }
-      ensure_referral_code: { Args: { _user_id: string }; Returns: string }
+      ensure_referral_code: { Args: { _user_id?: string }; Returns: string }
       executive_dashboard_stats: { Args: { _days?: number }; Returns: Json }
       financial_snapshot: { Args: { _days?: number }; Returns: Json }
       find_allocation_warehouse: {
@@ -4255,6 +4326,10 @@ export type Database = {
       process_commission_vesting: { Args: never; Returns: Json }
       process_group_buy_campaign: {
         Args: { _campaign_id: string }
+        Returns: Json
+      }
+      process_successful_referral: {
+        Args: { _referral_id: string }
         Returns: Json
       }
       progress_to_next_level: { Args: { _user_id: string }; Returns: Json }
