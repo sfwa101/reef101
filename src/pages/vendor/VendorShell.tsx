@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, Navigate } from "@tanstack/react-router";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminRoles } from "@/components/admin/RoleGuard";
-import { Loader2, LayoutDashboard, Package, Wallet, LogOut, Store as StoreIcon } from "lucide-react";
+import { Loader2, LayoutDashboard, Package, Wallet, LogOut, Store as StoreIcon, ClipboardList } from "lucide-react";
 
 export default function VendorShell() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -31,8 +31,9 @@ export default function VendorShell() {
     );
   }
 
-  const tabs = [
+    const tabs = [
     { to: "/vendor", label: "لوحة التحكم", icon: LayoutDashboard, exact: true },
+    { to: "/vendor/orders", label: "الطلبات", icon: ClipboardList },
     { to: "/vendor/products", label: "منتجاتي", icon: Package },
     { to: "/vendor/wallet", label: "محفظتي", icon: Wallet },
   ];
@@ -54,7 +55,7 @@ export default function VendorShell() {
       </header>
       <main className="max-w-3xl mx-auto"><Outlet /></main>
       <nav className="fixed bottom-0 inset-x-0 bg-surface/95 backdrop-blur border-t border-border/40 z-30">
-        <div className="max-w-3xl mx-auto grid grid-cols-3 h-16">
+        <div className="max-w-3xl mx-auto grid grid-cols-4 h-16">
           {tabs.map(t => {
             const active = t.exact ? location.pathname === t.to : location.pathname.startsWith(t.to);
             return (

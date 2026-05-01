@@ -22,6 +22,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as VendorWalletRouteImport } from './routes/vendor.wallet'
 import { Route as VendorProductsRouteImport } from './routes/vendor.products'
+import { Route as VendorOrdersRouteImport } from './routes/vendor.orders'
 import { Route as DriverWalletRouteImport } from './routes/driver.wallet'
 import { Route as DriverMapRouteImport } from './routes/driver.map'
 import { Route as AdminZakatRouteImport } from './routes/admin.zakat'
@@ -179,6 +180,11 @@ const VendorWalletRoute = VendorWalletRouteImport.update({
 const VendorProductsRoute = VendorProductsRouteImport.update({
   id: '/products',
   path: '/products',
+  getParentRoute: () => VendorRoute,
+} as any)
+const VendorOrdersRoute = VendorOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => VendorRoute,
 } as any)
 const DriverWalletRoute = DriverWalletRouteImport.update({
@@ -717,6 +723,7 @@ export interface FileRoutesByFullPath {
   '/admin/zakat': typeof AdminZakatRoute
   '/driver/map': typeof DriverMapRoute
   '/driver/wallet': typeof DriverWalletRoute
+  '/vendor/orders': typeof VendorOrdersRoute
   '/vendor/products': typeof VendorProductsRoute
   '/vendor/wallet': typeof VendorWalletRoute
   '/admin/': typeof AdminIndexRoute
@@ -820,6 +827,7 @@ export interface FileRoutesByTo {
   '/admin/zakat': typeof AdminZakatRoute
   '/driver/map': typeof DriverMapRoute
   '/driver/wallet': typeof DriverWalletRoute
+  '/vendor/orders': typeof VendorOrdersRoute
   '/vendor/products': typeof VendorProductsRoute
   '/vendor/wallet': typeof VendorWalletRoute
   '/': typeof AppIndexRoute
@@ -930,6 +938,7 @@ export interface FileRoutesById {
   '/admin/zakat': typeof AdminZakatRoute
   '/driver/map': typeof DriverMapRoute
   '/driver/wallet': typeof DriverWalletRoute
+  '/vendor/orders': typeof VendorOrdersRoute
   '/vendor/products': typeof VendorProductsRoute
   '/vendor/wallet': typeof VendorWalletRoute
   '/_app/': typeof AppIndexRoute
@@ -1041,6 +1050,7 @@ export interface FileRouteTypes {
     | '/admin/zakat'
     | '/driver/map'
     | '/driver/wallet'
+    | '/vendor/orders'
     | '/vendor/products'
     | '/vendor/wallet'
     | '/admin/'
@@ -1144,6 +1154,7 @@ export interface FileRouteTypes {
     | '/admin/zakat'
     | '/driver/map'
     | '/driver/wallet'
+    | '/vendor/orders'
     | '/vendor/products'
     | '/vendor/wallet'
     | '/'
@@ -1253,6 +1264,7 @@ export interface FileRouteTypes {
     | '/admin/zakat'
     | '/driver/map'
     | '/driver/wallet'
+    | '/vendor/orders'
     | '/vendor/products'
     | '/vendor/wallet'
     | '/_app/'
@@ -1401,6 +1413,13 @@ declare module '@tanstack/react-router' {
       path: '/products'
       fullPath: '/vendor/products'
       preLoaderRoute: typeof VendorProductsRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/vendor/orders': {
+      id: '/vendor/orders'
+      path: '/orders'
+      fullPath: '/vendor/orders'
+      preLoaderRoute: typeof VendorOrdersRouteImport
       parentRoute: typeof VendorRoute
     }
     '/driver/wallet': {
@@ -2324,12 +2343,14 @@ const DriverRouteWithChildren =
   DriverRoute._addFileChildren(DriverRouteChildren)
 
 interface VendorRouteChildren {
+  VendorOrdersRoute: typeof VendorOrdersRoute
   VendorProductsRoute: typeof VendorProductsRoute
   VendorWalletRoute: typeof VendorWalletRoute
   VendorIndexRoute: typeof VendorIndexRoute
 }
 
 const VendorRouteChildren: VendorRouteChildren = {
+  VendorOrdersRoute: VendorOrdersRoute,
   VendorProductsRoute: VendorProductsRoute,
   VendorWalletRoute: VendorWalletRoute,
   VendorIndexRoute: VendorIndexRoute,
