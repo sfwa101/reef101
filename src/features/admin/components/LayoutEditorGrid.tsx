@@ -47,13 +47,13 @@ export function LayoutEditorGrid({ pageKey: defaultPageKey = "main_hub" }: { pag
   const onSave = async () => {
     const r = await ed.saveDraft();
     if (r.ok) toast.success("تم حفظ المسودة");
-    else toast.error("فشل الحفظ: " + (r.error ?? ""));
+    else toast.error("فشل الحفظ: " + (("error" in r && r.error) || ""));
   };
   const onPublish = async () => {
     if (!confirm("نشر المخطط الحالي للعملاء؟ سيتم حفظ نسخة في السجل.")) return;
     const r = await ed.publish();
     if (r.ok) toast.success("تم النشر للعملاء ✓");
-    else toast.error("فشل النشر: " + (r.error ?? ""));
+    else toast.error("فشل النشر: " + (("error" in r && r.error) || ""));
   };
   const onPreview = () => {
     const url = `${previewPath}?preview=draft`;
