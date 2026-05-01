@@ -347,7 +347,7 @@ const HomePage = () => {
               to={s.to}
               className="group relative flex h-24 w-32 shrink-0 snap-start flex-col justify-end overflow-hidden rounded-2xl shadow-soft tile-overlay transition active:scale-[0.98]"
             >
-              <img src={s.img} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+              <OptimizedImage src={s.img} alt="" wrapperClassName="absolute inset-0" className="h-full w-full object-cover" />
               <span className="relative z-10 p-2.5 font-display text-sm font-bold text-white drop-shadow">
                 {s.title}
               </span>
