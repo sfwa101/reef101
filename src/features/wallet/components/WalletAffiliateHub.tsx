@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Banknote, Copy, Lock, Share2, Sparkles, Users } from "lucide-react";
+import { Banknote, Copy, Lock, Share2, Sparkles, Users, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { toLatin } from "@/lib/format";
 import { Progress } from "@/components/ui/progress";
 import type { ReferralRow } from "@/features/wallet/types/wallet.types";
 import { useAffiliateEngine } from "@/features/wallet/hooks/useAffiliateEngine";
+import { WithdrawDialog } from "@/features/wallet/components/WithdrawDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 // shopping bag icon (lucide doesn't expose ShoppingBagIcon by that name in older imports)
 function ShoppingBagIcon(props: any) {
@@ -47,7 +49,23 @@ export const WalletAffiliateHub = ({
   onEnsureCode: () => Promise<string | null>;
 }) => {
   const [busy, setBusy] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [balance, setBalance] = useState<number>(0);
   const totalRegistered = referrals.length;
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from("wallet_balances")
+        .select("balance")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!cancel) setBalance(Number(data?.balance ?? 0));
+    })();
+    return () => { cancel = true; };
+  }, [userId, withdrawOpen]);
 
   const {
     currentTier,
