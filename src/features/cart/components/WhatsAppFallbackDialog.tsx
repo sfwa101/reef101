@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Copy, ExternalLink, MessageCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -7,6 +8,8 @@ import { copyTextToClipboard, buildWaUrl, normalizeWaPhone } from "@/lib/whatsap
 export type WaFallbackPayload = {
   phone: string;
   text: string;
+  orderId?: string;
+  total?: number;
 };
 
 type Props = {
@@ -21,6 +24,7 @@ type Props = {
  */
 export const WhatsAppFallbackDialog = ({ open, payload, onClose }: Props) => {
   const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
   if (!payload) return null;
 
   const phone = normalizeWaPhone(payload.phone);
@@ -35,6 +39,13 @@ export const WhatsAppFallbackDialog = ({ open, payload, onClose }: Props) => {
     } else {
       toast.error("تعذر النسخ — يمكنك تحديد النص ونسخه يدويًا");
     }
+  };
+
+  const onConfirmSent = () => {
+    const id = payload.orderId ?? "";
+    const total = payload.total ?? 0;
+    onClose();
+    navigate({ to: "/order-success", search: { id, total } });
   };
 
   return (
@@ -104,12 +115,19 @@ export const WhatsAppFallbackDialog = ({ open, payload, onClose }: Props) => {
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => console.log("[wa] manual fallback link clicked", { url })}
                 className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-3 py-2.5 text-[12.5px] font-extrabold text-primary-foreground transition active:scale-[0.97]"
               >
                 <ExternalLink className="h-4 w-4" />
                 فتح واتساب
               </a>
             </div>
+            <button
+              onClick={onConfirmSent}
+              className="mt-2 w-full rounded-2xl bg-foreground px-3 py-2.5 text-[12.5px] font-extrabold text-background transition active:scale-[0.97]"
+            >
+              تم الإرسال، انتقل لصفحة التأكيد
+            </button>
           </motion.div>
         </motion.div>
       )}
