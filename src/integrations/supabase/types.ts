@@ -1466,6 +1466,153 @@ export type Database = {
         }
         Relationships: []
       }
+      group_buy_campaigns: {
+        Row: {
+          base_price: number
+          created_at: string
+          created_by: string | null
+          current_quantity: number
+          description: string | null
+          expires_at: string
+          geo_zone_id: string
+          id: string
+          image_url: string | null
+          product_id: string | null
+          settled_at: string | null
+          status: Database["public"]["Enums"]["group_buy_status"]
+          target_quantity: number
+          title: string
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          base_price: number
+          created_at?: string
+          created_by?: string | null
+          current_quantity?: number
+          description?: string | null
+          expires_at: string
+          geo_zone_id: string
+          id?: string
+          image_url?: string | null
+          product_id?: string | null
+          settled_at?: string | null
+          status?: Database["public"]["Enums"]["group_buy_status"]
+          target_quantity: number
+          title: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          base_price?: number
+          created_at?: string
+          created_by?: string | null
+          current_quantity?: number
+          description?: string | null
+          expires_at?: string
+          geo_zone_id?: string
+          id?: string
+          image_url?: string | null
+          product_id?: string | null
+          settled_at?: string | null
+          status?: Database["public"]["Enums"]["group_buy_status"]
+          target_quantity?: number
+          title?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_buy_campaigns_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_buy_pledges: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          escrow_amount: number
+          escrow_wallet_tx_id: string | null
+          id: string
+          pledged_quantity: number
+          settled_at: string | null
+          status: Database["public"]["Enums"]["group_buy_pledge_status"]
+          unit_price_locked: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          escrow_amount: number
+          escrow_wallet_tx_id?: string | null
+          id?: string
+          pledged_quantity: number
+          settled_at?: string | null
+          status?: Database["public"]["Enums"]["group_buy_pledge_status"]
+          unit_price_locked: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          escrow_amount?: number
+          escrow_wallet_tx_id?: string | null
+          id?: string
+          pledged_quantity?: number
+          settled_at?: string | null
+          status?: Database["public"]["Enums"]["group_buy_pledge_status"]
+          unit_price_locked?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_buy_pledges_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "group_buy_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_buy_tiers: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          price_per_unit: number
+          quantity_threshold: number
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          price_per_unit: number
+          quantity_threshold: number
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          price_per_unit?: number
+          quantity_threshold?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_buy_tiers_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "group_buy_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hakim_chat_messages: {
         Row: {
           content: string
@@ -4010,6 +4157,10 @@ export type Database = {
         }[]
       }
       get_user_kyc_level: { Args: { _user_id?: string }; Returns: number }
+      group_buy_current_price: {
+        Args: { _campaign_id: string }
+        Returns: number
+      }
       hakim_deep_report: {
         Args: { _from?: string; _to?: string }
         Returns: Json
@@ -4077,7 +4228,15 @@ export type Database = {
           suggested_discount_pct: number
         }[]
       }
+      pledge_group_buy: {
+        Args: { _campaign_id: string; _quantity: number }
+        Returns: Json
+      }
       process_commission_vesting: { Args: never; Returns: Json }
+      process_group_buy_campaign: {
+        Args: { _campaign_id: string }
+        Returns: Json
+      }
       progress_to_next_level: { Args: { _user_id: string }; Returns: Json }
       recompute_wallet_balance: { Args: { _user: string }; Returns: number }
       redeem_coupon: {
@@ -4153,6 +4312,8 @@ export type Database = {
         | "inventory_clerk"
         | "charity_auditor"
       app_user_level: "bronze" | "silver" | "gold" | "platinum"
+      group_buy_pledge_status: "locked" | "committed" | "refunded"
+      group_buy_status: "gathering" | "succeeded" | "failed" | "fulfilled"
       shared_cart_approval: "pending" | "approved" | "rejected"
       shared_cart_role: "owner" | "contributor"
       shared_cart_split_type: "percentage" | "fixed" | "itemized"
@@ -4303,6 +4464,8 @@ export const Constants = {
         "charity_auditor",
       ],
       app_user_level: ["bronze", "silver", "gold", "platinum"],
+      group_buy_pledge_status: ["locked", "committed", "refunded"],
+      group_buy_status: ["gathering", "succeeded", "failed", "fulfilled"],
       shared_cart_approval: ["pending", "approved", "rejected"],
       shared_cart_role: ["owner", "contributor"],
       shared_cart_split_type: ["percentage", "fixed", "itemized"],
