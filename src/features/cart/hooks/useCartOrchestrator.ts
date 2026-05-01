@@ -928,6 +928,20 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
     // checkout
     submitting,
     checkoutWA,
+    // shared cart (Phase 6)
+    isSharedMode,
+    sharedCartId,
+    sharedCart: shared.cart,
+    sharedParticipants: shared.participants,
+    sharedItems: shared.items,
+    sharedIsOwner: shared.isOwner,
+    sharedMyParticipant: shared.myParticipant,
+    sharedRequestApprovals: shared.requestApprovals,
+    sharedReopenForEdits: shared.reopenForEdits,
+    sharedApprove: shared.approve,
+    sharedReject: shared.reject,
+    sharedCancel: shared.cancelCart,
+    sharedMarkCompleted: shared.markCompleted,
   };
 };
 
