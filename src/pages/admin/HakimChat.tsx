@@ -156,6 +156,11 @@ export default function HakimChat() {
             </button>
           </div>
 
+          {/* Phase 13 — Hakim Pulse Monitor (local-first heartbeat) */}
+          <div className="px-3 pt-3">
+            <HakimPulseMonitor />
+          </div>
+
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-4 space-y-3">
             {messages.length === 0 && (
               <div className="max-w-md mx-auto text-center py-8">
