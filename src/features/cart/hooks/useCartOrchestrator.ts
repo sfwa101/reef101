@@ -534,6 +534,12 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
     }
     submittingRef.current = true;
     setSubmitting(true);
+    // CRITICAL: pre-open the WhatsApp tab inside the current user gesture.
+    // After awaits below, the gesture is gone and `window.open` would be
+    // blocked by every modern browser. We redirect this handle later.
+    // On mobile, `location.href` is more reliable than a popup, so skip pre-open.
+    const onMobile = isMobileWaContext();
+    const preOpened: Window | null = onMobile ? null : preOpenWindow();
     const minLoading = new Promise<void>((r) => setTimeout(r, 1000));
     try {
       const noteParts = [
