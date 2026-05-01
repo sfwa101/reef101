@@ -155,6 +155,7 @@ const Wallet = () => {
             transition={{ duration: 0.25 }}
           >
             <WalletAffiliateHub
+              userId={c.userId}
               code={c.referralCode}
               referrals={c.referrals}
               totalCommission={c.totalCommission}
