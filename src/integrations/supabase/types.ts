@@ -345,6 +345,113 @@ export type Database = {
         }
         Relationships: []
       }
+      charity_campaigns: {
+        Row: {
+          auditor_id: string
+          cover_url: string | null
+          created_at: string
+          current_amount: number
+          description: string | null
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          restricted_categories: string[]
+          starts_at: string
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          auditor_id: string
+          cover_url?: string | null
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          restricted_categories?: string[]
+          starts_at?: string
+          target_amount?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          auditor_id?: string
+          cover_url?: string | null
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          restricted_categories?: string[]
+          starts_at?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "charity_campaigns_auditor_id_fkey"
+            columns: ["auditor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      charity_donations: {
+        Row: {
+          amount: number
+          campaign_id: string | null
+          created_at: string
+          donor_user_id: string | null
+          id: string
+          note: string | null
+          source: string
+          status: string
+          wallet_tx_id: string | null
+        }
+        Insert: {
+          amount: number
+          campaign_id?: string | null
+          created_at?: string
+          donor_user_id?: string | null
+          id?: string
+          note?: string | null
+          source?: string
+          status?: string
+          wallet_tx_id?: string | null
+        }
+        Update: {
+          amount?: number
+          campaign_id?: string | null
+          created_at?: string
+          donor_user_id?: string | null
+          id?: string
+          note?: string | null
+          source?: string
+          status?: string
+          wallet_tx_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "charity_donations_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "charity_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charity_donations_donor_user_id_fkey"
+            columns: ["donor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       charity_ledger: {
         Row: {
           base_amount: number
@@ -3856,6 +3963,15 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      donate_to_campaign: {
+        Args: {
+          _amount: number
+          _campaign_id: string
+          _note?: string
+          _source?: string
+        }
+        Returns: Json
+      }
       driver_log_event: {
         Args: { _event: string; _lat?: number; _lng?: number; _task_id: string }
         Returns: Json
@@ -4035,6 +4151,7 @@ export type Database = {
         | "vendor"
         | "branch_manager"
         | "inventory_clerk"
+        | "charity_auditor"
       app_user_level: "bronze" | "silver" | "gold" | "platinum"
       shared_cart_approval: "pending" | "approved" | "rejected"
       shared_cart_role: "owner" | "contributor"
@@ -4183,6 +4300,7 @@ export const Constants = {
         "vendor",
         "branch_manager",
         "inventory_clerk",
+        "charity_auditor",
       ],
       app_user_level: ["bronze", "silver", "gold", "platinum"],
       shared_cart_approval: ["pending", "approved", "rejected"],

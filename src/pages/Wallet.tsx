@@ -1,4 +1,4 @@
-import { Loader2, PieChart as PieIcon, Users, Wallet2 } from "lucide-react";
+import { Heart, Loader2, PieChart as PieIcon, Users, Wallet2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toLatin } from "@/lib/format";
 
@@ -22,6 +22,7 @@ import { WalletAffiliateHub } from "@/features/wallet/components/WalletAffiliate
 import { WalletTopupDialog } from "@/features/wallet/components/WalletTopupDialog";
 import { WalletTransferDialog } from "@/features/wallet/components/WalletTransferDialog";
 import { WalletPosBarcode } from "@/features/wallet/components/WalletPosBarcode";
+import { WalletCharityHub } from "@/features/wallet/components/WalletCharityHub";
 
 /**
  * Wallet — page shell.
@@ -83,6 +84,7 @@ const Wallet = () => {
         tabs={[
           { id: "balance", label: "الرصيد", icon: Wallet2 },
           { id: "budgets", label: "التحليلات", icon: PieIcon },
+          { id: "charity", label: "الصدقات", icon: Heart },
           { id: "affiliate", label: "الإحالات", icon: Users },
         ]}
         active={c.tab}
@@ -129,6 +131,18 @@ const Wallet = () => {
               budgets={c.budgets}
               onChange={c.setBudgets}
             />
+          </motion.div>
+        )}
+
+        {c.tab === "charity" && (
+          <motion.div
+            key="charity"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <WalletCharityHub walletBalance={Number(c.balance?.balance ?? 0)} />
           </motion.div>
         )}
 
