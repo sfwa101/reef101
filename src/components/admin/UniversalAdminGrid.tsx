@@ -206,16 +206,46 @@ export function UniversalAdminGrid<T = any>({
 
         {topSlot}
 
-        {/* Search */}
-        {dataSource.searchKeys?.length ? (
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={searchPlaceholder ?? "بحث..."}
-              className="w-full bg-surface border border-border/50 rounded-2xl pr-10 pl-4 py-2.5 text-[13.5px] outline-none focus:border-primary/50 transition"
-            />
+        {/* Sticky search header + density toggle (Phase 20 D5) */}
+        {dataSource.searchKeys?.length || !renderList ? (
+          <div className="sticky top-[56px] lg:top-2 z-20 -mx-4 lg:mx-0 px-4 lg:px-0 py-2 glass-strong rounded-none lg:rounded-2xl flex items-center gap-2">
+            {dataSource.searchKeys?.length ? (
+              <div className="relative flex-1">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder={searchPlaceholder ?? "بحث..."}
+                  className="w-full bg-card/70 border border-border/50 rounded-2xl pr-10 pl-4 py-2.5 text-[13.5px] outline-none focus:border-primary/50 transition"
+                />
+              </div>
+            ) : <div className="flex-1" />}
+            <div className="hidden md:flex items-center rounded-2xl border border-border/50 bg-card/70 p-0.5" role="group" aria-label="كثافة العرض">
+              <button
+                type="button"
+                onClick={() => setDensity("comfortable")}
+                aria-pressed={density === "comfortable"}
+                title="عرض موسّع"
+                className={cn(
+                  "h-8 w-8 rounded-xl flex items-center justify-center transition press",
+                  density === "comfortable" ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground-tertiary hover:text-foreground",
+                )}
+              >
+                <Rows2 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setDensity("compact")}
+                aria-pressed={density === "compact"}
+                title="عرض مكثّف"
+                className={cn(
+                  "h-8 w-8 rounded-xl flex items-center justify-center transition press",
+                  density === "compact" ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground-tertiary hover:text-foreground",
+                )}
+              >
+                <Rows3 className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         ) : null}
 
@@ -245,8 +275,9 @@ export function UniversalAdminGrid<T = any>({
                     role={onRowClick ? "button" : undefined}
                     onClick={onRowClick ? () => onRowClick(row) : undefined}
                     className={cn(
-                      "px-4 lg:px-5 py-3 flex items-center gap-3 transition text-right",
-                      onRowClick && "hover:bg-surface-muted/50 cursor-pointer press",
+                      DENSITY_ROW[density],
+                      "flex items-center gap-3 transition text-right group/row hover:bg-surface-muted/60 hover:shadow-[inset_2px_0_0_hsl(var(--primary))]",
+                      onRowClick && "cursor-pointer press",
                     )}
                   >
                     {columns?.map((col) => (
