@@ -162,8 +162,8 @@ export default function Products() {
     <>
       <MobileTopbar title="المنتجات" />
       <div className="px-4 lg:px-6 pt-2 pb-6 max-w-6xl mx-auto">
-        <div className="flex gap-2 mb-3">
-          <div className="relative flex-1">
+        <div className="flex flex-wrap gap-2 mb-3">
+          <div className="relative w-full sm:flex-1 sm:w-auto">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground-tertiary" />
             <input
               value={q}
