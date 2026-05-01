@@ -265,6 +265,29 @@ export const WalletAffiliateHub = ({
         ))}
       </div>
 
+      {/* WITHDRAW CTA — Phase 22 */}
+      <button
+        onClick={() => {
+          if (!userId) { toast.error("سجّل الدخول أولاً"); return; }
+          setWithdrawOpen(true);
+        }}
+        className="w-full rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground py-3.5 px-4 flex items-center justify-between shadow-soft press"
+      >
+        <span className="flex items-center gap-2">
+          <Wallet className="h-4 w-4" />
+          <span className="text-sm font-extrabold">سحب الأرباح</span>
+        </span>
+        <span className="text-[11px] font-bold opacity-90">
+          متاح: {toLatin(balance.toFixed(2))} ج
+        </span>
+      </button>
+
+      <WithdrawDialog
+        open={withdrawOpen}
+        onOpenChange={setWithdrawOpen}
+        availableBalance={balance}
+      />
+
       {/* HOW IT WORKS */}
       <div className="rounded-2xl bg-primary/8 p-3.5 ring-1 ring-primary/15">
         <p className="text-[11px] font-extrabold text-primary">🎯 كيف تعمل العمولة؟</p>
