@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import HomeStore from "@/pages/store/Home";
+import HomePage from "@/pages/Home";
 
-// Phase 25: root `/` now serves the SDUI-powered storefront Home
-// (LayoutFactory + ui_layouts). The legacy monolithic `pages/Home.tsx`
-// was eradicated to remove the visual mask hiding new features.
+// Root `/` serves the Main Super App Dashboard (department hub).
+// The Home Goods storefront lives at /store/home (HomeGoods.tsx).
 export const Route = createFileRoute("/_app/")({
-  component: HomeStore,
+  component: HomePage,
 });
