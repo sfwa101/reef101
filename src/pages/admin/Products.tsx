@@ -129,35 +129,34 @@ export default function Products() {
   };
 
   const handleFixImages = async () => {
-    if (!confirm("سيتم تحديث صور كل المنتجات بصور احترافية مطابقة لاسم كل منتج. متابعة؟")) return;
+    if (!confirm("سيتم توليد صورة AI فريدة لكل منتج (قد يستغرق دقائق). متابعة؟")) return;
     setFixingImages(true);
-    const t = toast.loading("جاري إصلاح الصور…");
+    const t = toast.loading("جاري توليد صور AI فريدة…");
     try {
-      const { data, error } = await supabase.from("products").select("id, name, source").limit(5000);
+      const { data, error } = await supabase.from("products").select("id").limit(5000);
       if (error) throw error;
-      const all = (data ?? []) as { id: string; name: string; source: string | null }[];
-      const groups = new Map<string, string[]>();
-      all.forEach((row, i) => {
-        const url = pickImageFor(row.name, row.source, i);
-        if (!groups.has(url)) groups.set(url, []);
-        groups.get(url)!.push(row.id);
-      });
-      let updated = 0;
-      const errors: string[] = [];
-      for (const [url, ids] of groups) {
-        for (let i = 0; i < ids.length; i += 50) {
-          const chunk = ids.slice(i, i + 50);
-          const { error: upErr } = await supabase
-            .from("products")
-            .update({ image_url: url, image: url })
-            .in("id", chunk);
-          if (upErr) errors.push(upErr.message);
-          else updated += chunk.length;
+      const ids = (data ?? []).map((r: { id: string }) => r.id);
+      const total = ids.length;
+      let done = 0;
+      let failed = 0;
+      const BATCH = 8;
+      for (let i = 0; i < ids.length; i += BATCH) {
+        const chunk = ids.slice(i, i + BATCH);
+        toast.loading(`جاري توليد الصور… ${done}/${total}`, { id: t });
+        const { data: res, error: fnErr } = await supabase.functions.invoke("generate-product-image", {
+          body: { ids: chunk },
+        });
+        if (fnErr) {
+          failed += chunk.length;
+        } else {
+          const results = (res?.results ?? []) as { ok: boolean }[];
+          done += results.filter((r) => r.ok).length;
+          failed += results.filter((r) => !r.ok).length;
         }
       }
       toast.dismiss(t);
-      if (errors.length) toast.error(`تم تحديث ${updated}/${all.length} — خطأ: ${errors[0]}`);
-      else toast.success(`✨ تم تحديث صور ${updated} منتج بصور مطابقة`);
+      if (failed > 0) toast.error(`تم: ${done} • فشل: ${failed}`);
+      else toast.success(`✨ تم توليد ${done} صورة فريدة بنجاح`);
       await load();
     } catch (e) {
       toast.dismiss(t);
