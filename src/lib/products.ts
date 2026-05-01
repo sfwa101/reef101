@@ -42,6 +42,10 @@ export type Product = {
   variants?: ProductVariant[];
   addons?: ProductAddon[];
   perishable?: boolean;
+  /** Polymorphic per-source metadata (pharmacy fields, meat prep, etc). */
+  metadata?: Record<string, any>;
+  /** Long-form description (used on PDP). */
+  description?: string;
 };
 
 // Normalize a DB row → Product
@@ -53,6 +57,7 @@ type DbRow = {
   source: string; badge: string | null;
   variants: unknown; addons: unknown;
   perishable: boolean | null; is_active: boolean;
+  metadata: unknown; description: string | null;
 };
 
 const FALLBACK_IMG =
@@ -75,6 +80,10 @@ function rowToProduct(row: DbRow): Product {
     variants: (row.variants as ProductVariant[] | null) ?? undefined,
     addons: (row.addons as ProductAddon[] | null) ?? undefined,
     perishable: row.perishable ?? undefined,
+    metadata: (row.metadata && typeof row.metadata === "object")
+      ? (row.metadata as Record<string, any>)
+      : undefined,
+    description: row.description ?? undefined,
   };
 }
 
@@ -99,7 +108,7 @@ async function fetchAll(): Promise<Product[]> {
   if (!isBrowser) return [];
   const { data, error } = await supabase
     .from("products")
-    .select("id,name,brand,unit,price,old_price,image,image_url,rating,category,sub_category,source,badge,variants,addons,perishable,is_active")
+    .select("id,name,brand,unit,price,old_price,image,image_url,rating,category,sub_category,source,badge,variants,addons,perishable,is_active,metadata,description")
     .eq("is_active", true)
     .order("sort_order", { ascending: true })
     .limit(2000);
