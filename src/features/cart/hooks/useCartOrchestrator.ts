@@ -588,6 +588,7 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
           toast.error(result.error);
           setSubmitting(false);
           submittingRef.current = false;
+          try { preOpened?.close(); } catch { /* noop */ }
           return;
         }
         savedOrderId = result.order_id;
