@@ -576,33 +576,60 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       let savedOrderId: string | null = null;
 
       if (!isGuest && currentUser) {
-        const result = await placeOrder({
-          data: {
-            total: grand,
-            payment_method: payment,
-            address_id: selectedAddr?.id ?? null,
-            notes: noteParts.length ? noteParts.join(" · ") : null,
-            service_type: "delivery",
-            delivery_zone: zone.id ?? null,
-            items: lines.map((l) => ({
-              product_id: l.product.id,
-              product_name: l.product.name,
-              product_image: l.product.image ?? null,
-              price: l.meta?.unitPrice ?? l.product.price,
-              quantity: l.qty,
-            })),
-          },
-        });
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data: rpcData, error: rpcErr } = await (supabase as any).rpc(
+            "place_order_atomic",
+            {
+              _user_id: currentUser.id,
+              _total: grand,
+              _payment_method: payment,
+              _address_id: selectedAddr?.id ?? null,
+              _notes: noteParts.length ? noteParts.join(" · ") : null,
+              _service_type: "delivery",
+              _delivery_zone: zone.id ?? null,
+              _items: lines.map((l) => ({
+                product_id: l.product.id,
+                product_name: l.product.name,
+                product_image: l.product.image ?? null,
+                price: l.meta?.unitPrice ?? l.product.price,
+                quantity: l.qty,
+              })),
+            },
+          );
 
-        if (!result.ok) {
-          console.error("[checkout] placeOrder failed:", result);
-          toast.error(result.error);
+          if (rpcErr) {
+            console.error("[checkout] placeOrder rpc failed:", rpcErr);
+            const msg = rpcErr.message || "";
+            let friendly = "تعذر إنشاء الطلب، حاول مرة أخرى";
+            if (msg.includes("out_of_stock")) friendly = "أحد المنتجات نفد من المخزون";
+            else if (msg.includes("product_not_found")) friendly = "منتج غير موجود في الكتالوج";
+            else if (msg.includes("empty_cart")) friendly = "السلة فارغة";
+            else if (msg.includes("unauthorized")) friendly = "غير مصرح";
+            toast.error(friendly);
+            setSubmitting(false);
+            submittingRef.current = false;
+            try { preOpened?.close(); } catch { /* noop */ }
+            return;
+          }
+
+          if (!rpcData || typeof rpcData !== "string") {
+            console.error("[checkout] placeOrder missing order id", rpcData);
+            toast.error("استجابة غير متوقعة من الخادم");
+            setSubmitting(false);
+            submittingRef.current = false;
+            try { preOpened?.close(); } catch { /* noop */ }
+            return;
+          }
+          savedOrderId = rpcData;
+        } catch (e) {
+          console.error("[checkout] placeOrder exception:", e);
+          toast.error("حدث خطأ غير متوقع، حاول مرة أخرى");
           setSubmitting(false);
           submittingRef.current = false;
           try { preOpened?.close(); } catch { /* noop */ }
           return;
         }
-        savedOrderId = result.order_id;
 
         // Best-effort multi-warehouse allocation (non-blocking)
         try {
