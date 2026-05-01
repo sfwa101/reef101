@@ -117,7 +117,7 @@ export default function AdminPayouts() {
               compute: (rows) => fmtNum((rows as UserPayout[]).filter(r => r.status === "completed").length),
             },
             {
-              key: "rejected", label: "مرفوض", icon: XCircle, tone: "destructive",
+              key: "rejected", label: "مرفوض", icon: XCircle, tone: "pink",
               compute: (rows) => fmtNum((rows as UserPayout[]).filter(r => r.status === "rejected").length),
             },
           ]}
@@ -180,7 +180,7 @@ export default function AdminPayouts() {
               compute: (rows) => fmtNum((rows as VendorPayout[]).filter(r => r.status === "completed").length),
             },
             {
-              key: "rejected", label: "مرفوض", icon: XCircle, tone: "destructive",
+              key: "rejected", label: "مرفوض", icon: XCircle, tone: "pink",
               compute: (rows) => fmtNum((rows as VendorPayout[]).filter(r => r.status === "rejected").length),
             },
           ]}
