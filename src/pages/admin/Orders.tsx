@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, Package, Search } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTopbar } from "@/components/admin/MobileTopbar";
 import { IOSCard } from "@/components/ios/IOSCard";
 import { fmtMoney, fmtRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+const PAGE_SIZE = 50;
 
 type Order = {
   id: string;
