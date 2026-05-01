@@ -180,18 +180,9 @@ export default function Products() {
             <span>جديد</span>
           </button>
           <button
-            onClick={handleSeed}
-            disabled={seeding}
-            className="h-11 px-3 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center gap-1.5 press shadow-sm font-semibold text-[12px] disabled:opacity-60"
-            title="حقن أكثر من 500 منتج محلي"
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>{seeding ? "جاري…" : "حقن 500+"}</span>
-          </button>
-          <button
             onClick={handleFixImages}
             disabled={fixingImages}
-            className="h-11 px-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center gap-1.5 press shadow-sm font-semibold text-[12px] disabled:opacity-60"
+            className="h-11 px-3 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center gap-1.5 press shadow-sm font-semibold text-[12px] disabled:opacity-60"
             title="تحديث صور المنتجات الحالية"
           >
             <Wand2 className="h-4 w-4" />
