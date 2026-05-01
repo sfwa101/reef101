@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { UIProvider } from "@/context/UIContext";
 import { CartProvider } from "@/context/CartContext";
 import { CompareProvider } from "@/context/CompareContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
@@ -102,20 +103,22 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <AuthProvider>
-            <LocationProvider>
-              <CartProvider>
-                <CompareProvider>
-                  <FavoritesProvider>
-                    <Toaster />
-                    <Outlet />
-                  </FavoritesProvider>
-                </CompareProvider>
-              </CartProvider>
-            </LocationProvider>
-          </AuthProvider>
-        </TooltipProvider>
+        <UIProvider>
+          <TooltipProvider>
+            <AuthProvider>
+              <LocationProvider>
+                <CartProvider>
+                  <CompareProvider>
+                    <FavoritesProvider>
+                      <Toaster />
+                      <Outlet />
+                    </FavoritesProvider>
+                  </CompareProvider>
+                </CartProvider>
+              </LocationProvider>
+            </AuthProvider>
+          </TooltipProvider>
+        </UIProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
