@@ -129,6 +129,8 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
   const [guestNotes, setGuestNotes] = useState("");
   const [payment, setPayment] = useState<string>("wallet");
   const [submitting, setSubmitting] = useState(false);
+  // Double-submit guard — synchronous flag that beats React batching
+  const submittingRef = useRef(false);
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [trustLimit, setTrustLimit] = useState<number>(0);
   const [showRecharge, setShowRecharge] = useState(false);
