@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   Home, ShoppingBag, Package, Users, ShieldCheck, Wallet, Receipt, TrendingUp,
   Sparkles, Image, BellRing, Gift, Truck, MapPin, UserCog, MessagesSquare,
-  Star, BarChart3, Settings, FileClock, Warehouse, Store, Printer, FolderTree, Layout,
+  Star, BarChart3, Settings, FileClock, Warehouse, Store, Printer, FolderTree, Layout, Banknote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +26,7 @@ const groups = [
   ]},
   { title: "المالية", items: [
     { to: "/admin/wallets", icon: Wallet, label: "المحافظ" },
+    { to: "/admin/payouts", icon: Banknote, label: "طلبات السحب" },
     { to: "/admin/savings", icon: Receipt, label: "الادخار" },
     { to: "/admin/finance", icon: TrendingUp, label: "التقارير المالية" },
   ]},

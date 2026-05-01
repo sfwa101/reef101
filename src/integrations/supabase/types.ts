@@ -3691,6 +3691,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_payout_requests: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          bank_details: Json
+          created_at: string
+          id: string
+          ledger_tx_id: string | null
+          method: string
+          notes: string | null
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_details?: Json
+          created_at?: string
+          id?: string
+          ledger_tx_id?: string | null
+          method: string
+          notes?: string | null
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_details?: Json
+          created_at?: string
+          id?: string
+          ledger_tx_id?: string | null
+          method?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           avg_order_value: number | null
@@ -4663,6 +4711,10 @@ export type Database = {
           _source?: string
           _type: string
         }
+        Returns: Json
+      }
+      request_user_payout: {
+        Args: { _amount: number; _bank_details: Json; _method: string }
         Returns: Json
       }
       request_vendor_payout: {
