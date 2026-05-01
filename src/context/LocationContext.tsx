@@ -7,6 +7,21 @@ import {
   type ZoneId,
 } from "@/lib/geoZones";
 import { useGeoZones } from "@/hooks/useGeoZones";
+import {
+  useSmartLogistics,
+  calculateDynamicDelivery,
+  calculateDynamicETA,
+  type ZoneOpsMetrics,
+} from "@/lib/sync/useSmartLogistics";
+
+export type DynamicZoneInfo = {
+  fee: number;
+  surge: boolean;
+  loadFactor: number;
+  etaLabel: string;
+  etaMinutes: number;
+  pressure: "normal" | "elevated" | "high";
+};
 
 type LocationCtx = {
   zoneId: ZoneId;
@@ -17,6 +32,10 @@ type LocationCtx = {
   setZoneId: (id: ZoneId) => void;
   /** Convenience: derive + set zone from a free-form (city, district) pair. */
   setFromAddress: (city?: string | null, district?: string | null) => void;
+  /** Realtime ops metrics keyed by zone_code. */
+  zoneOps: Record<string, ZoneOpsMetrics>;
+  /** Compute dynamic fee + ETA for the active zone given a cart subtotal. */
+  getDynamicInfo: (subtotal: number, zoneId?: ZoneId) => DynamicZoneInfo;
 };
 
 const Ctx = createContext<LocationCtx | null>(null);
@@ -27,12 +46,12 @@ const VALID_ZONE_CODES: ZoneId[] = ["A", "B", "C", "D", "M", "E"];
 export const LocationProvider = ({ children }: { children: ReactNode }) => {
   const [zoneId, setZoneIdState] = useState<ZoneId>(DEFAULT_ZONE_ID);
 
-  // Live zones from DB; static module is initialData for instant first paint
-  // AND the fallback if the query errors out.
   const { data: liveZones } = useGeoZones();
   const zones: DeliveryZone[] = liveZones ?? STATIC_ZONES;
 
-  // Hydrate from localStorage (client-only)
+  // Realtime surge / load metrics
+  const { ops: zoneOps } = useSmartLogistics();
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -61,8 +80,6 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
 
   const setFromAddress = useCallback(
     (city?: string | null, district?: string | null) => {
-      // First try matching against the live zones list; fall back to the
-      // static detector (which knows the full governorate list for Zone E).
       const c = (city ?? "").trim();
       const d = (district ?? "").trim();
       const direct =
@@ -77,6 +94,24 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
     [zones],
   );
 
+  const getDynamicInfo = useCallback(
+    (subtotal: number, overrideZoneId?: ZoneId): DynamicZoneInfo => {
+      const z = resolveZone(overrideZoneId ?? zoneId);
+      const ops = zoneOps[z.id];
+      const { fee, surge, loadFactor } = calculateDynamicDelivery(z, subtotal, ops);
+      const eta = calculateDynamicETA(z, ops);
+      return {
+        fee,
+        surge,
+        loadFactor,
+        etaLabel: eta.label,
+        etaMinutes: eta.minutes,
+        pressure: eta.pressure,
+      };
+    },
+    [resolveZone, zoneId, zoneOps],
+  );
+
   const value = useMemo<LocationCtx>(
     () => ({
       zoneId,
@@ -84,8 +119,10 @@ export const LocationProvider = ({ children }: { children: ReactNode }) => {
       zones,
       setZoneId,
       setFromAddress,
+      zoneOps,
+      getDynamicInfo,
     }),
-    [zoneId, zones, resolveZone, setZoneId, setFromAddress],
+    [zoneId, zones, resolveZone, setZoneId, setFromAddress, zoneOps, getDynamicInfo],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

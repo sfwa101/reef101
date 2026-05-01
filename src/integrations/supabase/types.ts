@@ -196,6 +196,7 @@ export type Database = {
           created_at: string
           currency: string
           default_locale: string
+          geo_zone_id: string | null
           id: string
           is_active: boolean
           name: string
@@ -210,6 +211,7 @@ export type Database = {
           created_at?: string
           currency?: string
           default_locale?: string
+          geo_zone_id?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -224,6 +226,7 @@ export type Database = {
           created_at?: string
           currency?: string
           default_locale?: string
+          geo_zone_id?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -231,7 +234,15 @@ export type Database = {
           timezone?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "branches_geo_zone_id_fkey"
+            columns: ["geo_zone_id"]
+            isOneToOne: false
+            referencedRelation: "geo_zones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cashier_sessions: {
         Row: {
@@ -1407,8 +1418,10 @@ export type Database = {
         Row: {
           accent: string | null
           accepts_perishables: boolean
+          base_eta_minutes: number | null
           cod_allowed: boolean
           created_at: string
+          current_load_factor: number
           delivery_fee: number
           districts: string[]
           eta_label: string
@@ -1421,14 +1434,17 @@ export type Database = {
           polygon: Json | null
           short_name: string
           sort_order: number
+          surge_active: boolean
           updated_at: string
           zone_code: string
         }
         Insert: {
           accent?: string | null
           accepts_perishables?: boolean
+          base_eta_minutes?: number | null
           cod_allowed?: boolean
           created_at?: string
+          current_load_factor?: number
           delivery_fee?: number
           districts?: string[]
           eta_label?: string
@@ -1441,14 +1457,17 @@ export type Database = {
           polygon?: Json | null
           short_name: string
           sort_order?: number
+          surge_active?: boolean
           updated_at?: string
           zone_code: string
         }
         Update: {
           accent?: string | null
           accepts_perishables?: boolean
+          base_eta_minutes?: number | null
           cod_allowed?: boolean
           created_at?: string
+          current_load_factor?: number
           delivery_fee?: number
           districts?: string[]
           eta_label?: string
@@ -1461,6 +1480,7 @@ export type Database = {
           polygon?: Json | null
           short_name?: string
           sort_order?: number
+          surge_active?: boolean
           updated_at?: string
           zone_code?: string
         }
