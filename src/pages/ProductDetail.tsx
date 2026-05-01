@@ -358,6 +358,9 @@ const ProductDetail = () => {
           )}
         </section>
 
+        {/* ===== Pharmacy: Medical info + Smart Dosage Calculator ===== */}
+        {isPharmacy && <PharmacyMedicalBlock meta={meta} productName={product.name} />}
+
         {/* ===== Unit picker (multi-unit products) ===== */}
         {productUnits.length > 0 && (
           <section className="space-y-2">
