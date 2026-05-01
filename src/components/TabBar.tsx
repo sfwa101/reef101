@@ -1,5 +1,7 @@
-import { Home, Tag, LayoutGrid, Wallet, User, type LucideIcon } from "lucide-react";
+import { Home, Tag, LayoutGrid, Wallet, User, ShoppingBag, type LucideIcon } from "lucide-react";
 import { Link, useLocation } from "@tanstack/react-router";
+import { useCartCount } from "@/context/CartContext";
+import { toLatin } from "@/lib/format";
 
 type TabItem = {
   id: string;
