@@ -1507,6 +1507,7 @@ export type Database = {
           created_at: string
           front_image_path: string | null
           id: string
+          kyc_level: number
           national_id: string | null
           rejection_reason: string | null
           reviewed_at: string | null
@@ -1520,6 +1521,7 @@ export type Database = {
           created_at?: string
           front_image_path?: string | null
           id?: string
+          kyc_level?: number
           national_id?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -1533,6 +1535,7 @@ export type Database = {
           created_at?: string
           front_image_path?: string | null
           id?: string
+          kyc_level?: number
           national_id?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -3306,6 +3309,51 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_sub_accounts: {
+        Row: {
+          balance: number
+          beneficiary_phone: string | null
+          beneficiary_user_id: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          label: string
+          monthly_limit: number | null
+          owner_user_id: string
+          restricted_to_categories: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          beneficiary_phone?: string | null
+          beneficiary_user_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          label: string
+          monthly_limit?: number | null
+          owner_user_id: string
+          restricted_to_categories?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          beneficiary_phone?: string | null
+          beneficiary_user_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          monthly_limit?: number | null
+          owner_user_id?: string
+          restricted_to_categories?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       wallet_topup_requests: {
         Row: {
           amount: number
@@ -3361,12 +3409,15 @@ export type Database = {
           approved_by: string | null
           created_at: string
           created_by_admin: string | null
+          expires_at: string | null
           id: string
           kind: string
           label: string
           reference_order_id: string | null
+          restricted_to_categories: string[] | null
           source: string | null
           status: string
+          sub_account_id: string | null
           user_id: string
           vest_release_at: string | null
         }
@@ -3376,12 +3427,15 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           created_by_admin?: string | null
+          expires_at?: string | null
           id?: string
           kind?: string
           label: string
           reference_order_id?: string | null
+          restricted_to_categories?: string[] | null
           source?: string | null
           status?: string
+          sub_account_id?: string | null
           user_id: string
           vest_release_at?: string | null
         }
@@ -3391,12 +3445,15 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           created_by_admin?: string | null
+          expires_at?: string | null
           id?: string
           kind?: string
           label?: string
           reference_order_id?: string | null
+          restricted_to_categories?: string[] | null
           source?: string | null
           status?: string
+          sub_account_id?: string | null
           user_id?: string
           vest_release_at?: string | null
         }
@@ -3690,6 +3747,7 @@ export type Database = {
           score: number
         }[]
       }
+      get_user_kyc_level: { Args: { _user_id?: string }; Returns: number }
       hakim_deep_report: {
         Args: { _from?: string; _to?: string }
         Returns: Json
