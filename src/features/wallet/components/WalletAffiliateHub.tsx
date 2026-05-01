@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Banknote, Copy, Share2, Users } from "lucide-react";
+import { Banknote, Copy, Lock, Share2, Sparkles, Users } from "lucide-react";
 import { toast } from "sonner";
 import { toLatin } from "@/lib/format";
+import { Progress } from "@/components/ui/progress";
 import type { ReferralRow } from "@/features/wallet/types/wallet.types";
+import { useAffiliateEngine } from "@/features/wallet/hooks/useAffiliateEngine";
 
 // shopping bag icon (lucide doesn't expose ShoppingBagIcon by that name in older imports)
 function ShoppingBagIcon(props: any) {
@@ -25,17 +27,19 @@ function ShoppingBagIcon(props: any) {
 }
 
 /**
- * WalletAffiliateHub — referral / commission surface.
- * Owns its own copy/share UX state but stays decoupled from data fetching:
- * the parent passes `code`, `referrals`, totals, and an `onEnsureCode` callback.
+ * WalletAffiliateHub — referral / commission surface, tier-aware.
+ * Phase 11: pulls live tier state via `useAffiliateEngine` and exposes a
+ * gamified progress bar at the top. Copy/share UX intact.
  */
 export const WalletAffiliateHub = ({
+  userId,
   code,
   referrals,
   totalCommission,
   successfulRefs,
   onEnsureCode,
 }: {
+  userId?: string | null;
   code: string | null;
   referrals: ReferralRow[];
   totalCommission: number;
@@ -44,6 +48,17 @@ export const WalletAffiliateHub = ({
 }) => {
   const [busy, setBusy] = useState(false);
   const totalRegistered = referrals.length;
+
+  const {
+    currentTier,
+    nextTier,
+    successfulInvites,
+    invitesToNext,
+    progressPct,
+    unlocksWholesale,
+  } = useAffiliateEngine(userId ?? null);
+
+  const liveInvites = Math.max(successfulInvites, successfulRefs);
 
   const ensure = async () => {
     if (code) return code;
@@ -79,6 +94,70 @@ export const WalletAffiliateHub = ({
 
   return (
     <div className="space-y-4">
+      {/* TIER PROGRESS — gamified */}
+      {currentTier && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl bg-card p-4 shadow-soft ring-1 ring-border/40"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg leading-none">
+                {currentTier.badge_emoji ?? "🌱"}
+              </span>
+              <div>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-muted-foreground">
+                  مستواك الحالي
+                </p>
+                <p className="text-sm font-extrabold">
+                  {currentTier.name}
+                  <span className="ms-1.5 text-[10px] font-bold text-primary">
+                    +{toLatin(Math.round(currentTier.commission_fixed))} ج لكل دعوة
+                  </span>
+                </p>
+              </div>
+            </div>
+            {unlocksWholesale && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-extrabold text-amber-700 ring-1 ring-amber-500/30">
+                <Sparkles className="h-3 w-3" /> أسعار جملة
+              </span>
+            )}
+          </div>
+
+          <div className="mt-3">
+            <Progress value={progressPct} className="h-2" />
+            <div className="mt-1.5 flex items-center justify-between text-[10px] font-bold text-muted-foreground">
+              <span>{toLatin(liveInvites)} دعوة ناجحة</span>
+              {nextTier ? (
+                <span className="text-primary">
+                  {toLatin(invitesToNext)} متبقية لـ {nextTier.name}
+                  {nextTier.unlocks_wholesale && !unlocksWholesale && (
+                    <span className="ms-1 inline-flex items-center gap-0.5 text-amber-600">
+                      <Lock className="h-2.5 w-2.5" /> جملة
+                    </span>
+                  )}
+                </span>
+              ) : (
+                <span className="text-primary">أعلى مستوى 🏆</span>
+              )}
+            </div>
+          </div>
+
+          {nextTier && (
+            <p className="mt-2 text-[10px] leading-relaxed text-foreground/70">
+              ادعُ {toLatin(invitesToNext)} أصدقاء للوصول إلى{" "}
+              <b>{nextTier.name}</b> والحصول على{" "}
+              <b>{toLatin(Math.round(nextTier.commission_fixed))} ج</b> لكل دعوة
+              {nextTier.unlocks_wholesale && !unlocksWholesale ? (
+                <> + فتح أسعار الجملة 🛒</>
+              ) : null}
+              .
+            </p>
+          )}
+        </motion.div>
+      )}
+
       {/* HERO CARD — gold/dark green */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -141,7 +220,7 @@ export const WalletAffiliateHub = ({
           { label: "مسجلين", value: toLatin(totalRegistered), icon: Users, tone: "primary" },
           {
             label: "أوّل طلب",
-            value: toLatin(successfulRefs),
+            value: toLatin(liveInvites),
             icon: ShoppingBagIcon,
             tone: "amber",
           },
@@ -172,8 +251,9 @@ export const WalletAffiliateHub = ({
       <div className="rounded-2xl bg-primary/8 p-3.5 ring-1 ring-primary/15">
         <p className="text-[11px] font-extrabold text-primary">🎯 كيف تعمل العمولة؟</p>
         <p className="mt-1 text-[11px] leading-relaxed text-foreground/80">
-          احصل على <b>10٪ عمولة نقدية</b> أو <b>50 نقطة</b> عند أول طلب ناجح يقوم به العميل الذي
-          سجّل بكودك. تُضاف العمولة تلقائيًا إلى محفظتك.
+          تكسب <b>مكافأة ثابتة</b> عن كل دعوة ناجحة، والمبلغ يرتفع كلما صعدت في
+          المستويات. عند بلوغ <b>Gold Partner</b> تُفتح لك <b>أسعار الجملة</b>
+          تلقائيًا.
         </p>
       </div>
 
