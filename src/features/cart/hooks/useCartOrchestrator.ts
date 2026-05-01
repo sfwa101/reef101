@@ -498,6 +498,12 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
   const selectedAddr = addresses.find((a) => a.id === addrId);
 
   const checkoutWA = async () => {
+    // Double-submit protection — runs synchronously, beats setState batching
+    if (submittingRef.current) {
+      console.warn("[checkout] duplicate submit blocked");
+      return;
+    }
+
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -518,7 +524,9 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       toast.error(`الحد الأدنى للطلب هو ${toLatin(minOrderTotal)} ج.م`);
       return;
     }
+    submittingRef.current = true;
     setSubmitting(true);
+    const minLoading = new Promise<void>((r) => setTimeout(r, 1000));
     const minLoading = new Promise<void>((r) => setTimeout(r, 1000));
     try {
       const noteParts = [
