@@ -189,17 +189,118 @@ export default function Products() {
   };
 
   const handleSeed = async () => {
-    if (!confirm("سيتم حقن أكثر من 500 منتج محلي مصري في الكتالوج. متابعة؟")) return;
+    if (!confirm("سيتم حقن كتالوج السوبر ماركت المحلي المصري. متابعة؟")) return;
     setSeeding(true);
-    const t = toast.loading("جاري توليد الكتالوج المحلي…");
+    const t = toast.loading("جاري حقن منتجات السوبر ماركت…");
     try {
-      const res = await runMegaSeed();
-      toast.dismiss(t);
-      if (res.errors.length > 0) {
-        toast.error(`تم حقن ${res.inserted}/${res.total} — أخطاء: ${res.errors[0]}`);
-      } else {
-        toast.success(`✨ تم حقن ${res.inserted} منتج بنجاح!`);
+      // كتالوج محلي مصري — السوبر ماركت
+      type SeedItem = { name: string; brand?: string; sub: string; price: number; old?: number; stock?: number };
+      const items: SeedItem[] = [
+        // مشروبات — توب كولا (نكهات)
+        { name: "توب كولا تفاح 330مل", brand: "توب كولا", sub: "مشروبات", price: 8, old: 10, stock: 200 },
+        { name: "توب كولا ليمون 330مل", brand: "توب كولا", sub: "مشروبات", price: 8, old: 10, stock: 200 },
+        { name: "توب كولا برتقال 330مل", brand: "توب كولا", sub: "مشروبات", price: 8, old: 10, stock: 200 },
+        { name: "توب كولا أناناس 330مل", brand: "توب كولا", sub: "مشروبات", price: 8, old: 10, stock: 200 },
+        { name: "توب كولا تفاح 1 لتر", brand: "توب كولا", sub: "مشروبات", price: 18, stock: 120 },
+        { name: "توب كولا ليمون 1 لتر", brand: "توب كولا", sub: "مشروبات", price: 18, stock: 120 },
+        { name: "سينا كولا 330مل", brand: "سينا كولا", sub: "مشروبات", price: 9, stock: 180 },
+        { name: "سينا كولا 1 لتر", brand: "سينا كولا", sub: "مشروبات", price: 20, stock: 100 },
+        { name: "سينا كولا 2 لتر", brand: "سينا كولا", sub: "مشروبات", price: 32, stock: 80 },
+        { name: "مياه داش 600 مل", brand: "داش", sub: "مشروبات", price: 5, stock: 300 },
+        { name: "مياه داش 1.5 لتر", brand: "داش", sub: "مشروبات", price: 10, stock: 200 },
+        { name: "مياه داش 19 لتر", brand: "داش", sub: "مشروبات", price: 35, stock: 50 },
+        { name: "شاي العروسة 40 جم", brand: "العروسة", sub: "مشروبات", price: 12, stock: 150 },
+        { name: "شاي العروسة 100 جم", brand: "العروسة", sub: "مشروبات", price: 28, stock: 120 },
+        { name: "شاي العروسة 250 جم", brand: "العروسة", sub: "مشروبات", price: 65, old: 75, stock: 80 },
+
+        // تسالي
+        { name: "تايجر شطة 25 جم", brand: "تايجر", sub: "تسالي", price: 5, stock: 250 },
+        { name: "تايجر جبنة 25 جم", brand: "تايجر", sub: "تسالي", price: 5, stock: 250 },
+        { name: "تايجر ملح 25 جم", brand: "تايجر", sub: "تسالي", price: 5, stock: 250 },
+        { name: "بيج شيبس بطاطس ملح 30 جم", brand: "بيج شيبس", sub: "تسالي", price: 7, stock: 200 },
+        { name: "بيج شيبس بطاطس شطة 30 جم", brand: "بيج شيبس", sub: "تسالي", price: 7, stock: 200 },
+        { name: "توبس جبنة 25 جم", brand: "توبس", sub: "تسالي", price: 5, stock: 220 },
+        { name: "توبس شطة 25 جم", brand: "توبس", sub: "تسالي", price: 5, stock: 220 },
+        { name: "كاراتيه ذرة 30 جم", brand: "كاراتيه", sub: "تسالي", price: 5, stock: 240 },
+        { name: "برافو شيبس بطاطس 35 جم", brand: "برافو", sub: "تسالي", price: 6, stock: 200 },
+
+        // غذائية أساسية
+        { name: "مكرونة الملكة اسباجتي 400 جم", brand: "الملكة", sub: "غذائية أساسية", price: 18, stock: 180 },
+        { name: "مكرونة الملكة شعرية 400 جم", brand: "الملكة", sub: "غذائية أساسية", price: 18, stock: 180 },
+        { name: "مكرونة الملكة كوع 400 جم", brand: "الملكة", sub: "غذائية أساسية", price: 18, stock: 180 },
+        { name: "مكرونة المصرية اسباجتي 400 جم", brand: "المصرية", sub: "غذائية أساسية", price: 17, stock: 200 },
+        { name: "مكرونة المصرية بنّة 400 جم", brand: "المصرية", sub: "غذائية أساسية", price: 17, stock: 180 },
+        { name: "أرز الضحى 1 كجم", brand: "الضحى", sub: "غذائية أساسية", price: 38, old: 42, stock: 250 },
+        { name: "أرز الضحى 5 كجم", brand: "الضحى", sub: "غذائية أساسية", price: 180, old: 200, stock: 80 },
+        { name: "أرز ريم 1 كجم", brand: "ريم", sub: "غذائية أساسية", price: 36, stock: 200 },
+        { name: "أرز ريم 5 كجم", brand: "ريم", sub: "غذائية أساسية", price: 175, stock: 60 },
+        { name: "زيت هلا عباد الشمس 800 مل", brand: "هلا", sub: "غذائية أساسية", price: 75, old: 85, stock: 150 },
+        { name: "زيت هلا عباد الشمس 1.5 لتر", brand: "هلا", sub: "غذائية أساسية", price: 135, stock: 100 },
+        { name: "زيت عباد الشمس 800 مل", brand: "عافية", sub: "غذائية أساسية", price: 78, stock: 120 },
+        { name: "سمن كريستال 1 كجم", brand: "كريستال", sub: "غذائية أساسية", price: 110, stock: 90 },
+        { name: "سمن كريستال 2 كجم", brand: "كريستال", sub: "غذائية أساسية", price: 215, stock: 50 },
+        { name: "سمن روابي 1 كجم", brand: "روابي", sub: "غذائية أساسية", price: 105, stock: 80 },
+
+        // ألبان
+        { name: "حليب جهينة كامل الدسم 1 لتر", brand: "جهينة", sub: "ألبان", price: 32, stock: 150 },
+        { name: "حليب جهينة قليل الدسم 1 لتر", brand: "جهينة", sub: "ألبان", price: 32, stock: 150 },
+        { name: "حليب لمار 1 لتر", brand: "لمار", sub: "ألبان", price: 30, stock: 140 },
+        { name: "حليب لمار 200 مل", brand: "لمار", sub: "ألبان", price: 8, stock: 250 },
+        { name: "جبنة عبور لاند مثلثات 8 قطع", brand: "عبور لاند", sub: "ألبان", price: 22, stock: 180 },
+        { name: "جبنة عبور لاند بيضاء 500 جم", brand: "عبور لاند", sub: "ألبان", price: 55, stock: 120 },
+        { name: "جبنة دومتي مثلثات 8 قطع", brand: "دومتي", sub: "ألبان", price: 24, stock: 180 },
+        { name: "جبنة دومتي قريش 200 جم", brand: "دومتي", sub: "ألبان", price: 18, stock: 150 },
+        { name: "زبادي مزارع دينا 170 جم", brand: "مزارع دينا", sub: "ألبان", price: 9, stock: 250 },
+        { name: "زبادي مزارع دينا 1 كجم", brand: "مزارع دينا", sub: "ألبان", price: 38, stock: 100 },
+
+        // منظفات
+        { name: "أوكسي مسحوق غسيل 2.5 كجم", brand: "أوكسي", sub: "منظفات", price: 95, old: 110, stock: 120 },
+        { name: "أوكسي مسحوق غسيل 5 كجم", brand: "أوكسي", sub: "منظفات", price: 175, stock: 80 },
+        { name: "أوكسي جل غسيل 2 لتر", brand: "أوكسي", sub: "منظفات", price: 110, stock: 90 },
+        { name: "صابون جوي سائل أطباق 750 مل", brand: "جوي", sub: "منظفات", price: 45, stock: 150 },
+        { name: "صابون جوي سائل أطباق 1.25 لتر", brand: "جوي", sub: "منظفات", price: 70, stock: 120 },
+        { name: "صابون كامينا قطعة 125 جم", brand: "كامينا", sub: "منظفات", price: 8, stock: 300 },
+        { name: "كلوريل مبيض 1 لتر", brand: "كلوريل", sub: "منظفات", price: 22, stock: 200 },
+        { name: "كلوريل مبيض 2.5 لتر", brand: "كلوريل", sub: "منظفات", price: 50, stock: 120 },
+      ];
+
+      const idBase = `sm-${Date.now()}`;
+      const rows = items.map((it, idx) => {
+        const uniqueUrl = `https://loremflickr.com/600/600/groceries,packaging?lock=${idx + 1}`;
+        return {
+          id: `${idBase}-${idx}`,
+          name: it.name,
+          brand: it.brand ?? null,
+          unit: "قطعة",
+          price: it.price,
+          old_price: it.old ?? null,
+          image: uniqueUrl,
+          image_url: uniqueUrl,
+          category: "السوبر ماركت",
+          sub_category: it.sub,
+          source: "supermarket",
+          stock: it.stock ?? 100,
+          is_active: true,
+          sort_order: idx,
+          fulfillment_type: "stock",
+          affiliate_commission_pct: 0,
+          metadata: {},
+        };
+      });
+
+      let inserted = 0;
+      const errors: string[] = [];
+      for (let i = 0; i < rows.length; i += 25) {
+        const chunk = rows.slice(i, i + 25);
+        const { error } = await supabase.from("products").insert(chunk as never);
+        if (error) errors.push(error.message);
+        else inserted += chunk.length;
+        toast.loading(`جاري الحقن… ${inserted}/${rows.length}`, { id: t });
       }
+
+      toast.dismiss(t);
+      if (errors.length > 0) toast.error(`تم: ${inserted}/${rows.length} — خطأ: ${errors[0]}`);
+      else toast.success(`✨ تم حقن ${inserted} منتج سوبر ماركت بنجاح!`);
       await load();
     } catch (e) {
       toast.dismiss(t);
@@ -299,6 +400,15 @@ export default function Products() {
           >
             <Wand2 className="h-4 w-4" />
             <span>{fixingImages ? "جاري…" : "إصلاح الصور"}</span>
+          </button>
+          <button
+            onClick={handleSeed}
+            disabled={seeding}
+            className="h-11 px-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center gap-1.5 press shadow-sm font-semibold text-[12px] disabled:opacity-60"
+            title="حقن كتالوج السوبر ماركت المصري"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>{seeding ? "جاري…" : "حقن السوبر ماركت"}</span>
           </button>
         </div>
 
