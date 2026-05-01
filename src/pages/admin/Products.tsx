@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Plus, Search, Package, Image as ImageIcon, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Package, Image as ImageIcon, Pencil, Trash2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTopbar } from "@/components/admin/MobileTopbar";
 import { IOSCard } from "@/components/ios/IOSCard";
@@ -7,6 +7,7 @@ import { fmtMoney, fmtNum } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { ProductEditor, type ProductRow } from "@/components/admin/ProductEditor";
 import { toast } from "sonner";
+import { runMegaSeed } from "@/lib/megaSeed";
 
 type Category = { id: string; name: string; icon: string | null };
 
@@ -18,6 +19,28 @@ export default function Products() {
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [creating, setCreating] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeed = async () => {
+    if (!confirm("سيتم حقن أكثر من 500 منتج محلي مصري في الكتالوج. متابعة؟")) return;
+    setSeeding(true);
+    const t = toast.loading("جاري توليد الكتالوج المحلي…");
+    try {
+      const res = await runMegaSeed();
+      toast.dismiss(t);
+      if (res.errors.length > 0) {
+        toast.error(`تم حقن ${res.inserted}/${res.total} — أخطاء: ${res.errors[0]}`);
+      } else {
+        toast.success(`✨ تم حقن ${res.inserted} منتج بنجاح!`);
+      }
+      await load();
+    } catch (e) {
+      toast.dismiss(t);
+      toast.error("فشل الحقن: " + (e as Error).message);
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setProducts(null);
