@@ -577,6 +577,13 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
 
       if (!isGuest && currentUser) {
         try {
+          console.log("[checkout] calling place_order_atomic", {
+            userId: currentUser.id,
+            total: grand,
+            itemsCount: lines.length,
+            payment,
+            addressId: selectedAddr?.id ?? null,
+          });
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const { data: rpcData, error: rpcErr } = await (supabase as any).rpc(
             "place_order_atomic",
