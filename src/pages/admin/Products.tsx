@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Plus, Search, Package, Image as ImageIcon, Pencil, Trash2, Sparkles } from "lucide-react";
+import { Plus, Search, Package, Image as ImageIcon, Pencil, Trash2, Sparkles, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileTopbar } from "@/components/admin/MobileTopbar";
 import { IOSCard } from "@/components/ios/IOSCard";
@@ -20,6 +20,61 @@ export default function Products() {
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [creating, setCreating] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [fixingImages, setFixingImages] = useState(false);
+
+  const FIX_IMAGE_MAP: Record<string, string> = {
+    supermarket: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80",
+    produce: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=600&q=80",
+    meat: "https://images.unsplash.com/photo-1603048297172-c92544798d5e?auto=format&fit=crop&w=600&q=80",
+    dairy: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=600&q=80",
+    sweets: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
+    pharmacy: "https://images.unsplash.com/photo-1584308666744-24d5e4a8b792?auto=format&fit=crop&w=600&q=80",
+    library: "https://images.unsplash.com/photo-1542856204-0010166edc11?auto=format&fit=crop&w=600&q=80",
+    restaurants: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+    recipes: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+  };
+  const FIX_IMAGE_DEFAULT = "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=600&q=80";
+
+  const handleFixImages = async () => {
+    if (!confirm("سيتم تحديث صور جميع المنتجات الحالية بصور احترافية ثابتة. متابعة؟")) return;
+    setFixingImages(true);
+    const t = toast.loading("جاري إصلاح الصور…");
+    try {
+      const { data, error } = await supabase.from("products").select("id, source").limit(5000);
+      if (error) throw error;
+      const all = (data ?? []) as { id: string; source: string | null }[];
+      // Group ids by target URL
+      const groups = new Map<string, string[]>();
+      for (const row of all) {
+        const url = FIX_IMAGE_MAP[(row.source ?? "").toLowerCase()] ?? FIX_IMAGE_DEFAULT;
+        if (!groups.has(url)) groups.set(url, []);
+        groups.get(url)!.push(row.id);
+      }
+      let updated = 0;
+      const errors: string[] = [];
+      for (const [url, ids] of groups) {
+        // chunk of 50
+        for (let i = 0; i < ids.length; i += 50) {
+          const chunk = ids.slice(i, i + 50);
+          const { error: upErr } = await supabase
+            .from("products")
+            .update({ image_url: url, image: url })
+            .in("id", chunk);
+          if (upErr) errors.push(upErr.message);
+          else updated += chunk.length;
+        }
+      }
+      toast.dismiss(t);
+      if (errors.length) toast.error(`تم تحديث ${updated}/${all.length} — خطأ: ${errors[0]}`);
+      else toast.success(`✨ تم تحديث صور ${updated} منتج`);
+      await load();
+    } catch (e) {
+      toast.dismiss(t);
+      toast.error("فشل الإصلاح: " + (e as Error).message);
+    } finally {
+      setFixingImages(false);
+    }
+  };
 
   const handleSeed = async () => {
     if (!confirm("سيتم حقن أكثر من 500 منتج محلي مصري في الكتالوج. متابعة؟")) return;
@@ -132,6 +187,15 @@ export default function Products() {
           >
             <Sparkles className="h-4 w-4" />
             <span>{seeding ? "جاري…" : "حقن 500+"}</span>
+          </button>
+          <button
+            onClick={handleFixImages}
+            disabled={fixingImages}
+            className="h-11 px-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center gap-1.5 press shadow-sm font-semibold text-[12px] disabled:opacity-60"
+            title="تحديث صور المنتجات الحالية"
+          >
+            <Wand2 className="h-4 w-4" />
+            <span>{fixingImages ? "جاري…" : "إصلاح الصور"}</span>
           </button>
         </div>
 
