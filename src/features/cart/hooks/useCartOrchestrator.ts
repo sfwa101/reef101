@@ -41,6 +41,7 @@ import {
   openWhatsApp,
   isMobileWaContext,
   buildWaUrl,
+  type OpenResult,
 } from "@/lib/whatsapp";
 import type { WaFallbackPayload } from "../components/WhatsAppFallbackDialog";
 
@@ -826,14 +827,23 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       const mainPhone = WA_NUMBER;
       const orderId = savedOrderId ?? orderNum;
       const orderTotal = grand;
-      console.log("[checkout] attempting WhatsApp checkout URL", {
-        source,
-        url: buildWaUrl({ phone: mainPhone, text: mainMessage }),
-      });
-      const openResult = openWhatsApp(
-        { phone: mainPhone, text: mainMessage },
-        { preOpened, preferLocation: onMobile, source },
-      );
+      const waUrl = buildWaUrl({ phone: mainPhone, text: mainMessage });
+      console.log("[checkout] attempting WhatsApp checkout URL", { source, url: waUrl });
+      const openResult: OpenResult = onMobile
+        ? (() => {
+            try {
+              console.log("[checkout] mobile window.location.href", { source, url: waUrl });
+              window.location.href = waUrl;
+              return { ok: true, method: "location" };
+            } catch (e) {
+              console.warn("[checkout] mobile location.href failed", { source, error: e });
+              return { ok: false, url: waUrl, text: mainMessage, reason: "location_failed" };
+            }
+          })()
+        : openWhatsApp(
+            { phone: mainPhone, text: mainMessage },
+            { preOpened, preferLocation: false, source },
+          );
 
       if (!openResult.ok) {
         console.warn("[checkout] WhatsApp open blocked, success fallback armed", {
