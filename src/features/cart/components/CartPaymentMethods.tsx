@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Cake, PiggyBank } from "lucide-react";
+import { Cake, HandHeart, PiggyBank } from "lucide-react";
 import { fmtMoney, toLatin } from "@/lib/format";
 import { paymentOptions, type useCartOrchestrator } from "../hooks/useCartOrchestrator";
 
@@ -124,16 +124,83 @@ export const CartPaymentMethods = ({ o }: { o: O }) => {
 
       <AnimatePresence>
         {o.showChangeJar && (
-          <motion.label initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="mt-3 flex cursor-pointer items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 to-[hsl(45_70%_92%)] p-3 ring-1 ring-primary/20">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-primary to-[hsl(45_80%_55%)] text-white shadow-pill">
-              <PiggyBank className="h-5 w-5" strokeWidth={2.2} />
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="mt-3 overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 to-[hsl(45_70%_92%)] p-3 ring-1 ring-primary/20"
+          >
+            <div className="mb-2 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-primary to-[hsl(45_80%_55%)] text-white shadow-pill">
+                {o.donateChange ? (
+                  <HandHeart className="h-5 w-5" strokeWidth={2.2} />
+                ) : (
+                  <PiggyBank className="h-5 w-5" strokeWidth={2.2} />
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="text-[12px] font-extrabold">
+                  ادفع {toLatin(o.roundedCash)} ج.م رقم صحيح
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  الفكة{" "}
+                  <span className="font-extrabold text-primary">
+                    {toLatin(o.changeRemainder)} ج.م
+                  </span>{" "}
+                  {o.donateChange
+                    ? "تذهب للصندوق العام للخير ❤"
+                    : o.saveChange
+                      ? "تدخل حصّالتك تلقائياً"
+                      : "تبقى معك"}
+                </p>
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-[12px] font-extrabold">ادفع {toLatin(o.roundedCash)} ج.م رقم صحيح</p>
-              <p className="text-[10px] text-muted-foreground">الفكة <span className="font-extrabold text-primary">{toLatin(o.changeRemainder)} ج.م</span> تدخل حصّالتك تلقائياً</p>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  o.setSaveChange(false);
+                  o.setDonateChange(false);
+                }}
+                className={`rounded-[10px] px-2 py-1.5 text-[10px] font-extrabold transition ${
+                  !o.saveChange && !o.donateChange
+                    ? "bg-foreground text-background"
+                    : "bg-card text-muted-foreground ring-1 ring-border"
+                }`}
+              >
+                لا شيء
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  o.setSaveChange(true);
+                  o.setDonateChange(false);
+                }}
+                className={`flex items-center justify-center gap-1 rounded-[10px] px-2 py-1.5 text-[10px] font-extrabold transition ${
+                  o.saveChange && !o.donateChange
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card text-muted-foreground ring-1 ring-border"
+                }`}
+              >
+                <PiggyBank className="h-3 w-3" /> حصّالة
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  o.setSaveChange(false);
+                  o.setDonateChange(true);
+                }}
+                className={`flex items-center justify-center gap-1 rounded-[10px] px-2 py-1.5 text-[10px] font-extrabold transition ${
+                  o.donateChange
+                    ? "bg-rose-500 text-white"
+                    : "bg-card text-muted-foreground ring-1 ring-border"
+                }`}
+              >
+                <HandHeart className="h-3 w-3" /> صدقة
+              </button>
             </div>
-            <input type="checkbox" checked={o.saveChange} onChange={(e) => o.setSaveChange(e.target.checked)} className="h-5 w-5 cursor-pointer accent-primary" />
-          </motion.label>
+          </motion.div>
         )}
       </AnimatePresence>
     </section>
