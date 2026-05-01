@@ -1,10 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays, Check, Clock, Gift, ShoppingBag, Sparkles, Tag, Truck, Zap } from "lucide-react";
+import { CalendarDays, Check, Clock, Gift, Lock, ShoppingBag, Sparkles, Tag, Truck, Zap } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import BackHeader from "@/components/BackHeader";
 import CartUpgradeBanner from "@/components/baskets/CartUpgradeBanner";
 import { fmtMoney, toLatin } from "@/lib/format";
 import { useCartOrchestrator } from "@/features/cart/hooks/useCartOrchestrator";
+import { useSharedCartContext } from "@/context/SharedCartContext";
 import { CartCrossSellRail } from "@/features/cart/components/CartCrossSellRail";
 import { CartAddressSelector } from "@/features/cart/components/CartAddressSelector";
 import { CartCheckoutActions } from "@/features/cart/components/CartCheckoutActions";
@@ -13,9 +16,28 @@ import { CartSummary } from "@/features/cart/components/CartSummary";
 import { NumberFlow } from "@/features/cart/components/NumberFlow";
 import { RechargeDialog } from "@/features/cart/components/RechargeDialog";
 import { VendorGroupCard } from "@/features/cart/components/VendorGroupCard";
+import { SharedCartManager } from "@/features/cart/components/SharedCartManager";
+import type { SharedCartSplitType } from "@/features/cart/hooks/useSharedCartSync";
 
 const Cart = () => {
-  const o = useCartOrchestrator();
+  const { sharedCartId } = useSharedCartContext();
+  const o = useCartOrchestrator({ sharedCartId });
+
+  const updateSplit = async (
+    participantId: string,
+    splitType: SharedCartSplitType,
+    splitValue: number,
+  ) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+      .from("shared_cart_participants")
+      .update({ split_type: splitType, split_value: splitValue })
+      .eq("id", participantId);
+    if (error) throw error;
+  };
+
+  const isLocked =
+    o.isSharedMode && o.sharedCart?.status === "pending_approvals";
 
   if (o.lines.length === 0) {
     return (
