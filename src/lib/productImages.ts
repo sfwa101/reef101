@@ -346,6 +346,14 @@ const SOURCE_FALLBACK: Record<string, string> = {
   home: "1555041469-a586c61ea9bc",
 };
 
+// ─── Container priority: when a product is a "vessel" (cake, ice-cream, juice...),
+// the container keyword MUST win over the flavor keyword. Sorted by specificity.
+const CONTAINER_KEYWORDS = [
+  "تورتة", "تشيز كيك", "براونيز", "كنافة", "بقلاوة", "بسبوسة", "قطايف",
+  "هريسة", "أم علي", "كرواسون", "دونتس", "إكلير", "آيس كريم", "جيلاتي",
+  "بسكويت", "مولتو", "شيكولاتة", "كولا", "شويبس", "زبادي بالفواكه",
+];
+
 /**
  * Resolve a product image URL using strict matching priority.
  * Returns a stable Unsplash CDN URL (cacheable, deterministic).
@@ -357,7 +365,14 @@ export function resolveProductImage(input: {
 }): string {
   const name = (input.name || "").trim();
 
-  // Priority 1: exact keyword scan (longest match wins to avoid "تفاح" matching "تفاح بلدي" then ignoring brand drinks like "توب كولا تفاح" — sort by length desc).
+  // Priority 0: container override — if the name carries a known container keyword,
+  // use it directly even when a fruit/flavor keyword is also present
+  // (e.g., "تورتة فراولة" → cake, not strawberry).
+  for (const c of CONTAINER_KEYWORDS) {
+    if (name.includes(c) && KEYWORD_MAP[c]) return UNSPLASH(KEYWORD_MAP[c]);
+  }
+
+  // Priority 1: exact keyword scan (longest match wins).
   const sortedKeys = Object.keys(KEYWORD_MAP).sort((a, b) => b.length - a.length);
   for (const k of sortedKeys) {
     if (name.includes(k)) return UNSPLASH(KEYWORD_MAP[k]);
@@ -375,6 +390,22 @@ export function resolveProductImage(input: {
 
   // Final default
   return UNSPLASH("1604719312566-8912e9227c6a");
+}
+
+/**
+ * Validation helper — returns false when the resolver could not find any
+ * keyword/subcategory match (i.e. it fell back to source/default).
+ * Use in seed pipelines to block low-quality images.
+ */
+export function isImageConfident(input: {
+  name: string;
+  subCategory?: string | null;
+}): boolean {
+  const name = (input.name || "").trim();
+  for (const c of CONTAINER_KEYWORDS) if (name.includes(c)) return true;
+  for (const k of Object.keys(KEYWORD_MAP)) if (name.includes(k)) return true;
+  if (input.subCategory && SUBCATEGORY_FALLBACK[input.subCategory]) return true;
+  return false;
 }
 
 /**

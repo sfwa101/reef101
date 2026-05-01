@@ -1,6 +1,7 @@
 // Mega catalog seeder — generates 500+ realistic Egyptian products.
 // Local Egyptian brands only (boycott of Western brands supporting the entity).
 import { supabase } from "@/integrations/supabase/client";
+import { resolveProductImage } from "@/lib/productImages";
 
 type SeedRow = {
   id: string;
@@ -113,7 +114,7 @@ function makeProduct(args: {
   const price = round(args.basePrice * (0.9 + Math.random() * 0.3));
   const hasDiscount = Math.random() < 0.35;
   const old_price = hasDiscount ? round(price * (1.1 + Math.random() * 0.25)) : null;
-  const img = pickImage(args.category);
+  const img = resolveProductImage({ name: args.name, subCategory: args.sub, source: args.source });
   // Keep DB-safe unit code (matches units_of_measure). Original verbose unit kept in metadata + name.
   const safeUnit = "قطعة";
   return {
