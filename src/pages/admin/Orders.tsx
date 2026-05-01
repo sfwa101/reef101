@@ -122,6 +122,12 @@ export default function Orders() {
     return r;
   }, [orders, tab, q]);
 
+  // Reset pagination when filter/search changes.
+  useEffect(() => { setVisible(PAGE_SIZE); }, [tab, q]);
+
+  const pageItems = useMemo(() => filtered?.slice(0, visible) ?? null, [filtered, visible]);
+  const hasMore = !!filtered && filtered.length > visible;
+
   const counts = useMemo(() => ({
     all: orders?.length ?? 0,
     pending: orders?.filter(o => o.status === "pending").length ?? 0,
