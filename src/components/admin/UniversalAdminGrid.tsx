@@ -141,6 +141,10 @@ export function UniversalAdminGrid<T = any>({
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [density, setDensity] = useState<Density>("comfortable");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
       setLoading(true);
       try {
         let data: any[] = [];
