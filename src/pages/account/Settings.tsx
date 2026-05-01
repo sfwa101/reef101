@@ -1,6 +1,7 @@
 import BackHeader from "@/components/BackHeader";
 import { useTheme, type ColorTheme, type Mode } from "@/context/ThemeContext";
-import { Sun, Moon, Monitor, Globe, Bell, Check } from "lucide-react";
+import { useUI } from "@/context/UIContext";
+import { Sun, Moon, Monitor, Globe, Bell, Check, Accessibility } from "lucide-react";
 
 const modes: { id: Mode; icon: any; label: string }[] = [
   { id: "light", icon: Sun, label: "فاتح" },
@@ -36,6 +37,7 @@ const premiumDarkPalette: PaletteItem[] = [
 
 const Settings = () => {
   const { mode, setMode, colorTheme, setColorTheme } = useTheme();
+  const { viewMode, toggleSimplified } = useUI();
 
   return (
     <div className="space-y-6">
@@ -81,6 +83,38 @@ const Settings = () => {
         active={colorTheme}
         onPick={setColorTheme}
       />
+
+      <section>
+        <h3 className="mb-2 px-1 text-xs font-bold text-muted-foreground">إمكانية الوصول</h3>
+        <button
+          type="button"
+          onClick={toggleSimplified}
+          className="flex w-full items-center gap-3 rounded-2xl glass-strong p-4 shadow-soft press text-right"
+          aria-pressed={viewMode === "simplified"}
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft">
+            <Accessibility className="h-4 w-4 text-primary" strokeWidth={2.4} />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold">الوضع المبسّط</p>
+            <p className="text-[10px] text-muted-foreground">
+              خط أكبر وتباين أعلى — مناسب لكبار السن
+            </p>
+          </div>
+          <span
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+              viewMode === "simplified" ? "bg-primary" : "bg-muted"
+            }`}
+            aria-hidden
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-card shadow transition ${
+                viewMode === "simplified" ? "translate-x-[-22px]" : "translate-x-[-2px]"
+              }`}
+            />
+          </span>
+        </button>
+      </section>
 
       <section className="glass-strong divide-y divide-border rounded-2xl shadow-soft">
         <Row icon={Globe} label="لغة التطبيق" value="العربية" />
