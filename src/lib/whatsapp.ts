@@ -50,11 +50,25 @@ export const buildWaUrl = ({ phone, text }: WaTarget): string => {
  *
  * Returns `null` if the popup was blocked.
  */
-export const preOpenWindow = (): Window | null => {
+export const preOpenWindow = (source = "unknown"): Window | null => {
   try {
-    const w = window.open("about:blank", "_blank", "noopener,noreferrer");
-    return w ?? null;
-  } catch {
+    // Do not pass `noopener` here: several browsers intentionally return
+    // `null` for noopener windows, which makes later gesture-safe redirects
+    // impossible. We sever the opener manually after the handle is captured.
+    const w = window.open("about:blank", "_blank");
+    if (!w) {
+      console.warn("[wa] pre-open blocked", { source });
+      return null;
+    }
+    try {
+      w.opener = null;
+    } catch {
+      /* noop */
+    }
+    console.info("[wa] pre-opened blank window", { source });
+    return w;
+  } catch (e) {
+    console.warn("[wa] pre-open threw", { source, error: e });
     return null;
   }
 };
@@ -86,42 +100,42 @@ export type OpenResult =
  */
 export const openWhatsApp = (
   target: WaTarget,
-  opts?: { preOpened?: Window | null; preferLocation?: boolean },
+  opts?: { preOpened?: Window | null; preferLocation?: boolean; source?: string },
 ): OpenResult => {
   const url = buildWaUrl(target);
   const text = target.text ?? "";
+  const source = opts?.source ?? "unknown";
 
   // 1) Redirect pre-opened window — survives awaits.
   if (opts?.preOpened && !opts.preOpened.closed) {
     if (redirectPreOpenedWindow(opts.preOpened, url)) {
+      console.info("[wa] opened via preopened redirect", { source });
       return { ok: true, method: "preopened" };
     }
+    console.warn("[wa] preopened redirect failed", { source });
   }
 
   // 2) Direct location replace (mobile-friendly, no popup needed).
   if (opts?.preferLocation) {
     try {
       window.location.href = url;
+      console.info("[wa] opened via location.href", { source });
       return { ok: true, method: "location" };
     } catch (e) {
-      console.warn("[wa] location.href failed", e);
+      console.warn("[wa] location.href failed", { source, error: e });
     }
   }
 
-  // 3) window.open (works only inside gesture).
+  // 3) window.open (only safe when caller is still inside a user gesture).
   try {
     const w = window.open(url, "_blank", "noopener,noreferrer");
-    if (w) return { ok: true, method: "window-open" };
+    if (w) {
+      console.info("[wa] opened via direct window.open", { source });
+      return { ok: true, method: "window-open" };
+    }
+    console.warn("[wa] direct window.open blocked", { source });
   } catch (e) {
-    console.warn("[wa] window.open threw", e);
-  }
-
-  // 4) Last resort — try location.href anyway.
-  try {
-    window.location.href = url;
-    return { ok: true, method: "location" };
-  } catch {
-    /* fall through */
+    console.warn("[wa] window.open threw", { source, error: e });
   }
 
   return { ok: false, url, text, reason: "popup_blocked" };
