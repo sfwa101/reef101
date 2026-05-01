@@ -282,7 +282,8 @@ export default function Products() {
           stock: it.stock ?? 100,
           is_active: true,
           sort_order: idx,
-          fulfillment_type: "stock",
+          fulfillment_type: "internal_stock",
+          perishable: false,
           affiliate_commission_pct: 0,
           metadata: {},
         };
