@@ -45,12 +45,34 @@ export default function Orders() {
   const [q, setQ] = useState("");
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any).from("orders")
-      .select("id,status,total,payment_method,notes,whatsapp_sent,user_id,created_at")
-      .order("created_at", { ascending: false })
-      .limit(200)
-      .then(({ data }: { data: Order[] | null }) => setOrders(data ?? []));
+    let cancelled = false;
+    const load = async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any)
+        .from("orders")
+        .select("id,status,total,payment_method,notes,whatsapp_sent,user_id,created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (cancelled) return;
+      setOrders(Array.isArray(data) ? (data as Order[]) : []);
+    };
+    load();
+
+    // Live order updates with cleanup on unmount.
+    const channel = supabase
+      .channel("admin-orders-list")
+      .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "postgres_changes" as any,
+        { event: "*", schema: "public", table: "orders" },
+        () => { if (!cancelled) load(); },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const filtered = useMemo(() => {

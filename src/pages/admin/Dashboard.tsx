@@ -37,32 +37,60 @@ export default function Dashboard() {
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
 
-    Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("orders").select("id,total,status,created_at,user_id, profiles:user_id(full_name)").order("created_at", { ascending: false }).limit(40),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("profiles").select("id", { count: "exact", head: true }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("products").select("id", { count: "exact", head: true }).lte("stock", 5),
-    ]).then(([ordersRes, profilesRes, lowRes]: any[]) => {
-      const orders = ordersRes.data ?? [];
-      const today = orders.filter((o: any) => new Date(o.created_at) >= startToday);
-      const inDelivery = orders.filter((o: any) =>
-        ["out_for_delivery", "preparing", "ready", "confirmed"].includes(o.status)).length;
-      const todayRev = today.reduce((s: number, o: any) => s + Number(o.total ?? 0), 0);
+    const load = async () => {
+      try {
+        const [ordersRes, profilesRes, lowRes] = await Promise.all([
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase as any).from("orders").select("id,total,status,created_at,user_id, profiles:user_id(full_name)").order("created_at", { ascending: false }).limit(40),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase as any).from("profiles").select("id", { count: "exact", head: true }),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase as any).from("products").select("id", { count: "exact", head: true }).lte("stock", 5),
+        ]);
+        if (cancelled) return;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const orders: any[] = Array.isArray(ordersRes?.data) ? ordersRes.data : [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const today = orders.filter((o: any) => new Date(o.created_at) >= startToday);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const inDelivery = orders.filter((o: any) =>
+          ["out_for_delivery", "preparing", "ready", "confirmed"].includes(o.status)).length;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const todayRev = today.reduce((s: number, o: any) => s + Number(o.total ?? 0), 0);
+        setBento({
+          todayOrders: today.length,
+          todayRevenue: todayRev,
+          inDelivery,
+          totalCustomers: profilesRes?.count ?? 0,
+          lowStock: lowRes?.count ?? 0,
+          partnersDue: 0,
+        });
+        setRecent(orders.slice(0, 8));
+      } catch {
+        if (!cancelled) setRecent([]);
+      }
+    };
 
-      setBento({
-        todayOrders: today.length,
-        todayRevenue: todayRev,
-        inDelivery,
-        totalCustomers: profilesRes.count ?? 0,
-        lowStock: lowRes.count ?? 0,
-        partnersDue: 0,
-      });
-      setRecent(orders.slice(0, 8));
-    });
+    load();
+
+    // Live updates: any insert/update/delete on orders triggers a refetch.
+    const channel = supabase
+      .channel("admin-dashboard-orders")
+      .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "postgres_changes" as any,
+        { event: "*", schema: "public", table: "orders" },
+        () => { if (!cancelled) load(); },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (
