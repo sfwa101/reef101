@@ -140,6 +140,13 @@ const META_SCHEMA: Record<string, FieldDef[]> = {
       { v: "chops", l: "ريش" }, { v: "whole", l: "ذبيحة كاملة" },
     ] },
     { key: "origin", label: "المصدر", kind: "text", placeholder: "بلدي / مستورد" },
+    { key: "preparation", label: "التجهيز", kind: "select", options: [
+      { v: "whole", l: "كامل بدون تقطيع" },
+      { v: "cut", l: "مقطّع قطع" },
+      { v: "ground", l: "مفروم" },
+      { v: "marinated", l: "متبّل جاهز للطهي" },
+      { v: "skewers", l: "أسياخ" },
+    ] },
     { key: "halal_certified", label: "ذبح حلال موثق", kind: "bool" },
   ],
   sweets: [
