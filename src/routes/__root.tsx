@@ -109,12 +109,14 @@ function RootComponent() {
             <AuthProvider>
               <LocationProvider>
                 <CartProvider>
-                  <CompareProvider>
-                    <FavoritesProvider>
-                      <Toaster />
-                      <Outlet />
-                    </FavoritesProvider>
-                  </CompareProvider>
+                  <SharedCartProvider>
+                    <CompareProvider>
+                      <FavoritesProvider>
+                        <Toaster />
+                        <Outlet />
+                      </FavoritesProvider>
+                    </CompareProvider>
+                  </SharedCartProvider>
                 </CartProvider>
               </LocationProvider>
             </AuthProvider>
