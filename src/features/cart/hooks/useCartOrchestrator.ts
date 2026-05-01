@@ -874,6 +874,17 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       toast.error("حدث خطأ غير متوقّع");
       setSubmitting(false);
       submittingRef.current = false;
+      try { preOpened?.close(); } catch { /* noop */ }
+    }
+  };
+
+  /** Called by the Cart page when the WhatsApp fallback dialog closes. */
+  const dismissWaFallback = () => {
+    setWaFallback(null);
+    const pending = pendingNavRef.current;
+    pendingNavRef.current = null;
+    if (pending) {
+      navigate({ to: "/order-success", search: { id: pending.id, total: pending.total } });
     }
   };
 
