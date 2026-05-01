@@ -247,7 +247,8 @@ export const useSharedCartSync = (sharedCartId: string | null): UseSharedCartSyn
     async (input) => {
       guardEditable();
       if (!cart || !user) return;
-      const { error: err } = await supabase.from("shared_cart_items").insert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: err } = await (supabase as any).from("shared_cart_items").insert({
         cart_id: cart.id,
         added_by: user.id,
         product_id: input.product_id,
