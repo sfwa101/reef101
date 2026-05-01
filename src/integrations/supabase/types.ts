@@ -4702,6 +4702,19 @@ export type Database = {
           suggested_discount_pct: number
         }[]
       }
+      place_order_atomic: {
+        Args: {
+          _address_id: string
+          _delivery_zone: string
+          _items: Json
+          _notes: string
+          _payment_method: string
+          _service_type: string
+          _total: number
+          _user_id: string
+        }
+        Returns: string
+      }
       pledge_group_buy: {
         Args: { _campaign_id: string; _quantity: number }
         Returns: Json
