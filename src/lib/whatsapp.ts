@@ -12,9 +12,8 @@
  * Strategy:
  *   1) Normalize the phone (digits only, no +/spaces).
  *   2) Build a `wa.me` URL — the most reliable cross-platform format.
- *   3) `openWhatsApp()` tries direct navigation first (works inside a user
- *      gesture). If a pre-opened window handle is provided, redirect that
- *      window — this preserves the gesture across awaits.
+ *   3) `openWhatsApp()` first redirects a pre-opened window when available,
+ *      then tries mobile location navigation, then a final direct popup.
  *   4) If everything fails, return `{ ok: false, url, text }` so the UI can
  *      show a fallback dialog with copy-to-clipboard and a manual link.
  */
@@ -104,7 +103,6 @@ export const openWhatsApp = (
     preOpened?: Window | null;
     preferLocation?: boolean;
     source?: string;
-    allowWindowOpen?: boolean;
   },
 ): OpenResult => {
   const url = buildWaUrl(target);
@@ -113,6 +111,7 @@ export const openWhatsApp = (
 
   // 1) Redirect pre-opened window — survives awaits.
   if (opts?.preOpened && !opts.preOpened.closed) {
+    console.log("[wa] attempting preopened redirect", { source, url });
     if (redirectPreOpenedWindow(opts.preOpened, url)) {
       console.info("[wa] opened via preopened redirect", { source });
       return { ok: true, method: "preopened" };
@@ -123,6 +122,7 @@ export const openWhatsApp = (
   // 2) Direct location replace (mobile-friendly, no popup needed).
   if (opts?.preferLocation) {
     try {
+      console.log("[wa] attempting location.href", { source, url });
       window.location.href = url;
       console.info("[wa] opened via location.href", { source });
       return { ok: true, method: "location" };
@@ -131,13 +131,10 @@ export const openWhatsApp = (
     }
   }
 
-  if (opts?.allowWindowOpen === false) {
-    console.warn("[wa] skipped direct window.open outside gesture", { source });
-    return { ok: false, url, text, reason: "popup_blocked" };
-  }
-
-  // 3) window.open (only safe when caller is still inside a user gesture).
+  // 3) window.open as a last resort; it may be blocked, but trying is safer
+  // than silently failing when a pre-opened tab was closed or lost.
   try {
+    console.log("[wa] attempting direct window.open", { source, url });
     const w = window.open(url, "_blank", "noopener,noreferrer");
     if (w) {
       console.info("[wa] opened via direct window.open", { source });
