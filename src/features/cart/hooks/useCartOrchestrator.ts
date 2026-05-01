@@ -541,54 +541,40 @@ export const useCartOrchestrator = (opts?: { sharedCartId?: string | null }) => 
       let savedOrderId: string | null = null;
 
       if (!isGuest && currentUser) {
-        const { data: order, error } = await supabase
-          .from("orders")
-          .insert({
-            user_id: currentUser.id,
+        const result = await placeOrder({
+          data: {
             total: grand,
             payment_method: payment,
             address_id: selectedAddr?.id ?? null,
-            status: "pending",
-            whatsapp_sent: true,
             notes: noteParts.length ? noteParts.join(" · ") : null,
-          })
-          .select("id")
-          .single();
+            service_type: "delivery",
+            delivery_zone: zone.id ?? null,
+            items: lines.map((l) => ({
+              product_id: l.product.id,
+              product_name: l.product.name,
+              product_image: l.product.image ?? null,
+              price: l.meta?.unitPrice ?? l.product.price,
+              quantity: l.qty,
+            })),
+          },
+        });
 
-        if (error || !order) {
-          console.error(error);
-          toast.error("تعذّر حفظ الطلب، حاول مرة أخرى");
+        if (!result.ok) {
+          console.error("[checkout] placeOrder failed:", result);
+          toast.error(result.error);
           setSubmitting(false);
+          submittingRef.current = false;
           return;
         }
-        savedOrderId = order.id;
+        savedOrderId = result.order_id;
 
-        const items = lines.map((l) => ({
-          order_id: order.id,
-          product_id: l.product.id,
-          product_name: l.product.name,
-          product_image: l.product.image,
-          price: l.product.price,
-          quantity: l.qty,
-        }));
-        const { error: itemsErr } = await supabase.from("order_items").insert(items);
-        if (itemsErr) {
-          console.error(itemsErr);
-          toast.error("تعذّر حفظ تفاصيل الطلب، حاول مرة أخرى");
-          setSubmitting(false);
-          return;
-        }
-
+        // Best-effort multi-warehouse allocation (non-blocking)
         try {
-          const { data: allocResult, error: allocErr } = await supabase.rpc(
+          const { error: allocErr } = await supabase.rpc(
             "allocate_order_inventory",
-            { _order_id: order.id, _zone: zone.id },
+            { _order_id: savedOrderId, _zone: zone.id },
           );
-          if (allocErr) {
-            console.warn("[allocation] failed", allocErr);
-          } else {
-            console.info("[allocation]", allocResult);
-          }
+          if (allocErr) console.warn("[allocation] failed", allocErr);
         } catch (e) {
           console.warn("[allocation] exception", e);
         }
